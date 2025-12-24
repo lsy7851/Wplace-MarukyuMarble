@@ -1,10 +1,23 @@
 {
-  "name": "wplace-skirkmarble-fork",
+  "name": "wplace-marukyumarble",
   "version": "0.91.2",
-  "author": "Seris0",
+  "description": "Wplace.live template overlay tool - Fork of Blue Marble",
+  "author": "marukyu Marble Contributors",
   "contributors": [
-    "Hao-1337",
-    "pixelkat5"
+    "SwingTheVine (Original Blue Marble)",
+    "Hao-1337 (Error Map)",
+    "pixelkat5 (Search Features)",
+    "Seris0 (Skirk Marble)"
+  ],
+  "license": "MPL-2.0",
+  "keywords": [
+    "wplace",
+    "wplace.live",
+    "template",
+    "overlay",
+    "userscript",
+    "pixel-art",
+    "canvas"
   ],
   "type": "module",
   "scripts": {

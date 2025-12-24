@@ -136,8 +136,8 @@ if (mapCSS) {
 
 // Adds the banner
 fs.writeFileSync(
-  'dist/SkirkMarble.user.js', 
-  metaContent + fs.readFileSync('dist/SkirkMarble.user.js', 'utf8'), 
+  'dist/SkirkMarble.user.js',
+  metaContent + fs.readFileSync('dist/SkirkMarble.user.js', 'utf8'),
   'utf8'
 );
 
