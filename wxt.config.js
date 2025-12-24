@@ -2,6 +2,8 @@ import { defineConfig } from 'wxt';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
+  modules: ['@wxt-dev/module-vue'],
+
   extensionApi: 'chrome',
   srcDir: 'src',
 
@@ -23,7 +25,4 @@ export default defineConfig({
       },
     ],
   },
-
-  // Build output directory
-  outDir: '.output',
 });
