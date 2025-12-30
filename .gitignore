@@ -411,3 +411,5 @@ FodyWeavers.xsd
 
 # pnpm
 pnpm-lock.yaml
+
+.claude/*.local.json

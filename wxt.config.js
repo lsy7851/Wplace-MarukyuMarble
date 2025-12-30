@@ -20,8 +20,12 @@ export default defineConfig({
     ],
     web_accessible_resources: [
       {
-        resources: ['*.css', '*.js'],
-        matches: ['*://*.wplace.live/*'],
+        // MAIN world unlisted scripts:
+        // - api-interceptor.js: Intercepts fetch for API data
+        // - vue-app.js: Vue app running in MAIN world for Vue DevTools detection
+        // WXT automatically makes unlisted scripts web accessible
+        resources: ['api-interceptor.js', 'vue-app.js', '*.css', '*.js'],
+        matches: ['*://*.wplace.live/*', '*://*.wplace.lol/*'],
       },
     ],
   },
