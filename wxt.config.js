@@ -1,4 +1,10 @@
 import { defineConfig } from 'wxt';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -6,6 +12,17 @@ export default defineConfig({
 
   extensionApi: 'chrome',
   srcDir: 'src',
+
+  vite: () => ({
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+        '~': path.resolve(__dirname, './src'),
+        '@@': path.resolve(__dirname, '.'),
+        '~~': path.resolve(__dirname, '.'),
+      },
+    },
+  }),
 
   manifest: {
     name: '⑨ Marukyu Marble',

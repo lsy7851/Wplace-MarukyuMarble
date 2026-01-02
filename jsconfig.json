@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@": ["./src"],
+      "~/*": ["./src/*"],
+      "~": ["./src"],
+      "@@/*": ["./*"],
+      "@@": ["."],
+      "~~/*": ["./*"],
+      "~~": ["."]
+    },
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*",
+    ".wxt/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    ".output",
+    "dist"
+  ],
+  "vueCompilerOptions": {
+    "target": 3
+  }
+}

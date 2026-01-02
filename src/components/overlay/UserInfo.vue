@@ -1,7 +1,7 @@
 <script setup>
-import * as icons from '../../../old-src/icons.js';
-import { useUserStore } from '../../stores/userStore.js';
-import { useSettings } from '../../composables/useSettings.js';
+import * as icons from '@@/old-src/icons.js';
+import { useUserStore } from '@/stores/userStore.js';
+import { useSettings } from '@/composables/useSettings.js';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted } from 'vue';
 

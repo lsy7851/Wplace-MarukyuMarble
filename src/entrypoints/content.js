@@ -26,26 +26,27 @@ export default defineContentScript({
   async main(ctx) {
     console.log('✅ [ISOLATED] Marukyu Marble Content Script starting...');
 
-    // ===== 1. Wait for DOM head to be ready =====
+    // ===== CRITICAL: Inject API Interceptor IMMEDIATELY =====
+    // Must run before Wplace.live scripts execute to catch /api/me
+    await injectAPIInterceptorImmediate();
+    console.log('🎯 [ISOLATED] API interceptor injected immediately - ready to catch /api/me');
+
+    // ===== Setup chrome.storage proxy immediately =====
+    setupStorageProxy();
+    console.log('🔌 [ISOLATED] Chrome.storage proxy active');
+
+    // ===== Wait for DOM head to be ready =====
     await waitForDocumentHead();
     console.log('📄 [ISOLATED] document.head is ready');
 
-    // ===== 2. Manually inject CSS =====
+    // ===== Manually inject CSS =====
     await injectVueCSS();
     console.log('🎨 [ISOLATED] Vue CSS injected manually');
 
-    // ===== 3. Inject API Interceptor into MAIN world =====
-    await injectAPIInterceptor();
-    console.log('🎯 [ISOLATED] API interceptor injected - ready to catch /api/me');
-
-    // ===== 4. Inject Vue App into MAIN world =====
+    // ===== Inject Vue App into MAIN world =====
     await injectVueApp();
     console.log('🎨 [ISOLATED] Vue app injected into MAIN world');
     console.log('💡 [ISOLATED] Vue DevTools should now detect the app!');
-
-    // ===== 5. Setup chrome.storage proxy =====
-    setupStorageProxy();
-    console.log('🔌 [ISOLATED] Chrome.storage proxy active');
 
     console.log('✅ [ISOLATED] Marukyu Marble initialized');
   },
@@ -102,18 +103,23 @@ function injectVueCSS() {
 }
 
 /**
- * Inject API Interceptor into MAIN world
- * Must run before Wplace.live JavaScript
+ * Inject API Interceptor into MAIN world IMMEDIATELY
+ * Uses document.documentElement instead of document.head for earliest possible injection
+ * Must run before Wplace.live JavaScript to catch /api/me
  */
-async function injectAPIInterceptor() {
-  console.log('📥 [ISOLATED] Injecting API interceptor...');
+async function injectAPIInterceptorImmediate() {
+  console.log('📥 [ISOLATED] Injecting API interceptor immediately...');
 
   try {
-    await injectScript('/api-interceptor.js', {
-      keepInDom: true,
-    });
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL('api-interceptor.js');
+    script.type = 'module';
 
-    console.log('✅ [ISOLATED] API interceptor injected successfully');
+    // Inject into documentElement (available at document_start)
+    // This is earlier than waiting for document.head
+    (document.documentElement || document.head || document.body).appendChild(script);
+
+    console.log('✅ [ISOLATED] API interceptor injected to documentElement');
   } catch (error) {
     console.error('❌ [ISOLATED] Failed to inject API interceptor:', error);
     throw error;

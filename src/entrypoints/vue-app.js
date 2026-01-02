@@ -10,17 +10,12 @@
  * CSS is extracted to assets/vue-app.css but will be manually injected by content.js
  */
 import { defineUnlistedScript } from 'wxt/sandbox';
-import { createApp, devtools } from 'vue';
+import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';  // ✅ Import App component here for MAIN world execution
-import { useUserStore } from '@/stores/userStore.js';
 
 export default defineUnlistedScript(() => {
   'use strict';
-
-  const EXTENSION_NAME = 'Marukyu Marble';
-  const MESSAGE_SOURCE_TO_ISOLATED = 'marukyu-marble-main-vueapp';
-  const MESSAGE_SOURCE_FROM_INTERCEPTOR = 'marukyu-marble-main';
 
   console.log('🎨 [MAIN/VueApp] Initializing Vue app in MAIN world...');
 
@@ -67,50 +62,9 @@ export default defineUnlistedScript(() => {
     // 마운트
     app.mount(container);
 
-    // Store 인스턴스
-    const userStore = useUserStore();
-
     console.log('✅ [MAIN/VueApp] Vue app mounted successfully');
     console.log('💡 [MAIN/VueApp] Check for Vue DevTools in browser extension!');
-
-    // ===== API Interceptor로부터 메시지 수신 =====
-    window.addEventListener('message', (event) => {
-      if (event.source !== window) return;
-
-      const message = event.data;
-
-      // API interceptor로부터의 메시지 처리
-      if (message.source === MESSAGE_SOURCE_FROM_INTERCEPTOR) {
-        console.log('📨 [MAIN/VueApp] Received message from API interceptor:', message.type);
-
-        switch (message.type) {
-          case 'USER_INFO':
-            console.log('👤 [MAIN/VueApp] Updating user info in store');
-            userStore.setUserInfo(message.data);
-            break;
-
-          case 'USER_NOT_LOGGED_IN':
-            console.warn('⚠️ [MAIN/VueApp] User not logged in');
-            userStore.clearUserInfo();
-            break;
-
-          case 'PIXEL_DATA':
-            console.log('🎨 [MAIN/VueApp] Pixel data received:', message.data);
-            // TODO: 픽셀 클릭 처리
-            break;
-
-          case 'TILE_DATA':
-            console.log('🗺️ [MAIN/VueApp] Tile data received');
-            // TODO: 타일 캐싱 처리
-            break;
-
-          default:
-            console.warn('⚠️ [MAIN/VueApp] Unknown message type:', message.type);
-        }
-      }
-    });
-
-    console.log('✅ [MAIN/VueApp] Message listener registered');
+    console.log('📨 [MAIN/VueApp] API message handling is now managed by useApiMessages composable in App.vue');
   }
 
   // Vue App 초기화 실행

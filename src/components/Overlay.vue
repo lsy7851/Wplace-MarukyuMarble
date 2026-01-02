@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useDraggable } from '@vueuse/core';
-import * as icons from '../../old-src/icons.js';
+import * as icons from '@@/old-src/icons.js';
 import DragBar from './overlay/DragBar.vue';
 import Title from './overlay/Title.vue';
 import UserInfo from './overlay/UserInfo.vue';
@@ -53,7 +53,7 @@ setTimeout(() => {
 </script>
 
 <template>
-  <div ref="overlayRef" id="bm-overlay" :style="draggableStyle">
+  <div id="bm-overlay" ref="overlayRef" :style="draggableStyle">
     <div id="bm-contain-header">
       <DragBar ref="dragBarRef" :class="{minimized:minimized}" />
       <Title v-model:minimized="minimized" :class="{minimized:minimized}" />
@@ -69,9 +69,7 @@ setTimeout(() => {
         :icons="icons.templateIcon"
         headerText="Template" />
       <div id="bm-contain-automation">
-        <CoordinatesInput
-          :class="{minimized:minimized}"
-          :icons="icons" />
+        <CoordinatesInput :class="{minimized:minimized}" />
         <ColorMenu :class="{minimized:minimized}" />
         <TemplateButtons
           :class="{minimized:minimized}"
@@ -221,7 +219,6 @@ div:has(> #bm-button-teleport) {
 }
 
 
-
 /* All small elements */
 #bm-overlay small {
   font-size: x-small;
@@ -308,7 +305,6 @@ div:has(> #bm-button-teleport) {
   height: 2rem;
   transition: opacity 0.2s ease;
 }
-
 
 
 /* All overlay buttons */

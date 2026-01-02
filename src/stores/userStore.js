@@ -6,7 +6,7 @@
 
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import { useChargeTimer } from '../composables/useChargeTimer.js';
+import { useChargeTimer } from '@/composables/useChargeTimer.js';
 
 export const useUserStore = defineStore('user', () => {
   // ===== State (Volatile - not persisted) =====

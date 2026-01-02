@@ -8,7 +8,7 @@
  */
 
 import { ref } from 'vue';
-import { chromeStorageCompat } from '../utils/storageCompat.js';
+import { chromeStorageCompat } from '@/utils/storageCompat.js';
 
 // Setting keys (storage keys with 'cm' prefix)
 const STORAGE_KEYS = {

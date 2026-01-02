@@ -1,16 +1,29 @@
 <script setup>
-import { defineProps } from 'vue';
+import { ref } from 'vue';
+import { useCoordinateStore } from '@/stores/coordinateStore.js';
+import * as icons from '@@/old-src/icons.js';
 
-const props = defineProps({
-  icons: {
-    type: Object,
-    required: true
-  }
-});
+// Use coordinates composable
+const coordinateStore = useCoordinateStore();
 
+// Local input values (editable by user)
+const inputTileX = ref('');
+const inputTileY = ref('');
+const inputPixelX = ref('');
+const inputPixelY = ref('');
+
+// Handle Detect button click
 const handleDetect = () => {
-  // TODO: Implement coordinate detection from API
-  console.log('Detect coordinates clicked');
+  if (!coordinateStore.hasCoords) {
+    alert('No pixel selected. Please select a pixel on the canvas first.');
+    return;
+  }
+
+  // Update input fields with detected values
+  inputTileX.value = String(coordinateStore.tileX);
+  inputTileY.value = String(coordinateStore.tileY);
+  inputPixelX.value = String(coordinateStore.pixelX);
+  inputPixelY.value = String(coordinateStore.pixelY);
 };
 </script>
 
@@ -32,6 +45,7 @@ const handleDetect = () => {
       <p>Tile: </p>
       <input
         id="bm-input-tx"
+        v-model="inputTileX"
         max="2047"
         min="0"
         placeholder="T1 X"
@@ -40,6 +54,7 @@ const handleDetect = () => {
         type="number" />
       <input
         id="bm-input-ty"
+        v-model="inputTileY"
         max="2047"
         min="0"
         placeholder="T1 Y"
@@ -48,6 +63,7 @@ const handleDetect = () => {
         type="number" />
       <input
         id="bm-input-px"
+        v-model="inputPixelX"
         max="2047"
         min="0"
         placeholder="Px X"
@@ -56,6 +72,7 @@ const handleDetect = () => {
         type="number" />
       <input
         id="bm-input-py"
+        v-model="inputPixelY"
         max="2047"
         min="0"
         placeholder="Px y"
