@@ -11,6 +11,7 @@ import CoordinatesInput from './overlay/CoordinatesInput.vue';
 import TemplateButtons from './overlay/TemplateButtons.vue';
 import StatusDisplay from './overlay/StatusDisplay.vue';
 import ActionButtons from './overlay/ActionButtons.vue';
+import LocationSearchModal from './modals/LocationSearchModal.vue';
 
 const minimized = ref(false);
 const version = '0.91.2';
@@ -83,6 +84,9 @@ setTimeout(() => {
           :version="version" />
       </div>
     </div>
+
+    <!-- Location Search Modal -->
+    <LocationSearchModal />
   </div>
 </template>
 

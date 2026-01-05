@@ -34,6 +34,7 @@ export default defineConfig({
     host_permissions: [
       '*://*.wplace.live/*',
       '*://*.wplace.lol/*',
+      '*://nominatim.openstreetmap.org/*',
     ],
     web_accessible_resources: [
       {

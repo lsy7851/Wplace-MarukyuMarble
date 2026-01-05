@@ -26,6 +26,7 @@ window.addEventListener('message', (event) => {
   if (success) {
     pending.resolve(data);
   } else {
+    console.error(`❌ [MAIN][STORAGE] Request #${id} failed:`, error);
     pending.reject(new Error(error));
   }
 });
@@ -50,10 +51,11 @@ function sendStorageRequest(area, action, payload) {
       payload
     }, '*');
 
-    // 타임아웃 (10초)
+    // Timeout (10s)
     setTimeout(() => {
       if (pendingRequests.has(id)) {
         pendingRequests.delete(id);
+        console.error(`❌ [MAIN][STORAGE] Request #${id} timeout (${area}.${action})`);
         reject(new Error('Storage request timeout'));
       }
     }, 10000);

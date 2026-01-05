@@ -1,5 +1,6 @@
 <script setup>
 import { defineProps } from 'vue';
+import { useLocationSearchStore } from '@/stores/locationSearchStore.js';
 
 const props = defineProps({
   icons: {
@@ -12,13 +13,14 @@ const props = defineProps({
   }
 });
 
+const locationSearchStore = useLocationSearchStore();
+
 const handleColorConverter = () => {
   window.open('https://pepoafonso.github.io/color_converter_wplace/', '_blank', 'noopener noreferrer');
 };
 
 const handleSearch = () => {
-  // TODO: Implement search panel toggle
-  console.log('Search clicked');
+  locationSearchStore.toggle();
 };
 
 const handleFlyTo = () => {

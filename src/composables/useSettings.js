@@ -10,24 +10,28 @@
 import { ref } from 'vue';
 import { chromeStorageCompat } from '@/utils/storageCompat.js';
 
-// Setting keys (storage keys with 'cm' prefix)
+// Setting keys (storage keys with 'mm' prefix)
 const STORAGE_KEYS = {
-  SHOW_USERNAME: 'cmShowUsername',
+  SHOW_USERNAME: 'mmShowUsername',
+  NAVIGATION_METHOD: 'mmNavigationMethod',
 };
 
 // Default values
 const DEFAULTS = {
   showUsername: true,
+  navigationMethod: 'flyto', // 'flyto' | 'openurl'
 };
 
 // Mapping between variable names and storage keys
 const KEY_MAPPING = {
   showUsername: STORAGE_KEYS.SHOW_USERNAME,
+  navigationMethod: STORAGE_KEYS.NAVIGATION_METHOD,
 };
 
 // Reactive state (singleton - module level)
 const settings = ref({
   showUsername: DEFAULTS.showUsername,
+  navigationMethod: DEFAULTS.navigationMethod,
 });
 
 // Flag to track if settings have been loaded

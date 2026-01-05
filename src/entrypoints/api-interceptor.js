@@ -31,6 +31,18 @@ export default defineUnlistedScript(() => {
         // TODO: MAIN world에서 설정 사용
         break;
 
+      case 'FLY_TO':
+        handleFlyTo(message.data);
+        break;
+
+      case 'GET_MAP_STATUS':
+        sendToIsolated('MAP_STATUS', {
+          isReady: !!(window.mmmap && typeof window.mmmap.flyTo === 'function'),
+          version: window.mmmap?.version || null,
+          hasCenter: !!(window.mmmap && typeof window.mmmap.getCenter === 'function')
+        });
+        break;
+
       default:
         console.warn('⚠️ [MAIN] Unknown message type:', message.type);
     }
@@ -65,6 +77,131 @@ export default defineUnlistedScript(() => {
     } catch (error) {
       console.error('❌ [MAIN] Failed to extract endpoint:', error);
       return 'unknown';
+    }
+  }
+
+  // ===== MapLibre GL 인터셉터 설치 =====
+
+  /**
+   * Intercept MapLibre GL Map instance via Object.prototype.transform setter
+   *
+   * How it works:
+   * 1. MapLibre GL Map class internally sets `this.transform = new Transform()` during construction
+   * 2. We install a setter on Object.prototype.transform to intercept this assignment
+   * 3. When the setter is called:
+   *    - `this` = Map instance (has getCanvas, flyTo, etc.)
+   *    - `value` = Transform instance (has setZoom, etc.)
+   * 4. We verify both conditions and capture the Map instance
+   * 5. Clean up the hook to prevent side effects
+   *
+   * This works regardless of bundling, minification, or global variable exposure.
+   *
+   * Credit: Inspired by Wplace Zoom Plus extension
+   */
+  (function setupMapLibreInterceptor() {
+    console.log('🔧 [MAIN][TRANSFORM_HOOK] Setting up Object.prototype.transform interceptor...');
+
+    let hooked = false;
+
+    Object.defineProperty(Object.prototype, 'transform', {
+      configurable: true,
+      enumerable: false,
+      set: function(value) {
+        // Check if this is MapLibre GL Map instance being initialized
+        // Conditions:
+        // 1. value.setZoom exists (Transform object)
+        // 2. this.getCanvas exists (Map instance)
+        if (!hooked &&
+            value &&
+            typeof value.setZoom === 'function' &&
+            typeof this.getCanvas === 'function') {
+
+          hooked = true;
+          const mapInstance = this;
+
+          console.log('🎯 [MAIN][TRANSFORM_HOOK] MapLibre GL Map instance captured! Version:', mapInstance.version || 'unknown');
+
+          // Store globally for easy access
+          window.mmmap = mapInstance;
+
+          // Notify ISOLATED world that map is ready
+          sendToIsolated('MAP_READY', {
+            version: mapInstance.version || 'unknown',
+            timestamp: Date.now()
+          });
+
+          // Cleanup: remove the hook to prevent side effects on other objects
+          delete Object.prototype.transform;
+
+          // Set the property on the actual Map instance now that the hook is gone
+          this.transform = value;
+
+          return;
+        }
+
+        // For all other objects (or if already hooked), set the property normally
+        Object.defineProperty(this, 'transform', {
+          value: value,
+          writable: true,
+          configurable: true,
+          enumerable: true,
+        });
+      }
+    });
+
+    console.log('✅ [MAIN][TRANSFORM_HOOK] Hook installed, waiting for MapLibre GL Map...');
+  })();
+
+  /**
+   * Handle flyTo request from ISOLATED world
+   * @param {Object} data - FlyTo parameters
+   * @param {number} data.lat - Latitude
+   * @param {number} data.lng - Longitude
+   * @param {number} [data.zoom=13.62] - Zoom level
+   */
+  function handleFlyTo(data) {
+    const { lat, lng, zoom = 13.62 } = data;
+
+    // Validate coordinates
+    if (typeof lat !== 'number' || typeof lng !== 'number') {
+      console.error('❌ [MAIN] Invalid coordinates:', { lat, lng });
+      sendToIsolated('FLY_TO_ERROR', {
+        error: 'Invalid coordinates',
+        lat,
+        lng
+      });
+      return;
+    }
+
+    // Check if map is ready
+    if (!window.mmmap || typeof window.mmmap.flyTo !== 'function') {
+      console.error('❌ [MAIN] Map not ready for flyTo');
+      sendToIsolated('FLY_TO_ERROR', {
+        error: 'Map not ready',
+        isMapDefined: !!window.mmmap,
+        hasFlyTo: !!(window.mmmap && typeof window.mmmap.flyTo === 'function')
+      });
+      return;
+    }
+
+    try {
+      // Execute flyTo
+      window.mmmap.flyTo({
+        center: [lng, lat], // MapLibre uses [lng, lat] order
+        zoom: zoom
+      });
+
+      // Notify success
+      sendToIsolated('FLY_TO_SUCCESS', { lat, lng, zoom });
+
+    } catch (error) {
+      console.error('❌ [MAIN] FlyTo failed:', error);
+      sendToIsolated('FLY_TO_ERROR', {
+        error: error.message,
+        lat,
+        lng,
+        zoom
+      });
     }
   }
 
