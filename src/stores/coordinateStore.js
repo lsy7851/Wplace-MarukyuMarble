@@ -3,6 +3,7 @@
  * Stores the last clicked pixel coordinates from Wplace.live canvas
  */
 import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
 
 export const useCoordinateStore = defineStore('coordinate', () => {
   const tileX = ref();

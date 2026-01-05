@@ -42,15 +42,10 @@ let isInitialized = false;
  * Sets default values if not found in storage
  */
 async function loadSettings() {
-  console.log('🔧 [useSettings] loadSettings() called');
-
   try {
     // Get all storage keys to load
     const storageKeys = Object.values(STORAGE_KEYS);
-    console.log('🔧 [useSettings] Requesting storage keys:', storageKeys);
-
     const result = await chromeStorageCompat.sync.get(storageKeys);
-    console.log('🔧 [useSettings] Storage result:', result);
 
     // Apply loaded values or defaults
     for (const [varName, defaultValue] of Object.entries(DEFAULTS)) {
@@ -58,18 +53,14 @@ async function loadSettings() {
 
       if (result[storageKey] !== undefined) {
         settings.value[varName] = result[storageKey];
-        console.log(`🔧 [useSettings] Loaded ${varName} = ${result[storageKey]}`);
       } else {
         // If setting doesn't exist in storage, save the default value
         settings.value[varName] = defaultValue;
-        console.log(`🔧 [useSettings] Setting default for ${varName} = ${defaultValue}`);
         await chromeStorageCompat.sync.set({ [storageKey]: defaultValue });
-        console.log(`🔧 [useSettings] Default saved to storage: ${storageKey} = ${defaultValue}`);
       }
     }
 
     isInitialized = true;
-    console.log('✅ Settings loaded:', settings.value);
   } catch (error) {
     console.error('❌ Failed to load settings:', error);
     // Fallback to defaults on error
@@ -89,10 +80,8 @@ async function saveSetting(varName, value) {
       throw new Error(`Unknown setting: ${varName}`);
     }
 
-    console.log(`🔧 [useSettings] Saving ${varName} (${storageKey}) = ${value}`);
     await chromeStorageCompat.sync.set({ [storageKey]: value });
     settings.value[varName] = value;
-    console.log(`✅ Setting saved: ${varName} (${storageKey}) =`, value);
   } catch (error) {
     console.error(`❌ Failed to save setting ${varName}:`, error);
     throw error;
@@ -113,8 +102,6 @@ function getSetting(varName) {
  * Provides reactive settings management
  */
 export function useSettings() {
-  console.log('🔧 [useSettings] useSettings() called, isInitialized:', isInitialized);
-
   // Initialize settings on first use
   if (!isInitialized) {
     loadSettings();

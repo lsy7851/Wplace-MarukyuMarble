@@ -79,8 +79,6 @@ export const useUserStore = defineStore('user', () => {
    * @param {Object} data - User data from API
    */
   function setUserInfo(data) {
-    console.log('🏪 [UserStore] Setting user info:', data);
-
     userInfo.value = {
       id: data.id,
       name: data.name,
@@ -98,8 +96,6 @@ export const useUserStore = defineStore('user', () => {
    * Called on logout or extension disable
    */
   function clearUserInfo() {
-    console.log('🏪 [UserStore] Clearing user info');
-
     userInfo.value = null;
     resetChargeData();
     lastUpdated.value = null;
@@ -112,7 +108,6 @@ export const useUserStore = defineStore('user', () => {
   function refreshChargeData(newChargeData) {
     if (!newChargeData) return;
 
-    console.log('🔄 [UserStore] Refreshing charge data:', newChargeData);
     setChargeData(newChargeData);
   }
 

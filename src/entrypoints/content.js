@@ -24,31 +24,21 @@ export default defineContentScript({
   runAt: 'document_start',
 
   async main(ctx) {
-    console.log('✅ [ISOLATED] Marukyu Marble Content Script starting...');
-
     // ===== CRITICAL: Inject API Interceptor IMMEDIATELY =====
     // Must run before Wplace.live scripts execute to catch /api/me
     await injectAPIInterceptorImmediate();
-    console.log('🎯 [ISOLATED] API interceptor injected immediately - ready to catch /api/me');
 
     // ===== Setup chrome.storage proxy immediately =====
     setupStorageProxy();
-    console.log('🔌 [ISOLATED] Chrome.storage proxy active');
 
     // ===== Wait for DOM head to be ready =====
     await waitForDocumentHead();
-    console.log('📄 [ISOLATED] document.head is ready');
 
     // ===== Manually inject CSS =====
     await injectVueCSS();
-    console.log('🎨 [ISOLATED] Vue CSS injected manually');
 
     // ===== Inject Vue App into MAIN world =====
     await injectVueApp();
-    console.log('🎨 [ISOLATED] Vue app injected into MAIN world');
-    console.log('💡 [ISOLATED] Vue DevTools should now detect the app!');
-
-    console.log('✅ [ISOLATED] Marukyu Marble initialized');
   },
 });
 
@@ -87,7 +77,6 @@ function injectVueCSS() {
       link.rel = 'stylesheet';
       link.href = cssUrl;
       link.onload = () => {
-        console.log('✅ [ISOLATED] Vue CSS loaded successfully');
         resolve();
       };
       link.onerror = () => {
@@ -108,8 +97,6 @@ function injectVueCSS() {
  * Must run before Wplace.live JavaScript to catch /api/me
  */
 async function injectAPIInterceptorImmediate() {
-  console.log('📥 [ISOLATED] Injecting API interceptor immediately...');
-
   try {
     const script = document.createElement('script');
     script.src = chrome.runtime.getURL('api-interceptor.js');
@@ -118,8 +105,6 @@ async function injectAPIInterceptorImmediate() {
     // Inject into documentElement (available at document_start)
     // This is earlier than waiting for document.head
     (document.documentElement || document.head || document.body).appendChild(script);
-
-    console.log('✅ [ISOLATED] API interceptor injected to documentElement');
   } catch (error) {
     console.error('❌ [ISOLATED] Failed to inject API interceptor:', error);
     throw error;
@@ -131,15 +116,10 @@ async function injectAPIInterceptorImmediate() {
  * This allows Vue DevTools browser extension to detect the app
  */
 async function injectVueApp() {
-  console.log('📥 [ISOLATED] Injecting Vue app into MAIN world...');
-
-
   try {
     await injectScript('/vue-app.js', {
       keepInDom: true,
     });
-
-    console.log('✅ [ISOLATED] Vue app injected successfully');
   } catch (error) {
     console.error('❌ [ISOLATED] Failed to inject Vue app:', error);
     throw error;
@@ -161,8 +141,6 @@ function setupStorageProxy() {
     if (message.source !== STORAGE_REQUEST_SOURCE) return;
 
     const { id, area, action, payload } = message;
-
-    console.log(`🔌 [ISOLATED] Storage request: ${area}.${action}`, payload);
 
     try {
       let result;
@@ -209,8 +187,6 @@ function setupStorageProxy() {
         data: result,
       }, '*');
 
-      console.log(`✅ [ISOLATED] Storage ${area}.${action} succeeded`);
-
     } catch (error) {
       // 에러 응답 전송
       window.postMessage({
@@ -223,6 +199,4 @@ function setupStorageProxy() {
       console.error(`❌ [ISOLATED] Storage ${area}.${action} failed:`, error);
     }
   });
-
-  console.log('🔌 [ISOLATED] Chrome.storage proxy listener registered');
 }

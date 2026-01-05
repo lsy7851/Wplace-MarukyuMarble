@@ -31,12 +31,9 @@ export function useApiMessages() {
 
     const { type, data, timestamp } = message;
 
-    console.log(`📨 [useApiMessages] Received: ${type}`, data);
-
     // Distribute message to appropriate store
     switch (type) {
       case 'INTERCEPTOR_READY':
-        console.log('✅ [useApiMessages] API Interceptor is ready');
         break;
 
       case 'USER_INFO':
@@ -113,13 +110,11 @@ export function useApiMessages() {
   // Setup listener on component mount
   onMounted(() => {
     window.addEventListener('message', handleMessage);
-    console.log('🔌 [useApiMessages] Message listener registered');
   });
 
   // Cleanup listener on component unmount
   onUnmounted(() => {
     window.removeEventListener('message', handleMessage);
-    console.log('🔌 [useApiMessages] Message listener removed');
   });
 
   return {

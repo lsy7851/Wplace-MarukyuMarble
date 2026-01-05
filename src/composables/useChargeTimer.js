@@ -86,8 +86,6 @@ export function useChargeTimer() {
     timerInterval = setInterval(() => {
       updateChargeDisplay();
     }, 1000);
-
-    console.log('⏱️ [ChargeTimer] Started countdown');
   }
 
   /**
@@ -97,7 +95,6 @@ export function useChargeTimer() {
     if (timerInterval) {
       clearInterval(timerInterval);
       timerInterval = null;
-      console.log('⏱️ [ChargeTimer] Stopped countdown');
     }
   }
 
@@ -120,14 +117,6 @@ export function useChargeTimer() {
       remainingMs: timeToFullMs,
       currentCharges: currentCharges,
       canPaint: data.canPaint ?? (currentCharges >= 1),
-    });
-
-    console.log('⚡ [ChargeTimer] Initialized:', {
-      current: currentCharges,
-      max: maxCharges,
-      needed: chargesNeeded,
-      timeToFull: timeToFullMs,
-      cooldown: cooldownMs,
     });
 
     startTimer();

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useLocationFavoritesStore } from '@/stores/locationFavoritesStore.js';
-import { parseWplaceUrl } from '@/utils/urlParser.js';
+import { parseWplaceUrl } from '@/utils/coordinates.js';
 import BaseModal from './BaseModal.vue';
 
 const props = defineProps({

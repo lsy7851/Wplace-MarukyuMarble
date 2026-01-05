@@ -10,9 +10,7 @@ const { settings, loadSettings } = useSettings();
 
 // Explicitly load settings on mount
 onMounted(async () => {
-  console.log('🔧 [UserInfo] Component mounted, loading settings...');
   await loadSettings();
-  console.log('🔧 [UserInfo] Settings loaded:', settings.value);
 });
 
 // Extract only the refs we need

@@ -22,12 +22,9 @@ export default defineUnlistedScript(() => {
     // ISOLATED world로부터의 메시지만 처리
     if (message.source !== 'marukyu-marble-isolated') return;
 
-    console.log('📨 [MAIN] Received message from ISOLATED world:', message.type);
-
     // 향후 확장 가능: ISOLATED → MAIN 메시지 처리
     switch (message.type) {
       case 'INIT_SETTINGS':
-        console.log('⚙️ [MAIN] Settings received:', message.data);
         // TODO: MAIN world에서 설정 사용
         break;
 
@@ -85,6 +82,35 @@ export default defineUnlistedScript(() => {
   /**
    * Intercept MapLibre GL Map instance via Object.prototype.transform setter
    *
+   * Based on code from "Wplace Zoom Plus & Location Manager" userscript
+   * Original author: Kur0
+   * Original script: https://greasyfork.org/en/scripts/548945-wplace-zoom-plus-location-manager
+   * Licensed under MIT License
+   *
+   * Copyright (c) 2024 Kur0
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   * ---
+   *
+   * Modified for Marukyu Marble extension (MPL-2.0)
+   *
    * How it works:
    * 1. MapLibre GL Map class internally sets `this.transform = new Transform()` during construction
    * 2. We install a setter on Object.prototype.transform to intercept this assignment
@@ -95,8 +121,6 @@ export default defineUnlistedScript(() => {
    * 5. Clean up the hook to prevent side effects
    *
    * This works regardless of bundling, minification, or global variable exposure.
-   *
-   * Credit: Inspired by Wplace Zoom Plus extension
    */
   (function setupMapLibreInterceptor() {
     console.log('🔧 [MAIN][TRANSFORM_HOOK] Setting up Object.prototype.transform interceptor...');
@@ -225,8 +249,6 @@ export default defineUnlistedScript(() => {
     // 엔드포인트 추출
     const endpoint = extractEndpoint(url);
 
-    console.log(`🔍 [MAIN] Fetch intercepted: ${method} ${endpoint}`);
-
     // 원본 fetch 실행
     let response;
     try {
@@ -251,8 +273,6 @@ export default defineUnlistedScript(() => {
         switch (endpoint) {
           case 'me':
             // 사용자 정보 API
-            console.log('👤 [MAIN] User info API detected');
-
             // 로그인 상태 확인
             if (jsonData.status && jsonData.status.toString()[0] !== '2') {
               console.warn('⚠️ [MAIN] User not logged in (non-2xx status)');
@@ -282,14 +302,6 @@ export default defineUnlistedScript(() => {
               nextChargeTime = new Date(Date.now() + timeUntilNextMs).toISOString();
             }
 
-            console.log('📤 [MAIN] Sending user info to ISOLATED world:', {
-              name: jsonData.name,
-              level: jsonData.level,
-              charges: currentCharges,
-              maxCharges: maxCharges,
-              cooldownMs: cooldownMs
-            });
-
             sendToIsolated('USER_INFO', {
               id: jsonData.id,
               name: jsonData.name,
@@ -306,8 +318,6 @@ export default defineUnlistedScript(() => {
 
           case 'pixel':
             // 픽셀 데이터 API
-            console.log('🎨 [MAIN] Pixel API detected');
-
             try {
               const urlObj = new URL(url);
               const x = urlObj.searchParams.get('x');
@@ -332,7 +342,7 @@ export default defineUnlistedScript(() => {
 
           default:
             // 기타 JSON 응답
-            console.log(`📋 [MAIN] JSON response from ${endpoint}`);
+            break;
         }
 
       } catch (error) {
@@ -344,8 +354,6 @@ export default defineUnlistedScript(() => {
     else if (contentType.includes('image/')) {
       // 타일 이미지인지 확인
       if (url.includes('/tiles/')) {
-        console.log('🗺️ [MAIN] Tile image detected');
-
         try {
           const blob = await clonedResponse.blob();
 

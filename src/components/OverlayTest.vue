@@ -1,7 +1,6 @@
 <script setup>
 const clickBtn = () => {
   alert('⑨ Cirno Marble is working!');
-  console.log('⑨ Button clicked');
 };
 </script>
 

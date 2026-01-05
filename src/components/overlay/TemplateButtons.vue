@@ -19,29 +19,24 @@ const handleFileChange = (event) => {
   const file = event.target.files?.[0];
   if (file) {
     // TODO: Implement file upload logic
-    console.log('File selected:', file.name);
   }
 };
 
 const handleCreate = () => {
   // TODO: Implement template creation logic
-  console.log('Create template clicked');
 };
 
 const handleManage = () => {
   // TODO: Implement template management dialog
-  console.log('Manage templates clicked');
 };
 
 const handlePause = () => {
   // TODO: Implement tile pause/resume logic
   isPaused.value = !isPaused.value;
-  console.log('Pause tiles clicked');
 };
 
 const handleColorFilter = () => {
   // TODO: Implement color filter overlay
-  console.log('Color filter clicked');
 };
 </script>
 

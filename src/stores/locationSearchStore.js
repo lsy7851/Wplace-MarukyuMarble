@@ -114,8 +114,15 @@ export const useLocationSearchStore = defineStore('locationSearch', () => {
     try {
       const apiResults = await searchLocation(searchQuery, { limit: 5 });
 
-      // Parse results into standardized format
-      const parsedResults = apiResults.map(parseNominatimResult);
+      // Parse results into standardized format and normalize lat/lng naming
+      const parsedResults = apiResults.map(result => {
+        const parsed = parseNominatimResult(result);
+        // Nominatim uses 'lon' but we use 'lng' consistently
+        return {
+          ...parsed,
+          lng: parsed.lon || parsed.lng,
+        };
+      });
 
       results.value = parsedResults;
       error.value = null;

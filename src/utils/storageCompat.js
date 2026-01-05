@@ -140,5 +140,3 @@ export const chromeStorageCompat = {
     }
   }
 };
-
-console.log('✅ [MAIN] Chrome Storage compatibility layer initialized');

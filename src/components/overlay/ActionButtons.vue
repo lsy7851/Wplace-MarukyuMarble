@@ -1,6 +1,9 @@
 <script setup>
 import { defineProps } from 'vue';
 import { useLocationSearchStore } from '@/stores/locationSearchStore.js';
+import { useCoordinateStore } from '@/stores/coordinateStore.js';
+import { useNavigation } from '@/composables/useNavigation.js';
+import { tileToLatLng } from '@/utils/coordinates.js';
 
 const props = defineProps({
   icons: {
@@ -14,6 +17,8 @@ const props = defineProps({
 });
 
 const locationSearchStore = useLocationSearchStore();
+const coordinateStore = useCoordinateStore();
+const { navigateToLocation } = useNavigation();
 
 const handleColorConverter = () => {
   window.open('https://pepoafonso.github.io/color_converter_wplace/', '_blank', 'noopener noreferrer');
@@ -23,29 +28,47 @@ const handleSearch = () => {
   locationSearchStore.toggle();
 };
 
-const handleFlyTo = () => {
-  // TODO: Implement fly-to coordinates
-  console.log('Fly to clicked');
+const handleFlyTo = async () => {
+  // Get current coordinates from store
+  const coords = coordinateStore.coordsObject;
+
+  // Check if coordinates are available
+  if (!coordinateStore.hasCoords) {
+    alert('No coordinates detected. Please click on the canvas first.');
+    return;
+  }
+
+  try {
+    // Convert tile/pixel coordinates to lat/lng
+    const { lat, lng } = tileToLatLng(
+      coords.tileX,
+      coords.tileY,
+      coords.pixelX,
+      coords.pixelY
+    );
+
+    // Navigate to the location using settings-based navigation method
+    await navigateToLocation(lat, lng, 13.62);
+  } catch (error) {
+    console.error('❌ [ActionButtons] Failed to fly to coordinates:', error);
+    alert(`Failed to navigate: ${error.message}`);
+  }
 };
 
 const handleScreenshot = () => {
   // TODO: Implement screenshot functionality
-  console.log('Screenshot clicked');
 };
 
 const handleClearStorage = () => {
   // TODO: Implement clear storage dialog
-  console.log('Clear storage clicked');
 };
 
 const handleImport = () => {
   // TODO: Implement import dialog
-  console.log('Import clicked');
 };
 
 const handleSettings = () => {
   // TODO: Implement settings overlay
-  console.log('Settings clicked');
 };
 </script>
 

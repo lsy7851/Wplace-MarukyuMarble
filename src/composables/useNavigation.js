@@ -2,7 +2,7 @@
  * Navigation Composable
  * Handles navigation to locations on Wplace.live canvas
  */
-import { buildWplaceUrl } from '@/utils/urlParser.js';
+import { buildWplaceUrl } from '@/utils/coordinates.js';
 import { useSettings } from '@/composables/useSettings.js';
 
 /**
