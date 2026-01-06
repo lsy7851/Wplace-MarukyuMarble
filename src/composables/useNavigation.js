@@ -3,13 +3,15 @@
  * Handles navigation to locations on Wplace.live canvas
  */
 import { buildWplaceUrl } from '@/utils/coordinates.js';
-import { useSettings } from '@/composables/useSettings.js';
+import { useSettingsStore } from '@/stores/settingsStore.js';
+import { storeToRefs } from 'pinia';
 
 /**
  * Use navigation
  */
 export function useNavigation() {
-  const { settings } = useSettings();
+  const settingsStore = useSettingsStore();
+  const { navigationMethod } = storeToRefs(settingsStore);
 
   /**
    * Send message to MAIN world
@@ -125,7 +127,7 @@ export function useNavigation() {
     let method = options.method;
     if (!method) {
       // Use navigation method from settings
-      method = settings.value.navigationMethod; // 'flyto' or 'openurl'
+      method = navigationMethod.value; // 'flyto' or 'openurl'
     }
 
     try {

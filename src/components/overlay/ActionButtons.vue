@@ -67,8 +67,10 @@ const handleImport = () => {
   // TODO: Implement import dialog
 };
 
+const emit = defineEmits(['open-settings']);
+
 const handleSettings = () => {
-  // TODO: Implement settings overlay
+  emit('open-settings');
 };
 </script>
 

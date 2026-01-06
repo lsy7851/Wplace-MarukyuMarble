@@ -12,9 +12,11 @@ import TemplateButtons from './overlay/TemplateButtons.vue';
 import StatusDisplay from './overlay/StatusDisplay.vue';
 import ActionButtons from './overlay/ActionButtons.vue';
 import LocationSearchModal from './modals/LocationSearchModal.vue';
+import SettingsModal from './modals/SettingsModal.vue';
 
 const minimized = ref(false);
 const version = '0.91.2';
+const showSettingsModal = ref(false);
 
 const showInformationHeader = computed(() => {
   try {
@@ -71,7 +73,8 @@ setTimeout(() => {
         headerText="Template" />
       <div id="bm-contain-automation">
         <CoordinatesInput :class="{minimized:minimized}" />
-        <ColorMenu :class="{minimized:minimized}" />
+        <!-- Color Menu replaced by Modal, but maybe keep slot or remove if unused -->
+        <!-- <ColorMenu :class="{minimized:minimized}" /> -->
         <TemplateButtons
           :class="{minimized:minimized}"
           :icons="icons" />
@@ -81,12 +84,17 @@ setTimeout(() => {
         <ActionButtons
           :class="{minimized:minimized}"
           :icons="icons"
-          :version="version" />
+          :version="version"
+          @open-settings="showSettingsModal = true" />
       </div>
     </div>
 
     <!-- Location Search Modal -->
     <LocationSearchModal />
+
+    <!-- Settings Modal -->
+    <SettingsModal v-model="showSettingsModal" />
+
   </div>
 </template>
 

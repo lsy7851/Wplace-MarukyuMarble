@@ -1,5 +1,8 @@
 <script setup>
-import { ref, defineProps } from 'vue';
+import { defineProps, ref } from 'vue';
+import ColorFilterModal from '@/components/modals/ColorFilterModal.vue';
+
+const showColorFilterModal = ref(false);
 
 const props = defineProps({
   icons: {
@@ -36,7 +39,7 @@ const handlePause = () => {
 };
 
 const handleColorFilter = () => {
-  // TODO: Implement color filter overlay
+  showColorFilterModal.value = !showColorFilterModal.value;
 };
 </script>
 
@@ -49,10 +52,10 @@ const handleColorFilter = () => {
         Upload Template
       </button>
       <input
-        ref="fileInputRef"
         id="bm-input-file-template"
-        type="file"
+        ref="fileInputRef"
         accept="image/png, image/jpeg, image/webp, image/bmp, image/gif"
+        type="file"
         @change="handleFileChange"
       />
     </div>
@@ -68,8 +71,8 @@ const handleColorFilter = () => {
     </button>
     <button
       id="bm-button-pause-tiles"
-      @click="handlePause"
-      :class="{paused: isPaused}">
+      :class="{paused: isPaused}"
+      @click="handlePause">
       <span v-html="icons.pauseIcon"></span>
       Pause
     </button>
@@ -79,6 +82,11 @@ const handleColorFilter = () => {
       <span v-html="icons.colorFilterIcon"></span>
       Color Filter
     </button>
+
+    <!-- Color Filter Modal -->
+    <ColorFilterModal
+      v-model="showColorFilterModal"
+      @close="showColorFilterModal = false" />
   </div>
 </template>
 

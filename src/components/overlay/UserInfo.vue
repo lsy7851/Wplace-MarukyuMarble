@@ -1,19 +1,14 @@
 <script setup>
 import * as icons from '@@/old-src/icons.js';
 import { useUserStore } from '@/stores/userStore.js';
-import { useSettings } from '@/composables/useSettings.js';
+import { useSettingsStore } from '@/stores/settingsStore.js';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
 
 const userStore = useUserStore();
-const { settings, loadSettings } = useSettings();
+const settingsStore = useSettingsStore();
 
-// Explicitly load settings on mount
-onMounted(async () => {
-  await loadSettings();
-});
-
-// Extract only the refs we need
+// Extract only the refs we need from user store
 const {
   userName,
   dropletsFormatted,
@@ -24,6 +19,9 @@ const {
   timeToFullChargeFormatted,
   isFullyCharged,
 } = storeToRefs(userStore);
+
+// Extract showUsername from settings store
+const { showUsername } = storeToRefs(settingsStore);
 
 // Computed for charge display status
 const chargeStatus = computed(() => {
@@ -43,7 +41,7 @@ const chargeStatus = computed(() => {
 <template>
   <div id="bm-contain-userinfo">
     <!-- Username -->
-    <div v-if="settings.showUsername" id="bm-user-name">
+    <div v-if="showUsername" id="bm-user-name">
       <div id="bm-user-icon" v-html="icons.userIcon"></div>
       <p id="bm-user-name-content">
         <b>Username:</b> {{ userName ?? 'loading...' }}
