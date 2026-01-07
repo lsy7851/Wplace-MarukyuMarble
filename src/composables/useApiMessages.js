@@ -5,6 +5,7 @@
 import { onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '@/stores/userStore.js';
 import { useCoordinateStore } from '@/stores/coordinateStore.js';
+import { useCanvasOverlay } from './useCanvasOverlay';
 
 const MESSAGE_SOURCE = 'marukyu-marble-main';
 
@@ -15,6 +16,7 @@ const MESSAGE_SOURCE = 'marukyu-marble-main';
 export function useApiMessages() {
   const userStore = useUserStore();
   const coordStore = useCoordinateStore();
+  const canvasOverlay = useCanvasOverlay();
 
   /**
    * Handle incoming messages from MAIN world API Interceptor
@@ -100,11 +102,21 @@ export function useApiMessages() {
 
   /**
    * Handle TILE_DATA message (tile images)
-   * @param {Object} data
+   * @param {Object} data - { url, tileX, tileY, blob }
    */
-  function handleTileData(data) {
-    // TODO: Implement tileStore when needed
-    console.log('🗺️ [useApiMessages] Tile data received (not yet implemented):', data.url);
+  async function handleTileData(data) {
+    console.log(`🗺️ [useApiMessages] Tile data received: ${data.tileX},${data.tileY}`);
+
+    // Render tile with template overlay
+    if (data.blob && data.tileX !== undefined && data.tileY !== undefined) {
+      try {
+        await canvasOverlay.renderTile(data.blob, [data.tileX, data.tileY]);
+      } catch (e) {
+        console.error('Failed to render tile with overlay:', e);
+      }
+    } else {
+      console.warn('Tile data missing required fields:', data);
+    }
   }
 
   // Setup listener on component mount

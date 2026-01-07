@@ -1,5 +1,13 @@
 <script setup>
 import { defineProps, ref } from 'vue';
+import { useTemplateStore } from '@/stores/templateStore';
+import { useUserStore } from '@/stores/userStore';
+import { useCoordinateStore } from '@/stores/coordinateStore';
+import { useImageProcessing } from '@/composables/useImageProcessing';
+import { useTileCache } from '@/composables/useTileCache';
+import { Template } from '@/models/Template';
+import { numberToEncoded } from '@/utils/encoding';
+import ManageTemplatesModal from '@/components/modals/ManageTemplatesModal.vue';
 import ColorFilterModal from '@/components/modals/ColorFilterModal.vue';
 
 const showColorFilterModal = ref(false);
@@ -11,8 +19,17 @@ const props = defineProps({
   },
 });
 
+const templateStore = useTemplateStore();
+const userStore = useUserStore();
+const coordinateStore = useCoordinateStore();
+const { createTemplateTiles } = useImageProcessing();
+const tileCache = useTileCache();
+
 const fileInputRef = ref(null);
 const isPaused = ref(false);
+const selectedFile = ref(null);
+const uploadFileName = ref('');
+const showManageModal = ref(false);
 
 const handleUploadClick = () => {
   fileInputRef.value?.click();
@@ -21,21 +38,95 @@ const handleUploadClick = () => {
 const handleFileChange = (event) => {
   const file = event.target.files?.[0];
   if (file) {
-    // TODO: Implement file upload logic
+    selectedFile.value = file;
+    uploadFileName.value = file.name;
+    console.log(`[Template Upload] File selected: ${file.name}`);
   }
 };
 
-const handleCreate = () => {
-  // TODO: Implement template creation logic
+const handleCreate = async () => {
+  // Validate file selection
+  if (!selectedFile.value) {
+    alert('Please upload a template image first.');
+    return;
+  }
+
+  // Validate coordinate input
+  if (!coordinateStore.hasInputCoords) {
+    alert('Please enter template coordinates in all four fields (Tile X, Tile Y, Pixel X, Pixel Y).');
+    return;
+  }
+
+  const file = selectedFile.value;
+  const coords = coordinateStore.inputCoordsObject;
+
+  // Additional validation: check if coordinates are valid numbers
+  if (coords.tileX === null || coords.tileY === null || coords.pixelX === null || coords.pixelY === null) {
+    alert('Please enter valid coordinates.');
+    return;
+  }
+
+  // Validate coordinate ranges
+  if (coords.tileX < 0 || coords.tileX > 2047 || coords.tileY < 0 || coords.tileY > 2047) {
+    alert('Tile coordinates must be between 0 and 2047.');
+    return;
+  }
+
+  if (coords.pixelX < 0 || coords.pixelX > 999 || coords.pixelY < 0 || coords.pixelY > 999) {
+    alert('Pixel coordinates must be between 0 and 999.');
+    return;
+  }
+
+  try {
+    console.log(`[Template Create] Processing: ${file.name}`);
+    console.log(`[Template Create] Position: tile(${coords.tileX},${coords.tileY}) pixel(${coords.pixelX},${coords.pixelY})`);
+
+    const result = await createTemplateTiles(file, [coords.tileX, coords.tileY, coords.pixelX, coords.pixelY], {
+      onProgress: (progress) => {
+        console.log(`[Template Create] Progress: ${progress}%`);
+      }
+    });
+
+    const template = new Template({
+      id: `template-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      displayName: file.name.replace(/\.[^/.]+$/, ''),
+      sortID: templateStore.templates.length,
+      authorID: numberToEncoded(userStore.userId || 0),
+      coords: [coords.tileX, coords.tileY, coords.pixelX, coords.pixelY],
+      enabled: true,
+      pixelCount: result.pixelCount || 0,
+      validPixelCount: result.validPixelCount || 0,
+      transparentPixelCount: result.transparentPixelCount || 0,
+      colorPalette: result.colorPalette || {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+
+    await templateStore.addTemplate(template, result.tiles);
+
+    console.log(`[Template Create] Success: ${template.displayName}`);
+    alert(`Template "${template.displayName}" created successfully!\n${template.validPixelCount} pixels`);
+
+    selectedFile.value = null;
+    uploadFileName.value = '';
+    if (fileInputRef.value) {
+      fileInputRef.value.value = '';
+    }
+
+  } catch (error) {
+    console.error('[Template Create] Failed:', error);
+    alert(`Failed to create template: ${error.message}`);
+  }
 };
 
 const handleManage = () => {
-  // TODO: Implement template management dialog
+  showManageModal.value = true;
+  console.log('[Template Buttons] Opening Manage Templates modal');
 };
 
 const handlePause = () => {
-  // TODO: Implement tile pause/resume logic
-  isPaused.value = !isPaused.value;
+  isPaused.value = tileCache.togglePause();
+  console.log(`[Template Buttons] Tile refresh ${isPaused.value ? 'paused' : 'resumed'}`);
 };
 
 const handleColorFilter = () => {
@@ -49,13 +140,18 @@ const handleColorFilter = () => {
     <div>
       <button @click="handleUploadClick">
         <span v-html="icons.uploadIcon"></span>
-        Upload Template
+        <template v-if="uploadFileName">
+          {{ uploadFileName }}
+        </template>
+        <template v-else>
+          Upload Template
+        </template>
       </button>
       <input
-        id="bm-input-file-template"
         ref="fileInputRef"
-        accept="image/png, image/jpeg, image/webp, image/bmp, image/gif"
+        id="bm-input-file-template"
         type="file"
+        accept="image/png, image/jpeg, image/webp, image/bmp, image/gif"
         @change="handleFileChange"
       />
     </div>
@@ -71,8 +167,8 @@ const handleColorFilter = () => {
     </button>
     <button
       id="bm-button-pause-tiles"
-      :class="{paused: isPaused}"
-      @click="handlePause">
+      @click="handlePause"
+      :class="{paused: isPaused}">
       <span v-html="icons.pauseIcon"></span>
       Pause
     </button>
@@ -87,6 +183,9 @@ const handleColorFilter = () => {
     <ColorFilterModal
       v-model="showColorFilterModal"
       @close="showColorFilterModal = false" />
+
+    <!-- Manage Templates Modal -->
+    <ManageTemplatesModal v-model="showManageModal" />
   </div>
 </template>
 

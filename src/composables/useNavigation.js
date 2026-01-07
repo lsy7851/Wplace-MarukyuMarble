@@ -2,7 +2,7 @@
  * Navigation Composable
  * Handles navigation to locations on Wplace.live canvas
  */
-import { buildWplaceUrl } from '@/utils/coordinates.js';
+import { buildWplaceUrl, tileToLatLng } from '@/utils/coordinates.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';
 import { storeToRefs } from 'pinia';
 
@@ -152,9 +152,31 @@ export function useNavigation() {
     }
   }
 
+  /**
+   * Navigate to Wplace tile coordinates
+   * Converts tile coordinates to WGS84 and navigates
+   * @param {Array} coords - [tileX, tileY, pixelX, pixelY]
+   * @param {number} [zoom=13.62] - Zoom level
+   * @param {Object} [options] - Navigation options
+   */
+  async function flyToCoordinates(coords, zoom = 13.62, options = {}) {
+    if (!Array.isArray(coords) || coords.length !== 4) {
+      throw new Error('Invalid coordinates array. Expected [tileX, tileY, pixelX, pixelY]');
+    }
+
+    const [tileX, tileY, pixelX, pixelY] = coords;
+
+    // Convert Wplace coordinates to WGS84
+    const { lat, lng } = tileToLatLng(tileX, tileY, pixelX, pixelY);
+
+    // Navigate to location
+    await navigateToLocation(lat, lng, zoom, options);
+  }
+
   return {
     navigateToLocation,
     flyToLocation,
+    flyToCoordinates,
     navigateByUrl,
     isMapReady,
   };

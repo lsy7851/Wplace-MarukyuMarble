@@ -13,9 +13,19 @@ import { defineUnlistedScript } from 'wxt/sandbox';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';  // ✅ Import App component here for MAIN world execution
+import { chromeStorageCompat } from '@/utils/storageCompat';
 
 export default defineUnlistedScript(() => {
   'use strict';
+
+  // ===== Setup chrome.storage polyfill using existing compatibility layer =====
+  if (!window.chrome) {
+    window.chrome = {};
+  }
+
+  if (!window.chrome.storage) {
+    window.chrome.storage = chromeStorageCompat;
+  }
 
   // ===== DOM이 준비될 때까지 대기 =====
   function waitForDOMReady() {

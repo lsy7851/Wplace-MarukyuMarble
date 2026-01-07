@@ -60,7 +60,12 @@ export const useTemplateStore = defineStore('template', () => {
     try {
       // Save metadata only (no blobs)
       const metadata = templates.value.map(t => t.toJSON());
-      await chrome.storage.sync.set({ templates: metadata });
+
+      // Deep clone via JSON to ensure structured clone compatibility
+      // This removes any non-serializable properties that might cause postMessage to fail
+      const cleanMetadata = JSON.parse(JSON.stringify(metadata));
+
+      await chrome.storage.sync.set({ templates: cleanMetadata });
       console.log(`Saved ${metadata.length} templates to chrome.storage.sync`);
     } catch (e) {
       error.value = `Failed to save templates: ${e.message}`;
@@ -153,7 +158,7 @@ export const useTemplateStore = defineStore('template', () => {
   }
 
   /**
-   * Rename a template
+   * Rename a template by index
    * @param {number} index - Template index
    * @param {string} newName - New display name
    */
@@ -167,6 +172,32 @@ export const useTemplateStore = defineStore('template', () => {
     templates.value[index].updatedAt = new Date().toISOString();
     await saveTemplates();
     console.log(`Renamed template to: ${newName}`);
+  }
+
+  /**
+   * Rename a template by ID
+   * @param {string} id - Template ID
+   * @param {string} newName - New display name
+   */
+  async function renameTemplateById(id, newName) {
+    const index = templates.value.findIndex(t => t.id === id);
+    if (index === -1) {
+      throw new Error(`Template not found: ${id}`);
+    }
+    await renameTemplate(index, newName);
+  }
+
+  /**
+   * Update template enabled state by ID
+   * @param {string} id - Template ID
+   * @param {boolean} enabled - New enabled state
+   */
+  async function updateTemplateState(id, enabled) {
+    const index = templates.value.findIndex(t => t.id === id);
+    if (index === -1) {
+      throw new Error(`Template not found: ${id}`);
+    }
+    await setTemplateEnabled(index, enabled);
   }
 
   /**
@@ -250,6 +281,8 @@ export const useTemplateStore = defineStore('template', () => {
     deleteTemplate,
     setTemplateEnabled,
     renameTemplate,
+    renameTemplateById,
+    updateTemplateState,
     updateTemplateColors,
     setTileProgress,
     clearTileProgress,
