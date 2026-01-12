@@ -5,7 +5,8 @@
 import { onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '@/stores/userStore.js';
 import { useCoordinateStore } from '@/stores/coordinateStore.js';
-import { useCanvasOverlay } from './useCanvasOverlay';
+import { useServerStore } from '@/stores/serverStore.js';
+import { useTemplateRenderer } from './useTemplateRenderer';
 
 const MESSAGE_SOURCE = 'marukyu-marble-main';
 
@@ -16,7 +17,8 @@ const MESSAGE_SOURCE = 'marukyu-marble-main';
 export function useApiMessages() {
   const userStore = useUserStore();
   const coordStore = useCoordinateStore();
-  const canvasOverlay = useCanvasOverlay();
+  const serverStore = useServerStore();
+  const renderer = useTemplateRenderer();
 
   /**
    * Handle incoming messages from MAIN world API Interceptor
@@ -50,8 +52,17 @@ export function useApiMessages() {
         handlePixelData(data);
         break;
 
-      case 'TILE_DATA':
-        handleTileData(data);
+      case 'TILE_SERVER_DETECTED':
+        handleTileServerDetected(data);
+        break;
+
+
+      case 'TILE_SERVER_DETECTED':
+        handleTileServerDetected(data);
+        break;
+
+      case 'TILE_RENDER_REQUEST':
+        handleTileRenderRequest(message);
         break;
 
       default:
@@ -101,21 +112,53 @@ export function useApiMessages() {
   }
 
   /**
-   * Handle TILE_DATA message (tile images)
-   * @param {Object} data - { url, tileX, tileY, blob }
+   * Handle TILE_RENDER_REQUEST message from API interceptor
+   * @param {Object} message - { blobID, tileX, tileY, blob }
    */
-  async function handleTileData(data) {
-    console.log(`🗺️ [useApiMessages] Tile data received: ${data.tileX},${data.tileY}`);
+  async function handleTileRenderRequest(message) {
+    const { blobID, tileX, tileY, blob, url } = message;
 
-    // Render tile with template overlay
-    if (data.blob && data.tileX !== undefined && data.tileY !== undefined) {
-      try {
-        await canvasOverlay.renderTile(data.blob, [data.tileX, data.tileY]);
-      } catch (e) {
-        console.error('Failed to render tile with overlay:', e);
-      }
-    } else {
-      console.warn('Tile data missing required fields:', data);
+    console.log(`🎨 [useApiMessages] Tile render request:`, {
+      blobID,
+      tileX,
+      tileY,
+      url
+    });
+
+    try {
+      // Call template renderer directly
+      const processedBlob = await renderer.drawTemplateOnTile(blob, [tileX, tileY]);
+
+      console.log(`✅ [useApiMessages] Tile processed, size: ${processedBlob.size} bytes`);
+
+      // Send processed blob back to API interceptor
+      window.postMessage({
+        source: MESSAGE_SOURCE,
+        type: 'TILE_PROCESSED',
+        blobID,
+        processedBlob
+      }, '*');
+
+    } catch (e) {
+      console.error('❌ [useApiMessages] Failed to process tile:', e);
+
+      // Return original blob on error
+      window.postMessage({
+        source: MESSAGE_SOURCE,
+        type: 'TILE_PROCESSED',
+        blobID,
+        processedBlob: blob
+      }, '*');
+    }
+  }
+
+  /**
+   * Handle TILE_SERVER_DETECTED message
+   * @param {Object} data - { url }
+   */
+  function handleTileServerDetected(data) {
+    if (data.url) {
+      serverStore.setTileServerUrl(data.url);
     }
   }
 

@@ -94,20 +94,27 @@ export function useImportExport() {
         // Parse key "sortID authorID"
         const [sortID, authorID] = key.split(' ');
 
-        // Check for duplicates (same name + pixel count)
+        // Parse coordinates first for duplicate check
+        const coords = templateData.coords.split(',').map(s => parseInt(s.trim()));
+
+        console.log(`Processing template: "${templateData.name}" (${templateData.pixelCount} pixels) at [${coords.join(', ')}]`);
+
+        // Check for duplicates (same name + pixel count + coordinates)
+        // Templates with same name/pixels but different positions are NOT duplicates
         const duplicate = templateStore.templates.find(t =>
           t.displayName === templateData.name &&
-          t.pixelCount === templateData.pixelCount
+          t.pixelCount === templateData.pixelCount &&
+          t.coords[0] === coords[0] &&
+          t.coords[1] === coords[1] &&
+          t.coords[2] === coords[2] &&
+          t.coords[3] === coords[3]
         );
 
         if (duplicate) {
-          console.log(`Skipping duplicate: ${templateData.name}`);
+          console.log(`⏭️ Skipping duplicate: "${templateData.name}" (already exists at same position)`);
           skipped++;
           continue;
         }
-
-        // Parse coordinates
-        const coords = templateData.coords.split(',').map(s => parseInt(s.trim()));
 
         // Create template instance
         const template = new Template({
@@ -136,10 +143,10 @@ export function useImportExport() {
         // Add to store
         await templateStore.addTemplate(template);
 
-        console.log(`Imported: ${template.displayName}`);
+        console.log(`✅ Imported: "${template.displayName}"`);
         imported++;
       } catch (e) {
-        console.error(`Failed to import template ${templateData.name}:`, e);
+        console.error(`❌ Failed to import template "${templateData.name}":`, e);
         skipped++;
       }
     }

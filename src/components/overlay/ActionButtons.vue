@@ -3,6 +3,7 @@ import { defineProps } from 'vue';
 import { useLocationSearchStore } from '@/stores/locationSearchStore.js';
 import { useCoordinateStore } from '@/stores/coordinateStore.js';
 import { useNavigation } from '@/composables/useNavigation.js';
+import { useImportExport } from '@/composables/useImportExport.js';
 import { tileToLatLng } from '@/utils/coordinates.js';
 
 const props = defineProps({
@@ -19,6 +20,7 @@ const props = defineProps({
 const locationSearchStore = useLocationSearchStore();
 const coordinateStore = useCoordinateStore();
 const { navigateToLocation } = useNavigation();
+const { importFromFile } = useImportExport();
 
 const handleColorConverter = () => {
   window.open('https://pepoafonso.github.io/color_converter_wplace/', '_blank', 'noopener noreferrer');
@@ -55,8 +57,69 @@ const handleFlyTo = async () => {
   }
 };
 
-const handleScreenshot = () => {
-  // TODO: Implement screenshot functionality
+const { takeTemplateScreenshot } = useScreenshot();
+import { useTemplateStore } from '@/stores/templateStore';
+import { useScreenshot } from '@/composables/useScreenshot';
+
+const handleScreenshot = async () => {
+  const templateStore = useTemplateStore();
+  
+  try {
+    // SMART DETECTION: Get currently displayed template or first enabled template
+    let t = null;
+    
+    // 1. Check actively displayed templates (if we had tracking for "currently displayed" - for now check enabled)
+    // Legacy code had `currentlyDisplayedTemplates` set. In new architecture, we might check `templateStore.templates`
+    // and see which ones are enabled.
+    
+    // For now, let's look for the first enabled template
+    const enabledTemplates = templateStore.templates.filter(tpl => tpl.enabled);
+    
+    if (enabledTemplates.length === 1) {
+      t = enabledTemplates[0];
+    } else if (enabledTemplates.length > 0) {
+      // If multiple enabled, pick the first one (or ideally the one under cursor if we could detect)
+      t = enabledTemplates[0];
+    }
+    
+    // Fallback: Use first template if none enabled
+    if (!t && templateStore.templates.length > 0) {
+      t = templateStore.templates[0];
+    }
+    
+    if (!t) {
+      alert('No template loaded.');
+      return;
+    }
+    
+    // Check for coordinates
+    if (!t.coords || t.coords.length !== 4) {
+      alert('Template coordinates not available.');
+      return;
+    }
+    
+    const [tx, ty, px, py] = t.coords;
+    const width = t.imageWidth || t.width || 1000; // Fallback width
+    const height = t.imageHeight || t.height || 1000; // Fallback height
+    
+    const blob = await takeTemplateScreenshot(t);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const ts = new Date().toISOString().replace(/[:.]/g,'-');
+    a.download = `wplace_template_area_${String(tx).padStart(4,'0')},${String(ty).padStart(4,'0')}_${ts}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    
+    // Success feedback (using alert for now, could be toast)
+    console.log(`📸 Saved template screenshot for ${t.name || 'Template'}`);
+    
+  } catch (e) {
+    console.error('Screenshot failed:', e);
+    alert(`Failed to create screenshot: ${e.message}`);
+  }
 };
 
 const handleClearStorage = () => {
@@ -64,7 +127,30 @@ const handleClearStorage = () => {
 };
 
 const handleImport = () => {
-  // TODO: Implement import dialog
+  // Create hidden file input
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      console.log(`📥 Importing templates from: ${file.name}`);
+      const result = await importFromFile(file);
+      
+      const message = `✅ Import Complete!\n\nImported: ${result.imported} template(s)\nSkipped: ${result.skipped} template(s)`;
+      alert(message);
+      
+      console.log(`✅ Import successful: ${result.imported} imported, ${result.skipped} skipped`);
+    } catch (error) {
+      console.error('❌ Import failed:', error);
+      alert(`❌ Import failed: ${error.message}`);
+    }
+  };
+  
+  input.click();
 };
 
 const emit = defineEmits(['open-settings']);

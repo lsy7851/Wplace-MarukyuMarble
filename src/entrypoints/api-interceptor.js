@@ -12,6 +12,9 @@ export default defineUnlistedScript(() => {
   const EXTENSION_NAME = 'Marukyu Marble';
   const MESSAGE_SOURCE = 'marukyu-marble-main';
 
+  // ===== Tile processing queue (Promise-based) =====
+  const tileBlobQueue = new Map();
+
   // ===== ISOLATED world로부터 메시지 수신 =====
   window.addEventListener('message', (event) => {
     // 보안: 같은 window에서 온 메시지만 처리
@@ -19,29 +22,41 @@ export default defineUnlistedScript(() => {
 
     const message = event.data;
 
-    // ISOLATED world로부터의 메시지만 처리
-    if (message.source !== 'marukyu-marble-isolated') return;
+    // Handle messages from both ISOLATED world and Vue app (MAIN world)
+    if (message.source === 'marukyu-marble-isolated') {
+      // Messages from ISOLATED world (content script)
+      switch (message.type) {
+        case 'INIT_SETTINGS':
+          // TODO: MAIN world에서 설정 사용
+          break;
 
-    // 향후 확장 가능: ISOLATED → MAIN 메시지 처리
-    switch (message.type) {
-      case 'INIT_SETTINGS':
-        // TODO: MAIN world에서 설정 사용
-        break;
+        case 'FLY_TO':
+          handleFlyTo(message.data);
+          break;
 
-      case 'FLY_TO':
-        handleFlyTo(message.data);
-        break;
+        case 'GET_MAP_STATUS':
+          sendToIsolated('MAP_STATUS', {
+            isReady: !!(window.mmmap && typeof window.mmmap.flyTo === 'function'),
+            version: window.mmmap?.version || null,
+            hasCenter: !!(window.mmmap && typeof window.mmmap.getCenter === 'function')
+          });
+          break;
 
-      case 'GET_MAP_STATUS':
-        sendToIsolated('MAP_STATUS', {
-          isReady: !!(window.mmmap && typeof window.mmmap.flyTo === 'function'),
-          version: window.mmmap?.version || null,
-          hasCenter: !!(window.mmmap && typeof window.mmmap.getCenter === 'function')
-        });
-        break;
+        default:
+          console.warn('⚠️ [MAIN] Unknown message type:', message.type);
+      }
+    } else if (message.source === MESSAGE_SOURCE && message.type === 'TILE_PROCESSED') {
+      // Message from Vue app with processed tile
+      const { blobID, processedBlob } = message;
 
-      default:
-        console.warn('⚠️ [MAIN] Unknown message type:', message.type);
+      const queueEntry = tileBlobQueue.get(blobID);
+      if (queueEntry) {
+        tileBlobQueue.delete(blobID);
+        console.log(`✅ [MAIN] Received processed tile blob ${blobID}`);
+        queueEntry.resolve(processedBlob);
+      } else {
+        console.warn(`⚠️ [MAIN] No queue entry for blob ${blobID}`);
+      }
     }
   });
 
@@ -130,15 +145,15 @@ export default defineUnlistedScript(() => {
     Object.defineProperty(Object.prototype, 'transform', {
       configurable: true,
       enumerable: false,
-      set: function(value) {
+      set: function (value) {
         // Check if this is MapLibre GL Map instance being initialized
         // Conditions:
         // 1. value.setZoom exists (Transform object)
         // 2. this.getCanvas exists (Map instance)
         if (!hooked &&
-            value &&
-            typeof value.setZoom === 'function' &&
-            typeof this.getCanvas === 'function') {
+          value &&
+          typeof value.setZoom === 'function' &&
+          typeof this.getCanvas === 'function') {
 
           hooked = true;
           const mapInstance = this;
@@ -241,7 +256,7 @@ export default defineUnlistedScript(() => {
   }
 
   // fetch 오버라이드
-  window.fetch = async function(...args) {
+  window.fetch = async function (...args) {
     // URL 추출
     const url = (args[0] instanceof Request) ? args[0].url : args[0];
     const method = args[1]?.method || 'GET';
@@ -353,28 +368,82 @@ export default defineUnlistedScript(() => {
     // ===== 이미지 응답 처리 =====
     else if (contentType.includes('image/')) {
       // 타일 이미지인지 확인
-      if (url.includes('/tiles/')) {
-        try {
-          const blob = await clonedResponse.blob();
+      // 스크린샷용 raw 요청(?raw=true)은 인터셉트하지 않음
+      if (url.includes('/tiles/') && !url.includes('?raw=true')) {
+        // URL에서 타일 좌표 추출
+        const urlObj = new URL(url);
+        const pathParts = urlObj.pathname.split('/');
 
-          // Blob을 Base64로 변환
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            sendToIsolated('TILE_DATA', {
-              url: url,
-              blobData: reader.result, // data:image/png;base64,...
-              size: blob.size,
-              type: blob.type
-            });
-          };
-          reader.onerror = (event) => {
-            console.error('❌ [MAIN] Failed to read blob:', event, event?.target?.error);
-          };
-          reader.readAsDataURL(blob);
+        // "tiles" 이후의 숫자 부분 찾기
+        const tilesIndex = pathParts.indexOf('tiles');
+        let tileX, tileY;
 
-        } catch (error) {
-          console.error('❌ [MAIN] Failed to process tile image:', error);
+        if (tilesIndex !== -1) {
+          // Detect Tile Server Base URL
+          // e.g. https://wplace.live/api/files/s0/tiles
+          const baseUrl = url.substring(0, url.indexOf('/tiles/') + 6); // include '/tiles'
+
+          // Send base URL to ISOLATED world (only once or periodically, handled by receiver)
+          sendToIsolated('TILE_SERVER_DETECTED', {
+            url: baseUrl
+          });
+
+          if (pathParts.length > tilesIndex + 2) {
+            // Format: .../tiles/[x]/[y].png (no zoom level)
+            tileX = parseInt(pathParts[tilesIndex + 1], 10);
+            tileY = parseInt(pathParts[tilesIndex + 2].split('.')[0], 10); // Remove .png
+          }
         }
+
+        console.log(`🔍 [MAIN] Parsed tile URL: ${url} -> tileX=${tileX}, tileY=${tileY}`);
+
+        // Return Promise that resolves with processed blob
+        return new Promise((resolve, reject) => {
+          const blobID = crypto.randomUUID();
+
+          // Store Promise resolver in queue
+          tileBlobQueue.set(blobID, {
+            resolve: (processedBlob) => {
+              // Create new Response with processed blob
+              resolve(new Response(processedBlob, {
+                headers: clonedResponse.headers,
+                status: clonedResponse.status,
+                statusText: clonedResponse.statusText
+              }));
+            },
+            reject
+          });
+
+          // Get original blob and send to Vue app for processing
+          clonedResponse.blob()
+            .then(blob => {
+              console.log(`📤 [MAIN] Sending tile ${blobID} for processing (${tileX},${tileY})`);
+
+              window.postMessage({
+                source: MESSAGE_SOURCE,
+                type: 'TILE_RENDER_REQUEST',
+                blobID,
+                tileX,
+                tileY,
+                blob,
+                url
+              }, '*');
+            })
+            .catch(error => {
+              console.error('❌ [MAIN] Failed to read blob:', error);
+              tileBlobQueue.delete(blobID);
+              reject(error);
+            });
+
+          // Timeout after 10 seconds
+          setTimeout(() => {
+            if (tileBlobQueue.has(blobID)) {
+              console.warn(`⚠️ [MAIN] Timeout processing tile ${blobID}, returning original`);
+              tileBlobQueue.delete(blobID);
+              resolve(response);
+            }
+          }, 10000);
+        });
       }
     }
 

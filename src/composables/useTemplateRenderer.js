@@ -40,9 +40,14 @@ export function useTemplateRenderer() {
     );
     const ctx = canvas.getContext('2d');
 
+    // Disable image smoothing for pixel-perfect rendering (no anti-aliasing)
+    ctx.imageSmoothingEnabled = false;
+
     // Draw base tile from server
     const baseBitmap = await createImageBitmap(tileBlob);
-    ctx.drawImage(baseBitmap, 0, 0);
+    // Scale base tile to match canvas size (3000x3000)
+    // This ensures templates overlay at correct scale
+    ctx.drawImage(baseBitmap, 0, 0, canvas.width, canvas.height);
 
     // Get canvas pixel data for comparison
     const canvasData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -140,6 +145,7 @@ export function useTemplateRenderer() {
       templateBitmap.height
     );
     const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.imageSmoothingEnabled = false;  // Pixel-perfect rendering
     tempCtx.drawImage(templateBitmap, 0, 0);
 
     // Get pixel data
@@ -214,8 +220,30 @@ export function useTemplateRenderer() {
 
           // Check if neighbor is transparent in template
           if (templateData.data[nIdx + 3] < 64) {
-            // Check if unpainted on canvas
-            if (canvasData.data[nIdx + 3] < 64) {
+            let skipPainted = false;
+
+            // Check if unpainted on canvas (Legacy behavior: Smart borders)
+            // MUST apply offset to map template coords (nx, ny) to canvas coords
+            const offsetX = coords.pixelX * Template.SHREAD_SIZE;
+            const offsetY = coords.pixelY * Template.SHREAD_SIZE;
+
+            const cx = nx + offsetX;
+            const cy = ny + offsetY;
+
+            // Bounds check for canvas
+            if (cx >= 0 && cy >= 0 && cx < canvasData.width && cy < canvasData.height) {
+              const cIdx = (cy * canvasData.width + cx) * 4;
+              // Check if underlying pixel is painted (>0 alpha)
+              if (canvasData.data[cIdx + 3] > 0) {
+                skipPainted = true;
+              }
+            }
+
+            // If painted, we only skip if it's NOT a wrong color
+            // (If it is a wrong color, we want the crosshair to highlight it despite being painted)
+            // Note: Currently we don't have isWrongColor per pixel here (optimization), 
+            // so we follow basic legacy logic: skip if painted.
+            if (!skipPainted) {
               // Apply crosshair color
               templateData.data[nIdx] = crosshairColor.r;
               templateData.data[nIdx + 1] = crosshairColor.g;
@@ -231,6 +259,9 @@ export function useTemplateRenderer() {
             [1, 1], [-1, 1], [1, -1], [-1, -1]
           ];
 
+          const offsetX = coords.pixelX * Template.SHREAD_SIZE;
+          const offsetY = coords.pixelY * Template.SHREAD_SIZE;
+
           for (const [dx, dy] of cornerOffsets) {
             const nx = px + dx;
             const ny = py + dy;
@@ -241,12 +272,24 @@ export function useTemplateRenderer() {
 
             const nIdx = (ny * templateData.width + nx) * 4;
 
-            if (templateData.data[nIdx + 3] < 64 && canvasData.data[nIdx + 3] < 64) {
-              // Apply blue border
-              templateData.data[nIdx] = 0;
-              templateData.data[nIdx + 1] = 100;
-              templateData.data[nIdx + 2] = 255;
-              templateData.data[nIdx + 3] = 255;
+            if (templateData.data[nIdx + 3] < 64) {
+              // Check canvas painting for borders too
+              const cx = nx + offsetX;
+              const cy = ny + offsetY;
+              let skipPainted = false;
+
+              if (cx >= 0 && cy >= 0 && cx < canvasData.width && cy < canvasData.height) {
+                const cIdx = (cy * canvasData.width + cx) * 4;
+                if (canvasData.data[cIdx + 3] > 0) skipPainted = true;
+              }
+
+              if (!skipPainted) {
+                // Apply blue border
+                templateData.data[nIdx] = 0;
+                templateData.data[nIdx + 1] = 100;
+                templateData.data[nIdx + 2] = 255;
+                templateData.data[nIdx + 3] = 255;
+              }
             }
           }
         }
@@ -285,6 +328,7 @@ export function useTemplateRenderer() {
       const templateBitmap = await createImageBitmap(tileBlob);
       const tempCanvas = new OffscreenCanvas(templateBitmap.width, templateBitmap.height);
       const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.imageSmoothingEnabled = false;  // Pixel-perfect rendering
       tempCtx.drawImage(templateBitmap, 0, 0);
       const templateData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
 
