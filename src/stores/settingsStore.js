@@ -27,12 +27,26 @@ const STORAGE_KEYS = {
   COLLAPSE_MIN_ENABLED: `${KEY_PREFIX}CollapseMinEnabled`,
   MOBILE_MODE: `${KEY_PREFIX}MobileMode`,
   DRAG_MODE: `${KEY_PREFIX}DragMode`,
+
+  // Visibility settings
+  SHOW_INFORMATION_HEADER: `${KEY_PREFIX}ShowInformationHeader`,
+  SHOW_TEMPLATE_HEADER: `${KEY_PREFIX}ShowTemplateHeader`,
   SHOW_USERNAME: `${KEY_PREFIX}ShowUsername`,
+  SHOW_DROPLETS: `${KEY_PREFIX}ShowDroplets`,
+  SHOW_NEXT_LEVEL: `${KEY_PREFIX}ShowNextLevel`,
+  SHOW_FULL_CHARGE: `${KEY_PREFIX}ShowFullCharge`,
+  SHOW_COLOR_MENU: `${KEY_PREFIX}ShowColorMenu`,
+  COLOR_MENU_HEIGHT: `${KEY_PREFIX}ColorMenuHeight`,
 
   // Performance settings
   TILE_REFRESH_PAUSED: `${KEY_PREFIX}TileRefreshPaused`,
   SMART_CACHE_ENABLED: `${KEY_PREFIX}SmartCacheEnabled`,
   SMART_DETECTION_ENABLED: `${KEY_PREFIX}SmartDetectionEnabled`,
+  TILE_CACHE_VERSION: `${KEY_PREFIX}TileCacheVersion`,
+  TILE_CACHE_STATS: `${KEY_PREFIX}TileCacheStats`,
+
+  // Wrong color settings
+  ENHANCE_WRONG_COLORS: `${KEY_PREFIX}EnhanceWrongColors`,
 
   // Navigation settings
   NAVIGATION_METHOD: `${KEY_PREFIX}NavigationMethod`,
@@ -59,12 +73,26 @@ const DEFAULTS = {
   collapseMinEnabled: false,
   mobileMode: false,
   dragMode: true, // true = full overlay drag, false = drag bar only
+
+  // Visibility
+  showInformationHeader: true,
+  showTemplateHeader: true,
   showUsername: true,
+  showDroplets: true,
+  showNextLevel: true,
+  showFullCharge: true,
+  showColorMenu: true,
+  colorMenuHeight: 140, // default height in pixels
 
   // Performance
   tileRefreshPaused: false,
   smartCacheEnabled: true,
   smartDetectionEnabled: true,
+  tileCacheVersion: '1.0',
+  tileCacheStats: { hits: 0, misses: 0 },
+
+  // Wrong color settings
+  enhanceWrongColors: false,
 
   // Navigation
   navigationMethod: 'flyto', // 'flyto' | 'openurl'
@@ -90,12 +118,26 @@ export const useSettingsStore = defineStore('settings', () => {
   const collapseMinEnabled = ref(DEFAULTS.collapseMinEnabled);
   const mobileMode = ref(DEFAULTS.mobileMode);
   const dragMode = ref(DEFAULTS.dragMode);
+
+  // Visibility settings
+  const showInformationHeader = ref(DEFAULTS.showInformationHeader);
+  const showTemplateHeader = ref(DEFAULTS.showTemplateHeader);
   const showUsername = ref(DEFAULTS.showUsername);
+  const showDroplets = ref(DEFAULTS.showDroplets);
+  const showNextLevel = ref(DEFAULTS.showNextLevel);
+  const showFullCharge = ref(DEFAULTS.showFullCharge);
+  const showColorMenu = ref(DEFAULTS.showColorMenu);
+  const colorMenuHeight = ref(DEFAULTS.colorMenuHeight);
 
   // Performance settings
   const tileRefreshPaused = ref(DEFAULTS.tileRefreshPaused);
   const smartCacheEnabled = ref(DEFAULTS.smartCacheEnabled);
   const smartDetectionEnabled = ref(DEFAULTS.smartDetectionEnabled);
+  const tileCacheVersion = ref(DEFAULTS.tileCacheVersion);
+  const tileCacheStats = ref({ ...DEFAULTS.tileCacheStats });
+
+  // Wrong color settings
+  const enhanceWrongColors = ref(DEFAULTS.enhanceWrongColors);
 
   // Navigation settings
   const navigationMethod = ref(DEFAULTS.navigationMethod);
@@ -148,8 +190,31 @@ export const useSettingsStore = defineStore('settings', () => {
       if (result[STORAGE_KEYS.DRAG_MODE] !== undefined) {
         dragMode.value = result[STORAGE_KEYS.DRAG_MODE];
       }
+
+      // Visibility settings
+      if (result[STORAGE_KEYS.SHOW_INFORMATION_HEADER] !== undefined) {
+        showInformationHeader.value = result[STORAGE_KEYS.SHOW_INFORMATION_HEADER];
+      }
+      if (result[STORAGE_KEYS.SHOW_TEMPLATE_HEADER] !== undefined) {
+        showTemplateHeader.value = result[STORAGE_KEYS.SHOW_TEMPLATE_HEADER];
+      }
       if (result[STORAGE_KEYS.SHOW_USERNAME] !== undefined) {
         showUsername.value = result[STORAGE_KEYS.SHOW_USERNAME];
+      }
+      if (result[STORAGE_KEYS.SHOW_DROPLETS] !== undefined) {
+        showDroplets.value = result[STORAGE_KEYS.SHOW_DROPLETS];
+      }
+      if (result[STORAGE_KEYS.SHOW_NEXT_LEVEL] !== undefined) {
+        showNextLevel.value = result[STORAGE_KEYS.SHOW_NEXT_LEVEL];
+      }
+      if (result[STORAGE_KEYS.SHOW_FULL_CHARGE] !== undefined) {
+        showFullCharge.value = result[STORAGE_KEYS.SHOW_FULL_CHARGE];
+      }
+      if (result[STORAGE_KEYS.SHOW_COLOR_MENU] !== undefined) {
+        showColorMenu.value = result[STORAGE_KEYS.SHOW_COLOR_MENU];
+      }
+      if (result[STORAGE_KEYS.COLOR_MENU_HEIGHT] !== undefined) {
+        colorMenuHeight.value = result[STORAGE_KEYS.COLOR_MENU_HEIGHT];
       }
 
       // Performance settings
@@ -161,6 +226,17 @@ export const useSettingsStore = defineStore('settings', () => {
       }
       if (result[STORAGE_KEYS.SMART_DETECTION_ENABLED] !== undefined) {
         smartDetectionEnabled.value = result[STORAGE_KEYS.SMART_DETECTION_ENABLED];
+      }
+      if (result[STORAGE_KEYS.TILE_CACHE_VERSION] !== undefined) {
+        tileCacheVersion.value = result[STORAGE_KEYS.TILE_CACHE_VERSION];
+      }
+      if (result[STORAGE_KEYS.TILE_CACHE_STATS] !== undefined) {
+        tileCacheStats.value = result[STORAGE_KEYS.TILE_CACHE_STATS];
+      }
+
+      // Wrong color settings
+      if (result[STORAGE_KEYS.ENHANCE_WRONG_COLORS] !== undefined) {
+        enhanceWrongColors.value = result[STORAGE_KEYS.ENHANCE_WRONG_COLORS];
       }
 
       // Navigation settings
@@ -190,8 +266,9 @@ export const useSettingsStore = defineStore('settings', () => {
    */
   async function saveAllSettings() {
     try {
-      await chromeStorageCompat.sync.set({
-        [STORAGE_KEYS.CROSSHAIR_COLOR]: crosshairColor.value,
+      // Deep clone to plain objects (remove Vue reactivity proxies)
+      const plainSettings = {
+        [STORAGE_KEYS.CROSSHAIR_COLOR]: JSON.parse(JSON.stringify(crosshairColor.value)),
         [STORAGE_KEYS.CROSSHAIR_BORDER]: crosshairBorder.value,
         [STORAGE_KEYS.CROSSHAIR_ENHANCED_SIZE]: crosshairEnhancedSize.value,
         [STORAGE_KEYS.CROSSHAIR_RADIUS]: crosshairRadius.value,
@@ -200,17 +277,31 @@ export const useSettingsStore = defineStore('settings', () => {
         [STORAGE_KEYS.COLLAPSE_MIN_ENABLED]: collapseMinEnabled.value,
         [STORAGE_KEYS.MOBILE_MODE]: mobileMode.value,
         [STORAGE_KEYS.DRAG_MODE]: dragMode.value,
+
+        [STORAGE_KEYS.SHOW_INFORMATION_HEADER]: showInformationHeader.value,
+        [STORAGE_KEYS.SHOW_TEMPLATE_HEADER]: showTemplateHeader.value,
         [STORAGE_KEYS.SHOW_USERNAME]: showUsername.value,
+        [STORAGE_KEYS.SHOW_DROPLETS]: showDroplets.value,
+        [STORAGE_KEYS.SHOW_NEXT_LEVEL]: showNextLevel.value,
+        [STORAGE_KEYS.SHOW_FULL_CHARGE]: showFullCharge.value,
+        [STORAGE_KEYS.SHOW_COLOR_MENU]: showColorMenu.value,
+        [STORAGE_KEYS.COLOR_MENU_HEIGHT]: colorMenuHeight.value,
 
         [STORAGE_KEYS.TILE_REFRESH_PAUSED]: tileRefreshPaused.value,
         [STORAGE_KEYS.SMART_CACHE_ENABLED]: smartCacheEnabled.value,
         [STORAGE_KEYS.SMART_DETECTION_ENABLED]: smartDetectionEnabled.value,
+        [STORAGE_KEYS.TILE_CACHE_VERSION]: tileCacheVersion.value,
+        [STORAGE_KEYS.TILE_CACHE_STATS]: JSON.parse(JSON.stringify(tileCacheStats.value)),
+
+        [STORAGE_KEYS.ENHANCE_WRONG_COLORS]: enhanceWrongColors.value,
 
         [STORAGE_KEYS.NAVIGATION_METHOD]: navigationMethod.value,
 
         [STORAGE_KEYS.TEMPLATE_COLOR_SORT]: templateColorSort.value,
         [STORAGE_KEYS.COMPACT_SORT]: compactSort.value,
-      });
+      };
+
+      await chromeStorageCompat.sync.set(plainSettings);
 
       console.log('✅ All settings saved to chrome.storage.sync');
     } catch (error) {
@@ -226,7 +317,12 @@ export const useSettingsStore = defineStore('settings', () => {
    */
   async function saveSetting(key, value) {
     try {
-      await chromeStorageCompat.sync.set({ [key]: value });
+      // Deep clone to plain object (remove Vue reactivity proxies)
+      const plainValue = typeof value === 'object' && value !== null
+        ? JSON.parse(JSON.stringify(value))
+        : value;
+
+      await chromeStorageCompat.sync.set({ [key]: plainValue });
     } catch (error) {
       console.error(`❌ Failed to save setting ${key}:`, error);
       throw error;
@@ -342,6 +438,15 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   /**
+   * Update enhance wrong colors
+   * @param {boolean} enabled
+   */
+  async function updateEnhanceWrongColors(enabled) {
+    enhanceWrongColors.value = enabled;
+    await saveSetting(STORAGE_KEYS.ENHANCE_WRONG_COLORS, enabled);
+  }
+
+  /**
    * Update navigation method
    * @param {'flyto' | 'openurl'} method
    */
@@ -369,6 +474,33 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   /**
+   * Update color menu height
+   * @param {number} height
+   */
+  async function updateColorMenuHeight(height) {
+    colorMenuHeight.value = height;
+    await saveSetting(STORAGE_KEYS.COLOR_MENU_HEIGHT, height);
+  }
+
+  /**
+   * Update tile cache version
+   * @param {string} version
+   */
+  async function updateTileCacheVersion(version) {
+    tileCacheVersion.value = version;
+    await saveSetting(STORAGE_KEYS.TILE_CACHE_VERSION, version);
+  }
+
+  /**
+   * Update tile cache stats
+   * @param {Object} stats - { hits, misses }
+   */
+  async function updateTileCacheStats(stats) {
+    tileCacheStats.value = stats;
+    await saveSetting(STORAGE_KEYS.TILE_CACHE_STATS, stats);
+  }
+
+  /**
    * Apply bulk settings (used by settings modal)
    * @param {Object} settings - Settings object
    */
@@ -384,11 +516,20 @@ export const useSettingsStore = defineStore('settings', () => {
       collapseMinEnabled.value = settings.collapseMinEnabled;
       mobileMode.value = settings.mobileMode;
       dragMode.value = settings.dragMode;
+
+      showInformationHeader.value = settings.showInformationHeader;
+      showTemplateHeader.value = settings.showTemplateHeader;
       showUsername.value = settings.showUsername;
+      showDroplets.value = settings.showDroplets;
+      showNextLevel.value = settings.showNextLevel;
+      showFullCharge.value = settings.showFullCharge;
+      showColorMenu.value = settings.showColorMenu;
 
       tileRefreshPaused.value = settings.tileRefreshPaused;
       smartCacheEnabled.value = settings.smartCacheEnabled;
       smartDetectionEnabled.value = settings.smartDetectionEnabled;
+
+      enhanceWrongColors.value = settings.enhanceWrongColors;
 
       navigationMethod.value = settings.navigationMethod;
 
@@ -419,11 +560,20 @@ export const useSettingsStore = defineStore('settings', () => {
       collapseMinEnabled.value = DEFAULTS.collapseMinEnabled;
       mobileMode.value = DEFAULTS.mobileMode;
       dragMode.value = DEFAULTS.dragMode;
+
+      showInformationHeader.value = DEFAULTS.showInformationHeader;
+      showTemplateHeader.value = DEFAULTS.showTemplateHeader;
       showUsername.value = DEFAULTS.showUsername;
+      showDroplets.value = DEFAULTS.showDroplets;
+      showNextLevel.value = DEFAULTS.showNextLevel;
+      showFullCharge.value = DEFAULTS.showFullCharge;
+      showColorMenu.value = DEFAULTS.showColorMenu;
 
       tileRefreshPaused.value = DEFAULTS.tileRefreshPaused;
       smartCacheEnabled.value = DEFAULTS.smartCacheEnabled;
       smartDetectionEnabled.value = DEFAULTS.smartDetectionEnabled;
+
+      enhanceWrongColors.value = DEFAULTS.enhanceWrongColors;
 
       navigationMethod.value = DEFAULTS.navigationMethod;
 
@@ -453,11 +603,20 @@ export const useSettingsStore = defineStore('settings', () => {
       collapseMinEnabled: collapseMinEnabled.value,
       mobileMode: mobileMode.value,
       dragMode: dragMode.value,
+
+      showInformationHeader: showInformationHeader.value,
+      showTemplateHeader: showTemplateHeader.value,
       showUsername: showUsername.value,
+      showDroplets: showDroplets.value,
+      showNextLevel: showNextLevel.value,
+      showFullCharge: showFullCharge.value,
+      showColorMenu: showColorMenu.value,
 
       tileRefreshPaused: tileRefreshPaused.value,
       smartCacheEnabled: smartCacheEnabled.value,
       smartDetectionEnabled: smartDetectionEnabled.value,
+
+      enhanceWrongColors: enhanceWrongColors.value,
 
       navigationMethod: navigationMethod.value,
 
@@ -486,11 +645,23 @@ export const useSettingsStore = defineStore('settings', () => {
     collapseMinEnabled,
     mobileMode,
     dragMode,
+
+    showInformationHeader,
+    showTemplateHeader,
     showUsername,
+    showDroplets,
+    showNextLevel,
+    showFullCharge,
+    showColorMenu,
+    colorMenuHeight,
 
     tileRefreshPaused,
     smartCacheEnabled,
     smartDetectionEnabled,
+    tileCacheVersion,
+    tileCacheStats,
+
+    enhanceWrongColors,
 
     navigationMethod,
 
@@ -519,10 +690,15 @@ export const useSettingsStore = defineStore('settings', () => {
     updateSmartCacheEnabled,
     updateSmartDetectionEnabled,
 
+    updateEnhanceWrongColors,
+
     updateNavigationMethod,
 
     updateTemplateColorSort,
     updateCompactSort,
+    updateColorMenuHeight,
+    updateTileCacheVersion,
+    updateTileCacheStats,
 
     applySettings,
     resetSettings,

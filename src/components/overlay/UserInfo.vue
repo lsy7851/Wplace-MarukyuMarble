@@ -20,8 +20,8 @@ const {
   isFullyCharged,
 } = storeToRefs(userStore);
 
-// Extract showUsername from settings store
-const { showUsername } = storeToRefs(settingsStore);
+// Extract visibility settings from settings store
+const { showUsername, showDroplets, showNextLevel, showFullCharge } = storeToRefs(settingsStore);
 
 // Computed for charge display status
 const chargeStatus = computed(() => {
@@ -49,7 +49,7 @@ const chargeStatus = computed(() => {
     </div>
 
     <!-- Droplets -->
-    <div id="bm-user-droplets">
+    <div v-if="showDroplets" id="bm-user-droplets">
       <div id="bm-user-droplets-icon" v-html="icons.dropletIcon"></div>
       <p id="bm-user-droplets-content">
         <b>Droplets:</b> {{ dropletsFormatted || 'loading...' }}
@@ -57,7 +57,7 @@ const chargeStatus = computed(() => {
     </div>
 
     <!-- Next Level -->
-    <div id="bm-user-nextlevel">
+    <div v-if="showNextLevel" id="bm-user-nextlevel">
       <div id="bm-user-nextlevel-icon" v-html="icons.userIcon"></div>
       <p v-if="pixelsToNextLevel" id="bm-user-nextlevel-content">
         Next level in <b>{{ pixelsToNextLevelFormatted }}</b> pixel{{ pixelsToNextLevel === 1 ? '' : 's' }}
@@ -66,7 +66,7 @@ const chargeStatus = computed(() => {
     </div>
 
     <!-- Full Charge Timer -->
-    <div id="bm-user-fullcharge">
+    <div v-if="showFullCharge" id="bm-user-fullcharge">
       <div id="bm-user-fullcharge-icon" v-html="icons.chargeIcon"></div>
       <p id="bm-user-fullcharge-content">
         Full Charge in

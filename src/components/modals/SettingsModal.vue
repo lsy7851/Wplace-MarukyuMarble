@@ -54,7 +54,7 @@
             <input
               v-model="item.visible"
               type="checkbox"
-              @change="updateVisibility(item.key, item.visible, item.elementId)" />
+              @change="updateVisibility(item.key, item.visible)" />
             <span>{{ item.label }}</span>
           </label>
         </div>
@@ -252,47 +252,53 @@ const isOpen = computed({
 // Temporary settings (not saved until Apply is clicked)
 const tempSettings = ref({});
 
-// Overlay Elements Visibility (stored in localStorage)
-const visibilityItems = ref([
-  { key: 'bmShowInformationHeader', label: 'Information Header', visible: true, elementId: null },
-  { key: 'bmShowTemplateHeader', label: 'Template Header', visible: true, elementId: null },
-  { key: 'bmShowUsername', label: 'Username', visible: true, elementId: 'bm-user-name' },
-  { key: 'bmShowDroplets', label: 'Droplets', visible: true, elementId: 'bm-user-droplets' },
-  { key: 'bmShowNextLevel', label: 'Next Level', visible: true, elementId: 'bm-user-nextlevel' },
-  { key: 'bmShowFullCharge', label: 'Full Charge', visible: true, elementId: 'bm-user-fullcharge' },
-  { key: 'bmShowColorMenu', label: 'Color Menu (Beta Test)', visible: true, elementId: 'bm-color-menu' },
-]);
+// Original settings when modal opened (for change detection and Cancel restoration)
+const originalSettings = ref({});
 
-// Load visibility settings from localStorage
-function loadVisibilitySettings() {
-  visibilityItems.value.forEach(item => {
-    try {
-      const saved = localStorage.getItem(item.key);
-      if (saved !== null) {
-        item.visible = JSON.parse(saved);
-      }
-    } catch (e) {
-      item.visible = true;
-    }
-  });
-}
+// Visibility keys that should be applied immediately
+const visibilityKeys = [
+  'showInformationHeader',
+  'showTemplateHeader',
+  'showUsername',
+  'showDroplets',
+  'showNextLevel',
+  'showFullCharge',
+  'showColorMenu',
+];
 
-// Update visibility setting
-function updateVisibility(key, visible, elementId) {
-  try {
-    localStorage.setItem(key, JSON.stringify(visible));
+// Visibility items configuration (now using store-based state via tempSettings)
+const visibilityItemsConfig = [
+  { storeKey: 'showInformationHeader', label: 'Information Header', elementId: null },
+  { storeKey: 'showTemplateHeader', label: 'Template Header', elementId: null },
+  { storeKey: 'showUsername', label: 'Username', elementId: 'bm-user-name' },
+  { storeKey: 'showDroplets', label: 'Droplets', elementId: 'bm-user-droplets' },
+  { storeKey: 'showNextLevel', label: 'Next Level', elementId: 'bm-user-nextlevel' },
+  { storeKey: 'showFullCharge', label: 'Full Charge', elementId: 'bm-user-fullcharge' },
+  { storeKey: 'showColorMenu', label: 'Color Menu (Beta Test)', elementId: 'bm-color-menu' },
+];
 
-    if (elementId) {
-      const el = document.getElementById(elementId);
-      if (el) {
-        el.style.display = visible ? '' : 'none';
-      }
-    } else {
-      // For headers, we need to trigger a reload or emit an event
-      // This will be handled by the parent component
-    }
-  } catch (e) {
-    console.error('Failed to update visibility:', e);
+// Computed visibility items that sync with tempSettings
+const visibilityItems = computed(() =>
+  visibilityItemsConfig.map(item => ({
+    key: item.storeKey,
+    label: item.label,
+    elementId: item.elementId,
+    get visible() {
+      return tempSettings.value[item.storeKey] ?? true;
+    },
+    set visible(value) {
+      tempSettings.value[item.storeKey] = value;
+    },
+  }))
+);
+
+// Update visibility setting (applies immediately for visual feedback)
+function updateVisibility(key, visible) {
+  tempSettings.value[key] = visible;
+
+  // Apply immediately to store for instant visual feedback
+  if (visibilityKeys.includes(key) && settingsStore[key] !== undefined) {
+    settingsStore[key] = visible;
   }
 }
 
@@ -301,26 +307,35 @@ function deepClone(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
-// Load visibility settings on component mount
-loadVisibilitySettings();
-
 // Watch modal open/close to sync temp settings
 watch(isOpen, (newVal) => {
   if (newVal) {
-    // Modal opened - copy current settings to temp
-    tempSettings.value = deepClone(settingsStore.getCurrentSettings());
+    // Modal opened - copy current settings to temp and save original for comparison
+    const currentSettings = settingsStore.getCurrentSettings();
+    tempSettings.value = deepClone(currentSettings);
+    originalSettings.value = deepClone(currentSettings);
   }
 });
 
-// Check if settings have changed
+// Check if settings have changed (compare with original, not current store)
 const hasChanges = computed(() => {
   if (!tempSettings.value || Object.keys(tempSettings.value).length === 0) {
     return false;
   }
 
-  const current = settingsStore.getCurrentSettings();
-  return JSON.stringify(tempSettings.value) !== JSON.stringify(current);
+  return JSON.stringify(tempSettings.value) !== JSON.stringify(originalSettings.value);
 });
+
+/**
+ * Restore original visibility settings (called on Cancel)
+ */
+function restoreVisibility() {
+  for (const key of visibilityKeys) {
+    if (originalSettings.value[key] !== undefined) {
+      settingsStore[key] = originalSettings.value[key];
+    }
+  }
+}
 
 /**
  * Handle Cancel button
@@ -328,9 +343,11 @@ const hasChanges = computed(() => {
 function handleCancel() {
   if (hasChanges.value) {
     if (confirm('Discard changes? Any unsaved settings will be lost.')) {
+      restoreVisibility();
       isOpen.value = false;
     }
   } else {
+    restoreVisibility();
     isOpen.value = false;
   }
 }

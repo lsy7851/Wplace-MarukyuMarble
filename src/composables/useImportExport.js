@@ -116,6 +116,66 @@ export function useImportExport() {
           continue;
         }
 
+        // Build colorPalette from tiles (legacy compatibility)
+        // Legacy never stores colorPalette in JSON - always rebuilds from tiles
+        // Reference: old-src/templateManager.js:2125-2176 (buildColorPaletteFromTileProgress)
+        let colorPalette = {};
+
+        if (templateData.tiles) {
+          console.log(`📊 Building colorPalette for "${templateData.name}" from ${Object.keys(templateData.tiles).length} tiles...`);
+
+          for (const [tileKey, base64Data] of Object.entries(templateData.tiles)) {
+            try {
+              const blob = await base64ToBlob(base64Data);
+              const bitmap = await createImageBitmap(blob);
+
+              // Create temporary canvas to read pixel data
+              const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+              const ctx = canvas.getContext('2d', { willReadFrequently: true });
+              ctx.imageSmoothingEnabled = false;
+              ctx.drawImage(bitmap, 0, 0);
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const data = imageData.data;
+
+              // Scan colors matching legacy logic:
+              // - Only center pixels of 3×3 blocks (x % 3 === 1, y % 3 === 1)
+              // - Skip transparent (alpha < 64)
+              // - Skip #deface (222, 250, 206)
+              const DRAW_MULT = 3;  // drawMult from legacy
+
+              for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                  // Only center of 3×3 blocks (legacy: x % drawMult !== 1 || y % drawMult !== 1)
+                  if ((x % DRAW_MULT) !== 1 || (y % DRAW_MULT) !== 1) {
+                    continue;
+                  }
+
+                  const idx = (y * canvas.width + x) * 4;
+                  const r = data[idx];
+                  const g = data[idx + 1];
+                  const b = data[idx + 2];
+                  const a = data[idx + 3];
+
+                  // Skip transparent/semi-transparent (alpha < 64)
+                  if (a < 64) continue;
+
+                  // Skip #deface magic color (222, 250, 206)
+                  if (r === 222 && g === 250 && b === 206) continue;
+
+                  const colorKey = `${r},${g},${b}`;
+                  colorPalette[colorKey] = (colorPalette[colorKey] || 0) + 1;
+                }
+              }
+            } catch (e) {
+              console.error(`❌ Failed to scan tile ${tileKey}:`, e);
+            }
+          }
+
+          const totalColors = Object.keys(colorPalette).length;
+          const totalPixels = Object.values(colorPalette).reduce((sum, count) => sum + count, 0);
+          console.log(`✅ Built colorPalette: ${totalColors} colors, ${totalPixels} pixels`);
+        }
+
         // Create template instance
         const template = new Template({
           id: `template-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -129,7 +189,7 @@ export function useImportExport() {
           transparentPixelCount: templateData.transparentPixelCount,
           disabledColors: templateData.disabledColors || [],
           enhancedColors: templateData.enhancedColors || [],
-          colorPalette: templateData.colorPalette || {},
+          colorPalette: colorPalette,  // Use generated or provided palette
           createdAt: templateData.createdAt,
           updatedAt: new Date().toISOString()
         });

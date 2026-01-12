@@ -201,10 +201,13 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useDraggable } from '@vueuse/core';
 import ColorFilterItem from '@/components/color-filter/ColorFilterItem.vue';
 import { useColorFilter } from '@/composables/useColorFilter.js';
+import { useTemplateStore } from '@/stores/templateStore.js';
+import { useSettingsStore } from '@/stores/settingsStore.js';
+import { useTileCache } from '@/composables/useTileCache.js';
 
 // Props
 const props = defineProps({
@@ -215,16 +218,37 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(['update:modelValue', 'toggle-compact-list']);
+const emit = defineEmits(['update:modelValue', 'toggle-compact-list', 'close']);
 
 // Settings icon SVG
 const settingsIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 1v6m0 6v6m-6-6h6m6 0h-6M4.93 4.93l4.24 4.24m5.66 5.66l4.24 4.24M4.93 19.07l4.24-4.24m5.66-5.66l4.24-4.24"></path></svg>`;
+
+// Stores
+const templateStore = useTemplateStore();
+const settingsStore = useSettingsStore();
+const tileCache = useTileCache();
+
+// Computed for enhance wrong colors (synced with store)
+const enhanceWrongColors = computed({
+  get: () => settingsStore.enhanceWrongColors,
+  set: async (value) => {
+    await settingsStore.updateEnhanceWrongColors(value);
+    // Clear tile cache and refresh when setting changes
+    tileCache.clear();
+    // Force re-render by toggling templatesShouldBeDrawn
+    templateStore.templatesShouldBeDrawn = false;
+    await new Promise(resolve => setTimeout(resolve, 50));
+    templateStore.templatesShouldBeDrawn = true;
+    console.log(`✅ Enhance Wrong Colors: ${value}`);
+  }
+});
 
 // Color filter composable
 const {
   searchQuery,
   sortMode,
   viewMode,
+  includeWrongPixels,  // Use from composable
   filteredColors,
   overallProgress,
   toggleColorEnabled,
@@ -233,12 +257,10 @@ const {
   enableAllColors,
   disableAllColors,
   disableAllEnhanced,
+  loadTemplateColors,
+  saveTemplateColors,
   saveSettings
 } = useColorFilter();
-
-// Additional state
-const includeWrongPixels = ref(false);
-const enhanceWrongColors = ref(false);
 
 // Draggable setup
 const modalRef = ref(null);
@@ -291,36 +313,50 @@ function handleSettings() {
 /**
  * Handle Enable All
  */
-function handleEnableAll() {
-  enableAllColors();
+async function handleEnableAll() {
+  await enableAllColors();
   saveSettings();
 }
 
 /**
  * Handle Disable All
  */
-function handleDisableAll() {
-  disableAllColors();
+async function handleDisableAll() {
+  await disableAllColors();
   saveSettings();
 }
 
 /**
  * Handle Disable All Enhanced
  */
-function handleDisableAllEnhanced() {
-  disableAllEnhanced();
+async function handleDisableAllEnhanced() {
+  await disableAllEnhanced();
   saveSettings();
 }
 
 /**
  * Handle Apply
  */
-function handleApply() {
-  saveSettings();
+async function handleApply() {
   console.log('Applying color filter...');
+  
+  // Save colors to template store
+  await saveTemplateColors();
+  
+  // Save UI settings
+  saveSettings();
+  
   emit('update:modelValue', false);
-  // TODO: Refresh template display
+  console.log('✅ Color filter applied and templates refreshed');
 }
+
+// Load template colors on mount
+onMounted(() => {
+  // Load colors from current template (index 0 for now, TODO: support multiple templates)
+  if (templateStore.templates.length > 0) {
+    loadTemplateColors(templateStore.currentIndex);
+  }
+});
 </script>
 
 <style scoped>

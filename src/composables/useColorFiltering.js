@@ -1,5 +1,6 @@
 import { computed } from 'vue';
 import { useTemplateStore } from '@/stores/templateStore';
+import { colorPalette as GLOBAL_PALETTE, getColorKey } from '@/utils/colorpalette';
 
 /**
  * Color filtering composable
@@ -17,18 +18,65 @@ export function useColorFiltering(templateIndex) {
 
   /**
    * Get color palette with filtering state
+   * Merges global palette (for fixed 64 colors) with detected template colors
    */
   const colorPalette = computed(() => {
     if (!template.value) return {};
 
     const palette = {};
-    for (const [colorKey, data] of Object.entries(template.value.colorPalette)) {
-      palette[colorKey] = {
-        ...data,
-        disabled: template.value.isColorDisabled(parseColorKey(colorKey)),
-        enhanced: template.value.isColorEnhanced(parseColorKey(colorKey))
+
+    // 1. Initialize with Global Palette (ensure all 64 colors exist)
+    GLOBAL_PALETTE.forEach(def => {
+      let key = getColorKey(def.rgb);
+
+      // Handle Transparent specially to avoid key collision with Black
+      if (def.name === 'Transparent') {
+        key = 'transparent';
+      }
+
+      palette[key] = {
+        enabled: true, // Default
+        count: 0,
+        ...def,
+        colorKey: key
       };
+    });
+
+    // 2. Merge detected colors from template
+    for (const [key, data] of Object.entries(template.value.colorPalette)) {
+      if (!palette[key]) {
+        // Custom/Extra color not in global palette
+        palette[key] = {
+          ...data,
+          name: getColorName(key),
+          rgb: parseColorKey(key),
+          colorKey: key,
+          disabled: false,
+          enhanced: false
+        };
+      } else {
+        // Update existing global color with actual data
+        palette[key] = {
+          ...palette[key],
+          ...data
+        };
+      }
     }
+
+    // 3. Special handling for Transparent stats
+    if (palette['transparent']) {
+      palette['transparent'].count = template.value.transparentPixelCount || 0;
+    }
+
+    // 4. Update status (disabled/enhanced) for all keys
+    for (const key of Object.keys(palette)) {
+      const rgb = parseColorKey(key);
+      // parseColorKey('transparent') returns [0,0,0]
+      // This replicates legacy behavior where transparent key is treated same as black
+      palette[key].disabled = template.value.isColorDisabled(rgb);
+      palette[key].enhanced = template.value.isColorEnhanced(rgb);
+    }
+
     return palette;
   });
 
@@ -189,10 +237,14 @@ export function useColorFiltering(templateIndex) {
 
   /**
    * Parse color key "r,g,b" to [r, g, b]
+   * Handles "transparent" key by returning [0, 0, 0] (same as black)
    * @param {string} key - Color key
    * @returns {[number, number, number]}
    */
   function parseColorKey(key) {
+    if (key === 'transparent') {
+      return [0, 0, 0];
+    }
     return key.split(',').map(Number);
   }
 
@@ -212,6 +264,8 @@ export function useColorFiltering(templateIndex) {
    * @returns {string} Color name
    */
   function getColorName(colorKey) {
+    if (colorKey === 'transparent') return 'Transparent';
+
     const names = {
       '255,255,255': 'White',
       '0,0,0': 'Black',
@@ -241,6 +295,8 @@ export function useColorFiltering(templateIndex) {
    * @returns {boolean}
    */
   function isPremiumColor(colorKey) {
+    if (colorKey === 'transparent') return true;
+
     // Common premium colors (basic palette)
     const premiumColors = [
       '255,255,255', '0,0,0', '255,0,0', '0,255,0',

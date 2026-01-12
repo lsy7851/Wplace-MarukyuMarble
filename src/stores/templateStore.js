@@ -10,6 +10,7 @@ export const useTemplateStore = defineStore('template', () => {
   const tileProgress = ref(new Map());  // Map<tileCoords, ProgressStats>
   const isLoading = ref(false);
   const error = ref(null);
+  const templatesShouldBeDrawn = ref(true);  // Should templates be drawn? (legacy: templateManager.templatesShouldBeDrawn)
 
   // IndexedDB composable
   const db = useIndexedDB();
@@ -268,6 +269,7 @@ export const useTemplateStore = defineStore('template', () => {
     tileProgress,
     isLoading,
     error,
+    templatesShouldBeDrawn,
 
     // Computed
     enabledTemplates,

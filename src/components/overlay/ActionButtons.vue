@@ -2,6 +2,8 @@
 import { defineProps } from 'vue';
 import { useLocationSearchStore } from '@/stores/locationSearchStore.js';
 import { useCoordinateStore } from '@/stores/coordinateStore.js';
+import { useSettingsStore } from '@/stores/settingsStore.js';
+import { useColorFilterStore } from '@/stores/colorFilterStore.js';
 import { useNavigation } from '@/composables/useNavigation.js';
 import { useImportExport } from '@/composables/useImportExport.js';
 import { tileToLatLng } from '@/utils/coordinates.js';
@@ -60,6 +62,7 @@ const handleFlyTo = async () => {
 const { takeTemplateScreenshot } = useScreenshot();
 import { useTemplateStore } from '@/stores/templateStore';
 import { useScreenshot } from '@/composables/useScreenshot';
+import { useIndexedDB } from '@/composables/useIndexedDB';
 
 const handleScreenshot = async () => {
   const templateStore = useTemplateStore();
@@ -122,8 +125,75 @@ const handleScreenshot = async () => {
   }
 };
 
-const handleClearStorage = () => {
-  // TODO: Implement clear storage dialog
+const handleClearStorage = async () => {
+  if (confirm('Clear All Extension Storage?\n\nThis will delete ONLY this extension\'s data:\n• Templates\n• Settings\n• Color filters\n• Cached tiles\n\nOther wplace settings will NOT be affected.\n\nAre you sure?')) {
+    try {
+      const db = useIndexedDB();
+      const settingsStore = useSettingsStore();
+      const colorFilterStore = useColorFilterStore();
+      
+      // 1. Clear IndexedDB (Tiles) - "marukyu-marble" is our specific DB, safe to clear.
+      await db.clearAllTiles();
+      console.log('🧹 IndexedDB cleared');
+      
+      // 2. Clear chrome.storage.sync (Metadata/Settings) - Extension isolated, safe to clear.
+      await chrome.storage.sync.clear();
+      console.log('🧹 chrome.storage.sync cleared');
+
+      // 3. Reset Pinia stores to defaults
+      await settingsStore.resetSettings();
+      await colorFilterStore.resetSettings();
+      console.log('🧹 Pinia stores reset');
+      
+      // 4. Clear localStorage (Legacy keys cleanup) - TARGETED CLEAR ONLY
+      // Most settings are now in chrome.storage.sync, but we still clean up legacy keys
+      // DO NOT USE localStorage.clear() as it wipes other extensions/wplace data!
+      let deletedCount = 0;
+      const keysToRemove = [];
+      
+        // Identify keys to remove (Standardized 'mm' prefix)
+        // Legacy 'bm' keys are also removed just in case of stale data from previous versions
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          
+          if (key && (
+              // Standardized mm keys (camelCase)
+              key.startsWith('mm') || 
+              // Legacy keys cleanup (bm prefix)
+              key.startsWith('bm') ||
+              // Safety catch for any old migration stragglers (though specific ones preferred)
+              key.startsWith('compactSort') || // Old key cleanup
+              key.startsWith('tile-cache')     // Old key cleanup
+          )) {
+              keysToRemove.push(key);
+          }
+        }
+      
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        deletedCount++;
+      });
+      console.log(`🧹 localStorage cleared (${deletedCount} keys removed)`);
+      
+      // 5. Clear sessionStorage (Session data) - TARGETED CLEAR ONLY
+      const sessionKeysToRemove = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && (key.startsWith('mm') || key.startsWith('bm') || key.toLowerCase().includes('bluemarble'))) {
+            sessionKeysToRemove.push(key);
+        }
+      }
+      sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
+      console.log(`🧹 sessionStorage cleared`);
+      
+      alert('Extension storage cleared successfully!\nThe page will now reload.');
+      window.location.reload();
+      
+    } catch (e) {
+      console.error('Failed to clear storage:', e);
+      alert(`Error clearing storage: ${e.message}`);
+    }
+  }
 };
 
 const handleImport = () => {

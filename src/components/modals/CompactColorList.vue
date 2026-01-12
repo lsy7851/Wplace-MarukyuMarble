@@ -127,6 +127,7 @@
 import { ref, computed, watch } from 'vue';
 import { useDraggable } from '@vueuse/core';
 import { useColorFilter } from '@/composables/useColorFilter.js';
+import { useColorFilterStore } from '@/stores/colorFilterStore.js';
 
 // Props
 const props = defineProps({
@@ -148,10 +149,13 @@ const {
   saveSettings
 } = useColorFilter();
 
+// Color filter store
+const colorFilterStore = useColorFilterStore();
+
 // State
 const compactSearch = ref('');
-const compactSort = ref('default');
-const isCollapsed = ref(false);
+const compactSort = ref(colorFilterStore.compactSort || 'default');
+const isCollapsed = ref(colorFilterStore.compactCollapsed || false);
 
 // Draggable setup
 const compactRef = ref(null);
@@ -236,7 +240,7 @@ const sortedCompactColors = computed(() => {
  */
 function toggleCollapse() {
   isCollapsed.value = !isCollapsed.value;
-  localStorage.setItem('bmcf-compact-collapsed', isCollapsed.value ? 'true' : 'false');
+  colorFilterStore.updateCompactCollapsed(isCollapsed.value);
 }
 
 /**
@@ -270,22 +274,10 @@ function handleClose() {
   emit('update:modelValue', false);
 }
 
-// Load collapse state
-const savedCollapsed = localStorage.getItem('bmcf-compact-collapsed');
-if (savedCollapsed === 'true') {
-  isCollapsed.value = true;
-}
-
-// Save sort preference
+// Save sort preference when it changes
 watch(compactSort, (newValue) => {
-  localStorage.setItem('compactSort', newValue);
+  colorFilterStore.updateCompactSort(newValue);
 });
-
-// Load sort preference
-const savedSort = localStorage.getItem('compactSort');
-if (savedSort) {
-  compactSort.value = savedSort;
-}
 </script>
 
 <style scoped>

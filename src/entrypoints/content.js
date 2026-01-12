@@ -131,6 +131,8 @@ async function injectVueApp() {
  * MAIN world cannot access chrome.* APIs, so we proxy requests via postMessage
  */
 function setupStorageProxy() {
+  console.log('🔧 [ISOLATED] Storage proxy initialized');
+
   window.addEventListener('message', async (event) => {
     // 보안: 같은 window에서 온 메시지만 처리
     if (event.source !== window) return;
@@ -141,6 +143,8 @@ function setupStorageProxy() {
     if (message.source !== STORAGE_REQUEST_SOURCE) return;
 
     const { id, area, action, payload } = message;
+
+    console.log(`📥 [ISOLATED] Received storage request #${id}: ${area}.${action}`, payload);
 
     try {
       let result;
@@ -180,6 +184,7 @@ function setupStorageProxy() {
       }
 
       // 성공 응답 전송
+      console.log(`📤 [ISOLATED] Sending response #${id}: SUCCESS`, result);
       window.postMessage({
         source: STORAGE_RESPONSE_SOURCE,
         id,
@@ -189,14 +194,13 @@ function setupStorageProxy() {
 
     } catch (error) {
       // 에러 응답 전송
+      console.error(`❌ [ISOLATED] Storage ${area}.${action} failed:`, error);
       window.postMessage({
         source: STORAGE_RESPONSE_SOURCE,
         id,
         success: false,
         error: error.message,
       }, '*');
-
-      console.error(`❌ [ISOLATED] Storage ${area}.${action} failed:`, error);
     }
   });
 }

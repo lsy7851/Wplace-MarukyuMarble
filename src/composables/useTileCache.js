@@ -13,26 +13,35 @@ import { useTemplateStore } from '@/stores/templateStore';
  *
  * Reference: old-src/tileManager.js:1-457
  */
+// Global cache storage (Singleton pattern)
+const cache = new Map(); // key → {blob, timestamp}
+const accessOrder = new Map(); // key → lastAccessTime (for LRU)
+const frozenCache = new Map(); // key → blob (for pause functionality)
+
+// Global Statistics
+const hits = ref(0);
+const misses = ref(0);
+const maxSize = ref(500);
+const enabled = ref(true);
+const paused = ref(false);
+
+// Cache version for invalidation
+const CACHE_VERSION = '1.0';
+
+/**
+ * Tile Cache Composable
+ *
+ * LRU cache system for rendered tiles to improve performance
+ * - Max 500 tiles cached
+ * - Automatic LRU eviction when cache is full
+ * - Cache hit/miss statistics
+ * - Tile refresh pause/resume functionality
+ *
+ * Reference: old-src/tileManager.js:1-457
+ */
 export function useTileCache() {
   const settingsStore = useSettingsStore();
   const templateStore = useTemplateStore();
-
-  // Cache storage
-  const cache = new Map(); // key → {blob, timestamp}
-  const accessOrder = new Map(); // key → lastAccessTime (for LRU)
-  const frozenCache = new Map(); // key → blob (for pause functionality)
-
-  // Statistics
-  const hits = ref(0);
-  const misses = ref(0);
-  const maxSize = ref(500);
-  const enabled = ref(true);
-  const paused = ref(false);
-
-  // Cache version for invalidation
-  const CACHE_VERSION = '1.0';
-  const CACHE_VERSION_KEY = 'mmTileCacheVersion';
-  const CACHE_STATS_KEY = 'mmTileCacheStats';
 
   /**
    * Computed statistics
@@ -53,20 +62,20 @@ export function useTileCache() {
   });
 
   /**
-   * Initialize cache from localStorage
+   * Initialize cache from store
    */
   function initialize() {
     try {
       // Check version and clear if outdated
-      const storedVersion = localStorage.getItem(CACHE_VERSION_KEY);
+      const storedVersion = settingsStore.tileCacheVersion;
       if (storedVersion !== CACHE_VERSION) {
         console.log('[Tile Cache] Version mismatch, clearing cache');
         clear();
-        localStorage.setItem(CACHE_VERSION_KEY, CACHE_VERSION);
+        settingsStore.updateTileCacheVersion(CACHE_VERSION);
       }
 
-      // Load statistics
-      const statsData = JSON.parse(localStorage.getItem(CACHE_STATS_KEY) || '{"hits":0,"misses":0}');
+      // Load statistics from store
+      const statsData = settingsStore.tileCacheStats || { hits: 0, misses: 0 };
       hits.value = statsData.hits || 0;
       misses.value = statsData.misses || 0;
 
@@ -108,15 +117,15 @@ export function useTileCache() {
 
     // Settings hash (visual settings that affect rendering)
     const settingsHash = [
-      settingsStore.settings.errorMapEnabled,
-      settingsStore.settings.showCorrectPixels,
-      settingsStore.settings.showWrongPixels,
-      settingsStore.settings.showUnpaintedAsWrong,
-      settingsStore.settings.enhanceWrongColors,
-      settingsStore.settings.crosshairColor?.r,
-      settingsStore.settings.crosshairColor?.g,
-      settingsStore.settings.crosshairColor?.b,
-      settingsStore.settings.crosshairBorder
+      settingsStore.errorMapEnabled,
+      settingsStore.showCorrectPixels,
+      settingsStore.showWrongPixels,
+      settingsStore.showUnpaintedAsWrong,
+      settingsStore.enhanceWrongColors,
+      settingsStore.crosshairColor?.rgb?.[0],
+      settingsStore.crosshairColor?.rgb?.[1],
+      settingsStore.crosshairColor?.rgb?.[2],
+      settingsStore.crosshairBorder
     ].join('_');
 
     return `${coordsKey}_${templateHash}_${contentHash}_${settingsHash}`;
@@ -283,7 +292,7 @@ export function useTileCache() {
   }
 
   /**
-   * Save statistics to localStorage
+   * Save statistics to store
    */
   function saveStats() {
     try {
@@ -291,7 +300,7 @@ export function useTileCache() {
         hits: hits.value,
         misses: misses.value
       };
-      localStorage.setItem(CACHE_STATS_KEY, JSON.stringify(statsData));
+      settingsStore.updateTileCacheStats(statsData);
     } catch (error) {
       console.warn('Failed to save cache statistics:', error);
     }

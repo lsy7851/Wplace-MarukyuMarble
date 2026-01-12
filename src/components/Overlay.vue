@@ -13,26 +13,18 @@ import StatusDisplay from './overlay/StatusDisplay.vue';
 import ActionButtons from './overlay/ActionButtons.vue';
 import LocationSearchModal from './modals/LocationSearchModal.vue';
 import SettingsModal from './modals/SettingsModal.vue';
+import { useSettingsStore } from '@/stores/settingsStore.js';
+import { storeToRefs } from 'pinia';
 
 const minimized = ref(false);
 const version = '0.91.2';
 const showSettingsModal = ref(false);
 
-const showInformationHeader = computed(() => {
-  try {
-    return JSON.parse(localStorage.getItem('bmShowInformationHeader') ?? 'true');
-  } catch (e) {
-    return true;
-  }
-});
+// Settings store
+const settingsStore = useSettingsStore();
 
-const showTemplateHeader = computed(() => {
-  try {
-    return JSON.parse(localStorage.getItem('bmShowTemplateHeader') ?? 'true');
-  } catch (e) {
-    return true;
-  }
-});
+// Visibility settings from store
+const showTemplateHeader = computed(() => settingsStore.showTemplateHeader);
 
 // Draggable setup
 const overlayRef = useTemplateRef('overlayRef');
@@ -61,7 +53,7 @@ setTimeout(() => {
       <DragBar ref="dragBarRef" :class="{minimized:minimized}" />
       <Title v-model:minimized="minimized" :class="{minimized:minimized}" />
       <Header
-        v-if="showInformationHeader"
+        v-if="settingsStore.showInformationHeader"
         :class="{minimized:minimized}"
         :icons="icons.informationIcon"
         headerText="Information" />
@@ -74,7 +66,7 @@ setTimeout(() => {
       <div id="bm-contain-automation">
         <CoordinatesInput :class="{minimized:minimized}" />
         <!-- Color Menu replaced by Modal, but maybe keep slot or remove if unused -->
-        <!-- <ColorMenu :class="{minimized:minimized}" /> -->
+        <ColorMenu :class="{minimized:minimized}" />
         <TemplateButtons
           :class="{minimized:minimized}"
           :icons="icons" />

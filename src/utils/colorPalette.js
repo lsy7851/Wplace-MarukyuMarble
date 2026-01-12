@@ -305,7 +305,22 @@ export const colorPalette = [
   },
   {
     "name": "Light Slate",
-    "rgb": [154, 165, 181],
+    "rgb": [179, 185, 209],
+    "free": false
+  },
+  {
+    "name": "Dark Stone",
+    "rgb": [109, 100, 63],
+    "free": false
+  },
+  {
+    "name": "Stone",
+    "rgb": [148, 140, 107],
+    "free": false
+  },
+  {
+    "name": "Light Stone",
+    "rgb": [205, 197, 158],
     "free": false
   }
 ];
