@@ -51,7 +51,6 @@ export async function searchLocation(query, options = {}) {
     return data;
 
   } catch (error) {
-    console.error('❌ [nominatim] Search failed:', error);
     throw error;
   }
 }
@@ -99,7 +98,6 @@ export async function reverseGeocode(lat, lon, options = {}) {
     return data;
 
   } catch (error) {
-    console.error('❌ [nominatim] Reverse geocoding failed:', error);
     throw error;
   }
 }

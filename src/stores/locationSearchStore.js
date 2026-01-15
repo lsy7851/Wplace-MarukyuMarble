@@ -128,10 +128,8 @@ export const useLocationSearchStore = defineStore('locationSearch', () => {
       error.value = null;
 
     } catch (err) {
-      console.error('❌ [locationSearchStore] Search failed:', err);
       error.value = err.message || 'Search failed';
       results.value = [];
-
     } finally {
       isLoading.value = false;
     }

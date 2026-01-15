@@ -33,15 +33,12 @@ export function useIndexedDB() {
           // Value: { blob: Blob, createdAt: timestamp }
           if (!db.objectStoreNames.contains(TILES_STORE)) {
             db.createObjectStore(TILES_STORE);
-            console.log(`Created IndexedDB object store: ${TILES_STORE}`);
           }
         }
       });
 
-      console.log(`IndexedDB initialized: ${DB_NAME} v${DB_VERSION}`);
       return dbInstance;
     } catch (e) {
-      console.error('Failed to initialize IndexedDB:', e);
       throw e;
     }
   }
@@ -65,10 +62,7 @@ export function useIndexedDB() {
         blob,
         createdAt: Date.now()
       }, key);
-
-      console.log(`Saved tile: ${key} (${(blob.size / 1024).toFixed(2)} KB)`);
     } catch (e) {
-      console.error(`Failed to save tile ${templateId}:${tileKey}:`, e);
       throw e;
     }
   }
@@ -90,14 +84,11 @@ export function useIndexedDB() {
       const data = await db.get(TILES_STORE, key);
 
       if (data?.blob) {
-        console.log(`Loaded tile: ${key} (${(data.blob.size / 1024).toFixed(2)} KB)`);
         return data.blob;
       }
 
-      console.warn(`Tile not found: ${key}`);
       return null;
     } catch (e) {
-      console.error(`Failed to load tile ${templateId}:${tileKey}:`, e);
       throw e;
     }
   }
@@ -132,10 +123,8 @@ export function useIndexedDB() {
       }
 
       await tx.done;
-      console.log(`Deleted ${deletedCount} tiles for template ${templateId}`);
       return deletedCount;
     } catch (e) {
-      console.error(`Failed to delete tiles for template ${templateId}:`, e);
       throw e;
     }
   }
@@ -166,10 +155,8 @@ export function useIndexedDB() {
         cursor = await cursor.continue();
       }
 
-      console.log(`Found ${keys.length} tiles for template ${templateId}`);
       return keys;
     } catch (e) {
-      console.error(`Failed to get tile keys for template ${templateId}:`, e);
       throw e;
     }
   }
@@ -199,7 +186,6 @@ export function useIndexedDB() {
         totalSizeMB: (totalSize / (1024 * 1024)).toFixed(2)
       };
     } catch (e) {
-      console.error('Failed to get storage stats:', e);
       throw e;
     }
   }
@@ -212,9 +198,7 @@ export function useIndexedDB() {
     try {
       const db = await getDB();
       await db.clear(TILES_STORE);
-      console.log('All template tiles cleared from IndexedDB');
     } catch (e) {
-      console.error('Failed to clear all tiles:', e);
       throw e;
     }
   }

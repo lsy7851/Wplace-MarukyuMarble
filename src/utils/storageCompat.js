@@ -20,17 +20,14 @@ window.addEventListener('message', (event) => {
 
   const pending = pendingRequests.get(id);
   if (!pending) {
-    console.warn(`⚠️ [MAIN][STORAGE] No pending request for #${id}`);
     return;
   }
 
   pendingRequests.delete(id);
 
   if (success) {
-    console.log(`📥 [MAIN][STORAGE] Received response #${id}: SUCCESS`, data);
     pending.resolve(data);
   } else {
-    console.error(`❌ [MAIN][STORAGE] Request #${id} failed:`, error);
     pending.reject(new Error(error));
   }
 });
@@ -47,8 +44,6 @@ function sendStorageRequest(area, action, payload) {
 
     pendingRequests.set(id, { resolve, reject });
 
-    console.log(`📤 [MAIN][STORAGE] Sending request #${id}: ${area}.${action}`, payload);
-
     window.postMessage({
       source: MESSAGE_SOURCE,
       id,
@@ -61,7 +56,6 @@ function sendStorageRequest(area, action, payload) {
     setTimeout(() => {
       if (pendingRequests.has(id)) {
         pendingRequests.delete(id);
-        console.error(`❌ [MAIN][STORAGE] Request #${id} timeout (${area}.${action})`);
         reject(new Error('Storage request timeout'));
       }
     }, 10000);

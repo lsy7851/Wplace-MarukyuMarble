@@ -52,10 +52,7 @@ export function useColorFilter() {
 
     // CRITICAL: Access .size to trigger Vue reactivity on Map changes
     const tileProgressSize = templateStore.tileProgress.size;
-    console.log(`🔄 [pixelStats] Computing... (${enabledTemplates.length} templates, ${tileProgressSize} tiles)`);
-
     if (enabledTemplates.length === 0) {
-      console.log(`📊 [useColorFilter] No enabled templates`);
       return stats;
     }
 
@@ -85,24 +82,9 @@ export function useColorFilter() {
       stats['transparent'].totalRequired += (template.transparentPixelCount || 0);
       stats['transparent'].needsCrosshair += (template.transparentPixelCount || 0);
 
-      console.log(`📊 Processing template "${template.displayName}":`, {
-        id: template.id,
-        enabled: template.enabled,
-        totalColors: paletteSize,
-        totalPixels: paletteTotal,
-        validPixelCount: template.validPixelCount,
-        excludedColors: excludedColors.length,
-        hasPalette: paletteSize > 0
-      });
-
-      if (paletteSize === 0) {
-        console.warn(`⚠️ Template "${template.displayName}" has empty colorPalette! This will cause 0 pixels.`);
-      }
-
       for (const [colorKey, pixelCount] of Object.entries(colorPalette)) {
         // Skip excluded colors only (눈 이모지)
         if (excludedColorsList.includes(colorKey)) {
-          console.log(`⏭️ Skipping excluded color ${colorKey}: ${pixelCount} pixels`);
           skippedFromExcluded += pixelCount;
           continue;
         }
@@ -124,7 +106,6 @@ export function useColorFilter() {
       }
     }
 
-    console.log(`📊 After STEP 1 - totalRequired from palette: ${totalFromPalette}, excluded: ${skippedFromExcluded}`);
 
     // STEP 2: Get painted/wrong from tileProgress.colorBreakdown
     // This gives us REAL progress data from rendered tiles
@@ -150,14 +131,12 @@ export function useColorFilter() {
       }
     }
 
-    console.log(`📊 After STEP 2 - painted: ${totalPaintedFromTiles}, wrong: ${totalWrongFromTiles} from ${templateStore.tileProgress.size} tiles`);
 
     // STEP 3: Calculate needsCrosshair (remaining pixels)
     for (const colorKey of Object.keys(stats)) {
       stats[colorKey].needsCrosshair = stats[colorKey].totalRequired - stats[colorKey].painted;
     }
 
-    console.log(`📊 [useColorFilter] Stats: ${Object.keys(stats).length} colors, ${enabledTemplates.length} templates, ${excludedColorsList.length} excluded`);
 
     return stats;
   });
@@ -169,17 +148,11 @@ export function useColorFilter() {
     currentTemplateIndex.value = templateIndex;
 
     const template = templateStore.templates[templateIndex];
-    if (!template) {
-      console.warn(`Template ${templateIndex} not found`);
-      return;
-    }
+    if (!template) return;
 
     // Load disabled and enhanced colors from template
     disabledColors.value = Array.from(template.disabledColors || []);
     enhancedColors.value = Array.from(template.enhancedColors || []);
-
-    console.log(`Loaded colors for template: ${template.displayName}`);
-    console.log(`Disabled: ${disabledColors.value.length}, Enhanced: ${enhancedColors.value.length}`);
   }
 
   /**
@@ -188,14 +161,7 @@ export function useColorFilter() {
    */
   async function saveTemplateColors() {
     const template = templateStore.templates[currentTemplateIndex.value];
-    if (!template) {
-      console.warn(`Cannot save: template ${currentTemplateIndex.value} not found`);
-      return;
-    }
-
-    console.log(`🎨 Saving colors for template index [${currentTemplateIndex.value}]: ${template.displayName}`);
-    console.log(`   Disabled: ${disabledColors.value.length} colors`);
-    console.log(`   Enhanced: ${enhancedColors.value.length} colors`);
+    if (!template) return;
 
     // Update template colors in store (Single template only, matching legacy limitation)
     await templateStore.updateTemplateColors(
@@ -205,33 +171,18 @@ export function useColorFilter() {
     );
 
     // Clear tile cache
-    console.log(`🧹 Clearing tile cache...`);
     tileCache.clear();
 
     // Legacy pattern: disable → wait → re-enable (main.js:8342-8352)
-    console.log(`🔄 Refreshing template display (legacy pattern)...`);
-
-    // 1. Disable templates (legacy: templateManager.setTemplatesShouldBeDrawn(false))
     templateStore.templatesShouldBeDrawn = false;
-    console.log(`   ⏸️  Templates disabled`);
-
-    // 2. Wait for change to take effect (legacy: 50ms)
     await new Promise(resolve => setTimeout(resolve, 50));
-
-    // 3. Re-enable templates (legacy: templateManager.setTemplatesShouldBeDrawn(true))
     templateStore.templatesShouldBeDrawn = true;
-    console.log(`   ▶️  Templates re-enabled`);
 
     // Force MapLibre to re-fetch tiles by reloading the style
-    // This is necessary because MapLibre caches tiles internally and won't re-fetch
-    // just because we cleared our own cache.
     if (window.mmmap) {
-      console.log(`🔄 [Map] Forcing style reload to clear internal cache...`);
       const style = window.mmmap.getStyle();
       window.mmmap.setStyle(style);
     }
-
-    console.log(`✅ Template refresh completed - tiles will re-render with new color filters`);
   }
 
   /**
@@ -419,8 +370,6 @@ export function useColorFilter() {
 
     totalRemaining = totalRequired - effectivePainted;
 
-    console.log(`📊 Overall Progress: ${effectivePainted} / ${totalRequired} (wrong: ${totalWrong}, includeWrong: ${includeWrongPixels.value})`);
-
     return {
       totalRequired,
       totalPainted: effectivePainted,  // Display value (may include wrong)
@@ -515,8 +464,8 @@ export function useColorFilter() {
       excludedColors.value = [...colorFilterStore.excludedColors];
       viewMode.value = colorFilterStore.viewMode;
       sortMode.value = colorFilterStore.sortMode;
-    } catch (error) {
-      console.error('Failed to load color filter settings:', error);
+    } catch {
+      // Ignore load errors
     }
   }
 
@@ -528,8 +477,8 @@ export function useColorFilter() {
       await colorFilterStore.updateExcludedColors([...excludedColors.value]);
       await colorFilterStore.updateViewMode(viewMode.value);
       await colorFilterStore.updateSortMode(sortMode.value);
-    } catch (error) {
-      console.error('Failed to save color filter settings:', error);
+    } catch {
+      // Ignore save errors
     }
   }
 
@@ -543,7 +492,6 @@ export function useColorFilter() {
       () => templateStore.templates.length,
       (newLength) => {
         if (newLength > 0 && !isInitialized) {
-          console.log('🎨 [useColorFilter] Auto-loading colors from first template');
           loadTemplateColors(0);
           isInitialized = true;
         }

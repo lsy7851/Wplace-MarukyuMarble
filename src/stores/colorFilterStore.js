@@ -75,9 +75,7 @@ export const useColorFilterStore = defineStore('colorFilter', () => {
             }
 
             isInitialized.value = true;
-            console.log('✅ Color filter settings loaded from chrome.storage.sync');
-        } catch (error) {
-            console.error('❌ Failed to load color filter settings:', error);
+        } catch {
             isInitialized.value = true;
         }
     }
@@ -96,9 +94,7 @@ export const useColorFilterStore = defineStore('colorFilter', () => {
             };
 
             await chromeStorageCompat.sync.set(plainSettings);
-            console.log('✅ Color filter settings saved to chrome.storage.sync');
         } catch (error) {
-            console.error('❌ Failed to save color filter settings:', error);
             throw error;
         }
     }
@@ -114,7 +110,6 @@ export const useColorFilterStore = defineStore('colorFilter', () => {
 
             await chromeStorageCompat.sync.set({ [key]: plainValue });
         } catch (error) {
-            console.error(`❌ Failed to save setting ${key}:`, error);
             throw error;
         }
     }
@@ -184,9 +179,7 @@ export const useColorFilterStore = defineStore('colorFilter', () => {
             compactSort.value = DEFAULTS.compactSort;
 
             await saveAllSettings();
-            console.log('✅ Color filter settings reset to defaults');
         } catch (error) {
-            console.error('❌ Failed to reset color filter settings:', error);
             throw error;
         }
     }

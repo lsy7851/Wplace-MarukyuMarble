@@ -52,17 +52,7 @@ export const useCoordinateStore = defineStore('coordinate', () => {
       typeof px !== 'number' ||
       typeof py !== 'number'
     ) {
-      console.error('❌ [coordinateStore] Invalid coordinates:', { tx, ty, px, py });
       return;
-    }
-    // Validate ranges
-    if (
-      tx < 0 || tx > 2047 ||
-      ty < 0 || ty > 2047 ||
-      px < 0 || px > 999 ||
-      py < 0 || py > 999
-    ) {
-      console.warn('⚠️ [coordinateStore] Coordinates out of range:', { tx, ty, px, py });
     }
 
     tileX.value = tx;

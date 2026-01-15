@@ -2,30 +2,33 @@ import { Template } from '@/models/Template';
 import { useTemplateStore } from '@/stores/templateStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useIndexedDB } from './useIndexedDB';
+import { useTileCache } from './useTileCache';
+import { useErrorMap } from './useErrorMap';
 
 /**
  * Template rendering composable
  *
  * Handles real-time rendering of templates on canvas tiles
+ * Integrates with useTileCache for LRU caching and pause functionality
+ *
  * Reference: old-src/templateManager.js:487-1310
+ * Reference: old-src/tileManager.js:249-365 (cache integration)
  */
 export function useTemplateRenderer() {
   const templateStore = useTemplateStore();
   const settingsStore = useSettingsStore();
   const db = useIndexedDB();
+  const tileCache = useTileCache();
+  const errorMap = useErrorMap();
 
   /**
-   * Main rendering function called for each tile update
+   * Core rendering function (without cache)
+   * This is the actual rendering logic, called when cache misses
    * @param {Blob} tileBlob - Canvas tile from Wplace API
    * @param {[number, number]} tileCoords - [tileX, tileY]
    * @returns {Promise<Blob>} Modified tile with templates overlaid
    */
-  async function drawTemplateOnTile(tileBlob, tileCoords) {
-    // Returns early if no templates should be drawn (legacy: templateManager.js:490)
-    if (!templateStore.templatesShouldBeDrawn) {
-      return tileBlob;
-    }
-
+  async function renderTileCore(tileBlob, tileCoords) {
     const [tileX, tileY] = tileCoords;
     const tileSize = Template.TILE_SIZE;
     const drawMult = Template.SHREAD_SIZE;
@@ -34,7 +37,6 @@ export function useTemplateRenderer() {
     const matchingTemplates = await findMatchingTemplates(tileX, tileY);
 
     if (matchingTemplates.length === 0) {
-      // No templates for this tile, return original
       return tileBlob;
     }
 
@@ -70,16 +72,82 @@ export function useTemplateRenderer() {
       await renderTemplate(ctx, canvasData, matchedTemplate, matchedTileKey, matchedCoords, tileCoords, i);
     }
 
-    // STEP 4: Count pixels for progress tracking
-    await countPixelProgress(ctx, canvasData, matchingTemplates, tileCoords);
+    // STEP 4: Count pixels for progress tracking (using ORIGINAL tileBlob, not overlayed canvas)
+    await countPixelProgress(ctx, tileBlob, matchingTemplates, tileCoords);
 
-    // TODO: STEP 5: Apply error map if enabled (Phase 6)
-    // if (settingsStore.settings.errorMapEnabled) {
-    //   await applyErrorMap(ctx, matchingTemplates, tileCoords);
-    // }
+    // STEP 5: Apply error map if enabled
+    if (settingsStore.errorMapEnabled) {
+
+      // Create separate canvas for original tile data (for comparison)
+      // We need fresh original tile data, not the template-overlayed canvas
+      const originalCanvas = new OffscreenCanvas(
+        tileSize * drawMult,
+        tileSize * drawMult
+      );
+      const originalCtx = originalCanvas.getContext('2d', { willReadFrequently: true });
+      originalCtx.imageSmoothingEnabled = false;
+
+      // Re-draw original tile (baseBitmap was created earlier)
+      originalCtx.drawImage(baseBitmap, 0, 0, originalCanvas.width, originalCanvas.height);
+
+      // Apply error map for each template
+      for (const { template, tileKey, coords } of matchingTemplates) {
+        const templateTileBlob = await db.loadTile(template.id, tileKey);
+        if (!templateTileBlob) continue;
+
+        const templateBitmap = await createImageBitmap(templateTileBlob);
+
+        const result = await errorMap.applyErrorMap(
+          originalCtx,           // Original tile context for pixel comparison
+          ctx,                   // Main context to draw error map overlay
+          template,              // Template instance (for color filtering)
+          templateBitmap,        // Template tile bitmap
+          coords,                // Tile coordinates {tileX, tileY, pixelX, pixelY}
+          tileSize * drawMult    // Canvas size (3000)
+        );
+
+      }
+    }
 
     // Convert to blob
     return await canvas.convertToBlob({ type: 'image/png' });
+  }
+
+  /**
+   * Main rendering function called for each tile update
+   * Integrates with useTileCache for caching and pause functionality
+   *
+   * Reference: old-src/tileManager.js:261-294 (cache wrapper logic)
+   *
+   * @param {Blob} tileBlob - Canvas tile from Wplace API
+   * @param {[number, number]} tileCoords - [tileX, tileY]
+   * @returns {Promise<Blob>} Modified tile with templates overlaid
+   */
+  async function drawTemplateOnTile(tileBlob, tileCoords) {
+    // Early return if no templates should be drawn (legacy: templateManager.js:490)
+    if (!templateStore.templatesShouldBeDrawn) {
+      return tileBlob;
+    }
+
+    // STEP 1: Check cache first (smart cache or frozen cache when paused)
+    const cachedResult = tileCache.get(tileCoords, tileBlob);
+    if (cachedResult) {
+      return cachedResult;
+    }
+
+    // If paused and no frozen cache, return original blob (fallback)
+    if (tileCache.paused.value) {
+      return tileBlob;
+    }
+
+    // STEP 2: Cache miss - process tile with core renderer
+    const result = await renderTileCore(tileBlob, tileCoords);
+
+    // STEP 3: Store in cache for future use
+    // Reference: old-src/tileManager.js:277-291
+    tileCache.set(tileCoords, tileBlob, result);
+
+    return result;
   }
 
   /**
@@ -127,7 +195,6 @@ export function useTemplateRenderer() {
     const hasDisabledColors = filterTemplate.disabledColors.size > 0;
     const enhanceWrongColors = settingsStore.enhanceWrongColors || false;
 
-    console.log(`🔍 [Render] hasEnhancedColors=${hasEnhancedColors}, hasDisabledColors=${hasDisabledColors}, enhanceWrongColors=${enhanceWrongColors}`);
 
     if (!hasEnhancedColors && !hasDisabledColors && !enhanceWrongColors) {
       // FAST PATH: Direct draw (only when no color filtering needed)
@@ -162,366 +229,366 @@ export function useTemplateRenderer() {
     coords,
     tileCoords
   ) {
-    // Create temp canvas
-    const tempCanvas = new OffscreenCanvas(
-      templateBitmap.width,
-      templateBitmap.height
-    );
+    // ─────────────────────────────────────────────────────────────
+    // Constants
+    // ─────────────────────────────────────────────────────────────
+    const SHREAD_SIZE = Template.SHREAD_SIZE;
+    const SHREAD_CENTER = 1;                    // Center pixel offset within 3×3 block
+    const ALPHA_THRESHOLD = 64;                 // Minimum alpha to consider pixel visible
+    const BORDER_COLOR = [0, 100, 255, 255];    // Blue RGBA for corner borders
+
+    // Canvas coordinate offset
+    const offsetX = coords.pixelX * SHREAD_SIZE;
+    const offsetY = coords.pixelY * SHREAD_SIZE;
+
+    // ─────────────────────────────────────────────────────────────
+    // Setup temporary canvas for template manipulation
+    // ─────────────────────────────────────────────────────────────
+    const tempCanvas = new OffscreenCanvas(templateBitmap.width, templateBitmap.height);
     const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.imageSmoothingEnabled = false;  // Pixel-perfect rendering
+    tempCtx.imageSmoothingEnabled = false;
     tempCtx.drawImage(templateBitmap, 0, 0);
 
-    // Get pixel data
     const templateData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-    // CRITICAL: Keep a copy of original data for transparency checks (legacy: line 683)
-    // This ensures crosshairs are drawn based on ORIGINAL template transparency,
-    // not the modified data (which would cause solid lines instead of dotted)
-    const originalData = new Uint8ClampedArray(templateData.data);
-    const enhancedPixels = new Set();  // Store "x,y" of enhanced pixels
-    const wrongColorPixels = new Set();  // Store wrong color pixels separately
-    let wrongColorCount = 0;  // Debug counter
+    const templatePixels = templateData.data;
+    const templateWidth = templateData.width;
+    const templateHeight = templateData.height;
 
-    const SHREAD_SIZE = Template.SHREAD_SIZE;
+    // Keep original data copy for transparency checks (ensures dotted crosshair pattern)
+    const originalPixels = new Uint8ClampedArray(templatePixels);
 
-    // Phase 1: Identify enhanced pixels + apply color filtering
-    for (let y = 0; y < templateData.height; y++) {
-      for (let x = 0; x < templateData.width; x++) {
-        // Only check center pixels of 3×3 blocks
-        if (x % SHREAD_SIZE !== 1 || y % SHREAD_SIZE !== 1) {
+    // Track pixels needing crosshairs
+    const enhancedPixels = new Set();
+    const wrongColorPixels = new Set();
+
+    // ─────────────────────────────────────────────────────────────
+    // Phase 1: Identify enhanced pixels and apply color filtering
+    // ─────────────────────────────────────────────────────────────
+    for (let y = 0; y < templateHeight; y++) {
+      for (let x = 0; x < templateWidth; x++) {
+        // Only process center pixels of 3×3 shread blocks
+        const isCenterPixel = (x % SHREAD_SIZE === SHREAD_CENTER) && (y % SHREAD_SIZE === SHREAD_CENTER);
+        if (!isCenterPixel) continue;
+
+        const idx = (y * templateWidth + x) * 4;
+        const tR = templatePixels[idx];
+        const tG = templatePixels[idx + 1];
+        const tB = templatePixels[idx + 2];
+        const tA = templatePixels[idx + 3];
+        const templateRGB = [tR, tG, tB];
+
+        // Skip transparent pixels
+        if (tA < ALPHA_THRESHOLD) continue;
+
+        // Handle disabled colors: make transparent and skip
+        if (template.isColorDisabled(templateRGB)) {
+          templatePixels[idx + 3] = 0;
           continue;
         }
 
-        const idx = (y * templateData.width + x) * 4;
-        const tR = templateData.data[idx];
-        const tG = templateData.data[idx + 1];
-        const tB = templateData.data[idx + 2];
-        const tA = templateData.data[idx + 3];
-
-        if (tA < 64) continue;  // Skip transparent
-
-        // Check if color is disabled
-        if (template.isColorDisabled([tR, tG, tB])) {
-          templateData.data[idx + 3] = 0;  // Make transparent
-          continue;
-        }
-
-        // Check if color is enhanced
-        if (template.isColorEnhanced([tR, tG, tB])) {
+        // Mark enhanced colors for crosshair drawing
+        if (template.isColorEnhanced(templateRGB)) {
           enhancedPixels.add(`${x},${y}`);
         }
 
-        // Check if wrong color (if setting enabled)
+        // Detect wrong colors on canvas
         if (settingsStore.enhanceWrongColors) {
-          // Convert template coords to canvas coords
-          const offsetX = coords.pixelX * SHREAD_SIZE;
-          const offsetY = coords.pixelY * SHREAD_SIZE;
           const canvasX = x + offsetX;
           const canvasY = y + offsetY;
+          const inBounds = canvasX >= 0 && canvasY >= 0 && canvasX < canvasData.width && canvasY < canvasData.height;
 
-          // Bounds check for canvas
-          if (canvasX >= 0 && canvasY >= 0 && canvasX < canvasData.width && canvasY < canvasData.height) {
+          if (inBounds) {
             const cIdx = (canvasY * canvasData.width + canvasX) * 4;
             const cR = canvasData.data[cIdx];
             const cG = canvasData.data[cIdx + 1];
             const cB = canvasData.data[cIdx + 2];
             const cA = canvasData.data[cIdx + 3];
 
-            // Only check if pixel is painted (legacy: canvasA > 0)
-            if (cA > 0 && (cR !== tR || cG !== tG || cB !== tB)) {
+            const isPainted = cA > 0;
+            const colorMismatch = cR !== tR || cG !== tG || cB !== tB;
+
+            if (isPainted && colorMismatch) {
               const pixelKey = `${x},${y}`;
-              enhancedPixels.add(pixelKey);  // Wrong color
-              wrongColorPixels.add(pixelKey);  // Track separately for skipPainted bypass
-              wrongColorCount++;
+              enhancedPixels.add(pixelKey);
+              wrongColorPixels.add(pixelKey);
             }
           }
         }
       }
     }
 
-    console.log(`🎯 [Enhancement] enhanceWrongColors=${settingsStore.enhanceWrongColors}, enhancedPixels.size=${enhancedPixels.size}, wrongColorCount=${wrongColorCount}`);
-    console.log(`📐 [Coords] pixelX=${coords.pixelX}, pixelY=${coords.pixelY}, templateSize=${templateData.width}x${templateData.height}, canvasSize=${canvasData.width}x${canvasData.height}`);
+    // ─────────────────────────────────────────────────────────────
+    // Phase 2: Generate crosshairs for enhanced pixels
+    // ─────────────────────────────────────────────────────────────
+    if (enhancedPixels.size === 0) {
+      tempCtx.putImageData(templateData, 0, 0);
+      ctx.drawImage(tempCanvas, offsetX, offsetY);
+      return;
+    }
 
-    // Phase 2: Generate crosshairs
-    if (enhancedPixels.size > 0) {
-      const crosshairColor = settingsStore.crosshairColor || { rgb: [255, 0, 0], alpha: 255 };
-      const showBorder = settingsStore.crosshairBorder || false;
-      const enhancedSizeEnabled = settingsStore.crosshairEnhancedSize || false;
-      const crosshairRadius = settingsStore.crosshairRadius || 256;
+    // Crosshair settings
+    const crosshairColor = settingsStore.crosshairColor || { rgb: [255, 0, 0], alpha: 255 };
+    const showBorder = settingsStore.crosshairBorder || false;
+    const enhancedSizeEnabled = settingsStore.crosshairEnhancedSize || false;
+    const crosshairRadius = settingsStore.crosshairRadius || 256;
 
-      let crosshairDrawnCount = 0;
-      let skippedNotTransparent = 0;
-      let skippedPainted = 0;
+    // Base crosshair offsets (orthogonal: up, down, left, right)
+    const BASE_OFFSETS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    const CORNER_OFFSETS = [[1, 1], [-1, 1], [1, -1], [-1, -1]];
 
-      for (const pixelKey of enhancedPixels) {
-        const [px, py] = pixelKey.split(',').map(Number);
-        const isWrongColor = wrongColorPixels.has(pixelKey);
+    for (const pixelKey of enhancedPixels) {
+      const [px, py] = pixelKey.split(',').map(Number);
+      const isWrongColor = wrongColorPixels.has(pixelKey);
 
-        // Build base offsets (orthogonal neighbors: up, down, left, right)
-        const baseOffsets = [
-          [0, -1], [0, 1], [-1, 0], [1, 0]
-        ];
+      // Build offset list (base + optional extended radius)
+      let offsets = [...BASE_OFFSETS];
 
-        let offsets = [...baseOffsets];
+      if (enhancedSizeEnabled) {
+        const shouldExtend = BASE_OFFSETS.some(([bdx, bdy]) => {
+          const bx = px + bdx;
+          const by = py + bdy;
+          if (bx < 0 || bx >= templateWidth || by < 0 || by >= templateHeight) return false;
 
-        // If enhanced size is enabled, expand crosshair radius
-        // Legacy logic: templateManager.js:900-907
-        if (enhancedSizeEnabled) {
-          // Check if any base offset would be eligible (transparent in template and not painted on canvas)
-          // If so, add expanded offsets
-          let baseEligible = false;
+          const bi = (by * templateWidth + bx) * 4;
+          const isTransparent = originalPixels[bi + 3] === 0;
+          if (!isTransparent) return false;
 
-          for (const [bdx, bdy] of baseOffsets) {
-            const bx = px + bdx;
-            const by = py + bdy;
+          const cx = bx + offsetX;
+          const cy = by + offsetY;
+          const inBounds = cx >= 0 && cy >= 0 && cx < canvasData.width && cy < canvasData.height;
+          const isPainted = inBounds && canvasData.data[(cy * canvasData.width + cx) * 4 + 3] > 0;
 
-            if (bx < 0 || bx >= templateData.width || by < 0 || by >= templateData.height) continue;
+          return !isPainted || isWrongColor;
+        });
 
-            const bi = (by * templateData.width + bx) * 4;
-
-            // Must be transparent in ORIGINAL template
-            if (originalData[bi + 3] !== 0) continue;
-
-            // Check if unpainted on canvas
-            const offsetX = coords.pixelX * Template.SHREAD_SIZE;
-            const offsetY = coords.pixelY * Template.SHREAD_SIZE;
-            const cx = bx + offsetX;
-            const cy = by + offsetY;
-
-            let painted = false;
-            if (cx >= 0 && cy >= 0 && cx < canvasData.width && cy < canvasData.height) {
-              const cIdx = (cy * canvasData.width + cx) * 4;
-              painted = canvasData.data[cIdx + 3] > 0;
-            }
-
-            if (!painted || isWrongColor) {
-              baseEligible = true;
-              break;
-            }
-          }
-
-          // If base offsets are eligible, add expanded offsets up to radius
-          if (baseEligible) {
-            for (let d = 2; d <= crosshairRadius; d++) {
-              offsets.push([0, -d]);  // Up
-              offsets.push([0, d]);   // Down
-              offsets.push([-d, 0]);  // Left
-              offsets.push([d, 0]);   // Right
-            }
+        if (shouldExtend) {
+          for (let d = 2; d <= crosshairRadius; d++) {
+            offsets.push([0, -d], [0, d], [-d, 0], [d, 0]);
           }
         }
+      }
 
-        for (const [dx, dy] of offsets) {
+      // Draw crosshair arms
+      for (const [dx, dy] of offsets) {
+        const nx = px + dx;
+        const ny = py + dy;
+        if (nx < 0 || ny < 0 || nx >= templateWidth || ny >= templateHeight) continue;
+
+        const nIdx = (ny * templateWidth + nx) * 4;
+        const isTransparent = originalPixels[nIdx + 3] < ALPHA_THRESHOLD;
+        if (!isTransparent) continue;
+
+        // Check if canvas pixel is painted (smart border logic)
+        const cx = nx + offsetX;
+        const cy = ny + offsetY;
+        const inBounds = cx >= 0 && cy >= 0 && cx < canvasData.width && cy < canvasData.height;
+        const isPainted = inBounds && canvasData.data[(cy * canvasData.width + cx) * 4 + 3] > 0;
+
+        // Draw crosshair if unpainted or wrong color (wrong colors always show)
+        if (!isPainted || isWrongColor) {
+          templatePixels[nIdx] = crosshairColor.rgb[0];
+          templatePixels[nIdx + 1] = crosshairColor.rgb[1];
+          templatePixels[nIdx + 2] = crosshairColor.rgb[2];
+          templatePixels[nIdx + 3] = crosshairColor.alpha || 255;
+        }
+      }
+
+      // Draw corner borders (diagonal pixels)
+      if (showBorder) {
+        for (const [dx, dy] of CORNER_OFFSETS) {
           const nx = px + dx;
           const ny = py + dy;
+          if (nx < 0 || ny < 0 || nx >= templateWidth || ny >= templateHeight) continue;
 
-          if (nx < 0 || ny < 0 || nx >= templateData.width || ny >= templateData.height) {
-            continue;
-          }
+          const nIdx = (ny * templateWidth + nx) * 4;
+          const isTransparent = originalPixels[nIdx + 3] < ALPHA_THRESHOLD;
+          if (!isTransparent) continue;
 
-          const nIdx = (ny * templateData.width + nx) * 4;
+          const cx = nx + offsetX;
+          const cy = ny + offsetY;
+          const inBounds = cx >= 0 && cy >= 0 && cx < canvasData.width && cy < canvasData.height;
+          const isPainted = inBounds && canvasData.data[(cy * canvasData.width + cx) * 4 + 3] > 0;
 
-          // Check if neighbor is transparent in ORIGINAL template (not modified data)
-          // Using originalData ensures dotted pattern is preserved (legacy: line 920)
-          if (originalData[nIdx + 3] < 64) {
-            let skipPainted = false;
-
-            // Check if unpainted on canvas (Legacy behavior: Smart borders)
-            // MUST apply offset to map template coords (nx, ny) to canvas coords
-            const offsetX = coords.pixelX * Template.SHREAD_SIZE;
-            const offsetY = coords.pixelY * Template.SHREAD_SIZE;
-
-            const cx = nx + offsetX;
-            const cy = ny + offsetY;
-
-            // Bounds check for canvas
-            if (cx >= 0 && cy >= 0 && cx < canvasData.width && cy < canvasData.height) {
-              const cIdx = (cy * canvasData.width + cx) * 4;
-              // Check if underlying pixel is painted (>0 alpha)
-              if (canvasData.data[cIdx + 3] > 0) {
-                skipPainted = true;
-              }
-            }
-
-            // For wrong colors, we want to show crosshair even if pixel is painted
-            // (to highlight the wrong color) - Legacy: templateManager.js:937
-            if (!skipPainted || isWrongColor) {
-              // Apply crosshair color
-              // Dotted effect comes naturally from templates covering each other's crosshairs
-              templateData.data[nIdx] = crosshairColor.rgb[0];
-              templateData.data[nIdx + 1] = crosshairColor.rgb[1];
-              templateData.data[nIdx + 2] = crosshairColor.rgb[2];
-              templateData.data[nIdx + 3] = crosshairColor.alpha || 255;
-              crosshairDrawnCount++;
-            } else {
-              skippedPainted++;
-            }
-          } else {
-            skippedNotTransparent++;
-          }
-        }
-
-        // Diagonal corners (if border enabled)
-        if (showBorder) {
-          const cornerOffsets = [
-            [1, 1], [-1, 1], [1, -1], [-1, -1]
-          ];
-
-          const offsetX = coords.pixelX * Template.SHREAD_SIZE;
-          const offsetY = coords.pixelY * Template.SHREAD_SIZE;
-
-          for (const [dx, dy] of cornerOffsets) {
-            const nx = px + dx;
-            const ny = py + dy;
-
-            if (nx < 0 || ny < 0 || nx >= templateData.width || ny >= templateData.height) {
-              continue;
-            }
-
-            const nIdx = (ny * templateData.width + nx) * 4;
-
-            // Check transparency using ORIGINAL data (same as crosshair logic)
-            if (originalData[nIdx + 3] < 64) {
-              // Check canvas painting for borders too
-              const cx = nx + offsetX;
-              const cy = ny + offsetY;
-              let skipPainted = false;
-
-              if (cx >= 0 && cy >= 0 && cx < canvasData.width && cy < canvasData.height) {
-                const cIdx = (cy * canvasData.width + cx) * 4;
-                if (canvasData.data[cIdx + 3] > 0) skipPainted = true;
-              }
-
-              if (!skipPainted) {
-                // Apply blue border
-                templateData.data[nIdx] = 0;
-                templateData.data[nIdx + 1] = 100;
-                templateData.data[nIdx + 2] = 255;
-                templateData.data[nIdx + 3] = 255;
-              }
-            }
+          if (!isPainted) {
+            templatePixels[nIdx] = BORDER_COLOR[0];
+            templatePixels[nIdx + 1] = BORDER_COLOR[1];
+            templatePixels[nIdx + 2] = BORDER_COLOR[2];
+            templatePixels[nIdx + 3] = BORDER_COLOR[3];
           }
         }
       }
-
-      console.log(`✏️ [Crosshair] drawn=${crosshairDrawnCount}, skippedNotTransparent=${skippedNotTransparent}, skippedPainted=${skippedPainted}`);
     }
 
-    // Put processed data back
+    // ─────────────────────────────────────────────────────────────
+    // Finalize: write modified data and draw to main canvas
+    // ─────────────────────────────────────────────────────────────
     tempCtx.putImageData(templateData, 0, 0);
-
-    // Draw to main canvas
-    ctx.drawImage(
-      tempCanvas,
-      coords.pixelX * Template.SHREAD_SIZE,
-      coords.pixelY * Template.SHREAD_SIZE
-    );
+    ctx.drawImage(tempCanvas, offsetX, offsetY);
   }
 
   /**
    * Count pixel progress for statistics
    * Reference: old-src/templateManager.js:1009-1150
+   *
+   * CRITICAL: Uses fresh tile blob data from server, NOT the already-overlayed canvas.
+   * This ensures we compare against REAL server pixels, not our template overlay.
    */
-  async function countPixelProgress(ctx, canvasData, matchingTemplates, tileCoords) {
+  async function countPixelProgress(ctx, tileBlob, matchingTemplates, tileCoords) {
+    // ─────────────────────────────────────────────────────────────
+    // Constants
+    // ─────────────────────────────────────────────────────────────
+    const SHREAD_SIZE = Template.SHREAD_SIZE;
+    const SHREAD_CENTER = 1;
+    const CANVAS_SIZE = Template.TILE_SIZE * SHREAD_SIZE;  // 3000
+    const ALPHA_THRESHOLD = 64;
+    const DEFACE_COLOR = [222, 250, 206];  // Magic skip color
+
+    // ─────────────────────────────────────────────────────────────
+    // Initialize statistics
+    // ─────────────────────────────────────────────────────────────
     const stats = {
       painted: 0,
       required: 0,
       wrong: 0,
+      unpainted: 0,
       colorBreakdown: {}
     };
 
-    const SHREAD_SIZE = Template.SHREAD_SIZE;
-    const canvasWidth = Template.TILE_SIZE * SHREAD_SIZE;  // 1000 * 3 = 3000
+    // ─────────────────────────────────────────────────────────────
+    // Extract fresh server tile data (not template-overlayed)
+    // ─────────────────────────────────────────────────────────────
+    let serverPixels;
+    try {
+      const serverBitmap = await createImageBitmap(tileBlob);
+      const serverCanvas = document.createElement('canvas');
+      serverCanvas.width = CANVAS_SIZE;
+      serverCanvas.height = CANVAS_SIZE;
 
+      const serverCtx = serverCanvas.getContext('2d', { willReadFrequently: true });
+      serverCtx.imageSmoothingEnabled = false;
+      serverCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      serverCtx.drawImage(serverBitmap, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+      serverPixels = serverCtx.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE).data;
+    } catch {
+      return;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Process each matching template
+    // ─────────────────────────────────────────────────────────────
     for (const { template, tileKey, coords } of matchingTemplates) {
-      const tileBlob = await db.loadTile(template.id, tileKey);
-      if (!tileBlob) continue;
+      const templateTileBlob = await db.loadTile(template.id, tileKey);
+      if (!templateTileBlob) continue;
 
-      const templateBitmap = await createImageBitmap(tileBlob);
+      // Load template tile pixels
+      const templateBitmap = await createImageBitmap(templateTileBlob);
       const tempCanvas = new OffscreenCanvas(templateBitmap.width, templateBitmap.height);
       const tempCtx = tempCanvas.getContext('2d');
-      tempCtx.imageSmoothingEnabled = false;  // Pixel-perfect rendering
+      tempCtx.imageSmoothingEnabled = false;
       tempCtx.drawImage(templateBitmap, 0, 0);
-      const templateData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
 
-      // Calculate offset from coords (legacy: offsetX/offsetY = pixelCoords * drawMult)
+      const templateData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+      const templatePixels = templateData.data;
+      const templateWidth = templateData.width;
+      const templateHeight = templateData.height;
+
+      // Canvas offset for this template tile
       const offsetX = coords.pixelX * SHREAD_SIZE;
       const offsetY = coords.pixelY * SHREAD_SIZE;
 
-      let templatePixelCount = 0;
-      let templatePaintedCount = 0;
-      let templateWrongCount = 0;
+      // ─────────────────────────────────────────────────────────────
+      // Iterate template pixels (center of each 3×3 block only)
+      // ─────────────────────────────────────────────────────────────
+      for (let y = 0; y < templateHeight; y++) {
+        for (let x = 0; x < templateWidth; x++) {
+          // Only process center pixels of shread blocks
+          const isCenterPixel = (x % SHREAD_SIZE === SHREAD_CENTER) && (y % SHREAD_SIZE === SHREAD_CENTER);
+          if (!isCenterPixel) continue;
 
-      // Count pixels (only center of 3×3 blocks)
-      // Legacy: Iterate ALL pixels and filter by modulo (matches legacy exactly)
-      for (let y = 0; y < templateData.height; y++) {
-        for (let x = 0; x < templateData.width; x++) {
-          // Only evaluate the center pixel of each 3×3 block (legacy condition)
-          if ((x % SHREAD_SIZE) !== 1 || (y % SHREAD_SIZE) !== 1) {
-            continue;
-          }
+          // Calculate global canvas position
+          const gx = x + offsetX;
+          const gy = y + offsetY;
+          const inBounds = gx >= 0 && gy >= 0 && gx < CANVAS_SIZE && gy < CANVAS_SIZE;
+          if (!inBounds) continue;
 
-          const idx = (y * templateData.width + x) * 4;
-          const tR = templateData.data[idx];
-          const tG = templateData.data[idx + 1];
-          const tB = templateData.data[idx + 2];
-          const tA = templateData.data[idx + 3];
+          // Read template pixel
+          const tIdx = (y * templateWidth + x) * 4;
+          const tR = templatePixels[tIdx];
+          const tG = templatePixels[tIdx + 1];
+          const tB = templatePixels[tIdx + 2];
+          const tA = templatePixels[tIdx + 3];
 
-          if (tA < 64) continue;  // Skip transparent
+          // Skip transparent pixels
+          if (tA < ALPHA_THRESHOLD) continue;
 
-          // Skip #deface magic color (222, 250, 206) - legacy compatibility
-          if (tR === 222 && tG === 250 && tB === 206) continue;
+          // Skip magic "deface" color
+          const isDefaceColor = tR === DEFACE_COLOR[0] && tG === DEFACE_COLOR[1] && tB === DEFACE_COLOR[2];
+          if (isDefaceColor) continue;
 
+          // ─────────────────────────────────────────────────────────
+          // Count this pixel and track per-color breakdown
+          // ─────────────────────────────────────────────────────────
           stats.required++;
-          templatePixelCount++;
 
           const colorKey = `${tR},${tG},${tB}`;
           if (!stats.colorBreakdown[colorKey]) {
-            stats.colorBreakdown[colorKey] = {
-              painted: 0,
-              required: 0,
-              wrong: 0
-            };
+            stats.colorBreakdown[colorKey] = { painted: 0, required: 0, wrong: 0 };
           }
-
           stats.colorBreakdown[colorKey].required++;
 
-          // Calculate canvas position (legacy: gx = x + offsetX, gy = y + offsetY)
-          const gx = x + offsetX;
-          const gy = y + offsetY;
+          // Read server pixel at same position
+          const sIdx = (gy * CANVAS_SIZE + gx) * 4;
+          const sR = serverPixels[sIdx];
+          const sG = serverPixels[sIdx + 1];
+          const sB = serverPixels[sIdx + 2];
+          const sA = serverPixels[sIdx + 3];
 
-          // Bounds check
-          if (gx < 0 || gy < 0 || gx >= canvasWidth || gy >= canvasWidth) {
-            continue;
-          }
+          // ─────────────────────────────────────────────────────────
+          // Compare: unpainted / correct / wrong
+          // ─────────────────────────────────────────────────────────
+          const isServerUnpainted = sA < ALPHA_THRESHOLD;
+          const colorsMatch = sR === tR && sG === tG && sB === tB;
 
-          // Calculate canvas pixel index (legacy: tileIdx = (gy * drawSize + gx) * 4)
-          const cIdx = (gy * canvasWidth + gx) * 4;
-          const cR = canvasData.data[cIdx];
-          const cG = canvasData.data[cIdx + 1];
-          const cB = canvasData.data[cIdx + 2];
-          const cA = canvasData.data[cIdx + 3];
+          if (isServerUnpainted) {
+            stats.unpainted++;
+          } else if (colorsMatch) {
+            stats.painted++;
+            stats.colorBreakdown[colorKey].painted++;
+          } else {
+            stats.wrong++;
+            stats.colorBreakdown[colorKey].wrong++;
 
-          if (cA >= 64) {
-            if (cR === tR && cG === tG && cB === tB) {
-              stats.painted++;
-              stats.colorBreakdown[colorKey].painted++;
-              templatePaintedCount++;
-            } else {
-              stats.wrong++;
-              stats.colorBreakdown[colorKey].wrong++;
-              templateWrongCount++;
+            // Capture first wrong pixel coordinates for "Fly to" feature
+            if (!stats.colorBreakdown[colorKey].firstWrongPixel) {
+              const tilePixelX = Math.floor(gx / SHREAD_SIZE);
+              const tilePixelY = Math.floor(gy / SHREAD_SIZE);
+              stats.colorBreakdown[colorKey].firstWrongPixel = [tilePixelX, tilePixelY];
             }
           }
         }
       }
     }
 
-    // Store tile progress
-    const tileKey = `${tileCoords[0]},${tileCoords[1]}`;
-    templateStore.setTileProgress(tileKey, stats);
+    // ─────────────────────────────────────────────────────────────
+    // Store aggregated progress
+    // ─────────────────────────────────────────────────────────────
+    const tileCoordsKey = `${tileCoords[0]},${tileCoords[1]}`;
+    templateStore.setTileProgress(tileCoordsKey, stats);
   }
 
+  // Register the core renderer for force refresh capability
+  // Reference: old-src/tileManager.js:258 (originalDrawTemplateOnTile)
+  tileCache.setOriginalRenderer(renderTileCore);
+
   return {
-    drawTemplateOnTile
+    // Main entry point (with caching)
+    drawTemplateOnTile,
+
+    // Core renderer (without caching) - for force refresh
+    renderTileCore,
+
+    // Tile cache instance for external control
+    tileCache
   };
 }

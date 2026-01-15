@@ -3,6 +3,13 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useColorFilter } from '@/composables/useColorFilter.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';
 
+// Props
+const props = defineProps({
+  minimized: Boolean,
+});
+
+const emit = defineEmits(['request-maximize']);
+
 // Use color filter composable
 const colorFilter = useColorFilter();
 
@@ -11,6 +18,14 @@ const settingsStore = useSettingsStore();
 
 // Visibility from store
 const showColorMenu = computed(() => settingsStore.showColorMenu);
+
+// Mobile mode from store
+const mobileMode = computed(() => settingsStore.mobileMode);
+
+// Handle button click when minimized
+function onMinimizedButtonClick() {
+  emit('request-maximize');
+}
 
 // Resize state
 const colorListRef = ref(null);
@@ -135,7 +150,18 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="showColorMenu" id="bm-color-menu">
+  <!-- Minimized state: show only icon button -->
+  <button
+    v-if="minimized && showColorMenu"
+    id="bm-color-filter-btn-minimized"
+    class="minimized-color-btn"
+    title="Color Filter"
+    @click="onMinimizedButtonClick">
+    🎨
+  </button>
+
+  <!-- Normal state: show full menu -->
+  <div v-if="!minimized && showColorMenu" id="bm-color-menu" :class="{ 'mobile-mode': mobileMode }">
     <!-- Toolbar: Search, Sort, Toggle All -->
     <div class="toolbar">
       <div>
@@ -230,6 +256,27 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* Minimized state button */
+.minimized-color-btn {
+  width: 56px;
+  height: 38px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 4px auto 0;
+}
+
+.minimized-color-btn:hover {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  transform: scale(1.05);
+}
+
 #bm-color-menu {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
@@ -399,5 +446,105 @@ onUnmounted(() => {
   height: 3px;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 2px;
+}
+
+/* ========================================
+   Mobile Mode Styles
+   ======================================== */
+
+/* Mobile mode container */
+#bm-color-menu.mobile-mode {
+  padding: 8px;
+  border-radius: 6px;
+}
+
+/* Mobile toolbar */
+#bm-color-menu.mobile-mode .toolbar {
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+#bm-color-menu.mobile-mode .search-input {
+  padding: 6px 8px;
+  font-size: 10px;
+  max-width: 100px;
+  min-height: 32px;
+}
+
+#bm-color-menu.mobile-mode .sort-select {
+  padding: 6px 4px;
+  font-size: 10px;
+  min-width: 70px;
+  min-height: 32px;
+}
+
+#bm-color-menu.mobile-mode .toggle-all-btn {
+  padding: 6px 10px;
+  font-size: 10px;
+  min-height: 32px;
+}
+
+/* Mobile color list */
+#bm-color-menu.mobile-mode #bm-color-list {
+  gap: 2px;
+  max-height: 120px;
+}
+
+/* Mobile color items - more compact */
+#bm-color-menu.mobile-mode .bm-color-item {
+  padding: 4px 6px;
+  gap: 4px;
+  font-size: 10px;
+  min-height: 24px;
+  border-radius: 3px;
+}
+
+#bm-color-menu.mobile-mode .enhanced-checkbox {
+  width: 14px;
+  height: 14px;
+}
+
+#bm-color-menu.mobile-mode .color-swatch {
+  width: 14px;
+  height: 14px;
+}
+
+#bm-color-menu.mobile-mode .color-info {
+  gap: 3px;
+}
+
+#bm-color-menu.mobile-mode .color-name {
+  font-size: 10px;
+}
+
+#bm-color-menu.mobile-mode .color-stats,
+#bm-color-menu.mobile-mode .color-percentage {
+  font-size: 9px;
+}
+
+#bm-color-menu.mobile-mode .color-remaining {
+  font-size: 9px;
+}
+
+#bm-color-menu.mobile-mode .premium-badge {
+  font-size: 8px;
+}
+
+/* Mobile resize handle */
+#bm-color-menu.mobile-mode #bm-color-menu-resize-handle {
+  height: 12px;
+  margin-top: 2px;
+}
+
+#bm-color-menu.mobile-mode .resize-grip {
+  width: 40px;
+  height: 4px;
+}
+
+/* Mobile no colors message */
+#bm-color-menu.mobile-mode .no-colors {
+  font-size: 9px;
+  margin: 4px 0;
 }
 </style>

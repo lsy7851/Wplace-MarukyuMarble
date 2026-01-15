@@ -38,8 +38,7 @@ export const useLocationFavoritesStore = defineStore('locationFavorites', () => 
       const data = result[STORAGE_KEY];
       favorites.value = Array.isArray(data) ? data : [];
       isLoaded.value = true;
-    } catch (error) {
-      console.error('❌ [locationFavoritesStore] Failed to load favorites:', error);
+    } catch {
       favorites.value = [];
       isLoaded.value = true;
     }
@@ -53,8 +52,8 @@ export const useLocationFavoritesStore = defineStore('locationFavorites', () => 
       // Deep clone to plain objects to avoid DataCloneError with postMessage
       const plainFavorites = JSON.parse(JSON.stringify(favorites.value));
       await chromeStorageCompat.sync.set({ [STORAGE_KEY]: plainFavorites });
-    } catch (error) {
-      console.error('❌ [locationFavoritesStore] Failed to save favorites:', error);
+    } catch {
+      // Ignore save errors
     }
   }
 
@@ -74,7 +73,6 @@ export const useLocationFavoritesStore = defineStore('locationFavorites', () => 
     );
 
     if (exists) {
-      console.warn('⚠️ [locationFavoritesStore] Location already in favorites');
       return false;
     }
 

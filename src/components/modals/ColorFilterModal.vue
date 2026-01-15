@@ -9,6 +9,7 @@
           id="bm-color-filter-overlay"
           ref="modalRef"
           class="bmcf-overlay"
+          :class="{ 'mobile-mode': mobileMode }"
           :style="draggableStyle"
           style="pointer-events: auto;">
           <!-- Header -->
@@ -226,7 +227,9 @@ const settingsIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height=
 // Stores
 const templateStore = useTemplateStore();
 const settingsStore = useSettingsStore();
-const tileCache = useTileCache();
+// Stores
+// Mobile mode from store
+const mobileMode = computed(() => settingsStore.mobileMode);
 
 // Computed for enhance wrong colors (synced with store)
 const enhanceWrongColors = computed({
@@ -239,7 +242,6 @@ const enhanceWrongColors = computed({
     templateStore.templatesShouldBeDrawn = false;
     await new Promise(resolve => setTimeout(resolve, 50));
     templateStore.templatesShouldBeDrawn = true;
-    console.log(`✅ Enhance Wrong Colors: ${value}`);
   }
 });
 
@@ -291,7 +293,6 @@ function handleClose() {
  * Handle Update Stats
  */
 function handleUpdateStats() {
-  console.log('Updating statistics...');
   // TODO: Rebuild overlay with fresh data
 }
 
@@ -306,7 +307,6 @@ function handleCompactList() {
  * Handle Settings
  */
 function handleSettings() {
-  console.log('Open crosshair settings');
   // TODO: Open crosshair settings overlay
 }
 
@@ -338,16 +338,9 @@ async function handleDisableAllEnhanced() {
  * Handle Apply
  */
 async function handleApply() {
-  console.log('Applying color filter...');
-  
-  // Save colors to template store
   await saveTemplateColors();
-  
-  // Save UI settings
   saveSettings();
-  
   emit('update:modelValue', false);
-  console.log('✅ Color filter applied and templates refreshed');
 }
 
 // Load template colors on mount
@@ -891,6 +884,67 @@ onMounted(() => {
 
 .bmcf-btn:hover::before {
   opacity: 1;
+}
+
+/* ========================================
+   Mobile Mode Styles
+   ======================================== */
+
+.bmcf-overlay.mobile-mode {
+  width: min(350px, 96vw);
+  max-height: 70vh;
+  font-size: 12px;
+}
+
+.bmcf-overlay.mobile-mode .bmcf-header {
+  padding: 8px 12px 0 12px;
+}
+
+.bmcf-overlay.mobile-mode .modal-title {
+  font-size: 1.2em;
+}
+
+.bmcf-overlay.mobile-mode .bmcf-content {
+  padding: 12px;
+}
+
+.bmcf-overlay.mobile-mode .bmcf-footer {
+  padding: 8px 12px;
+}
+
+.bmcf-overlay.mobile-mode .view-toggle-btn,
+.bmcf-overlay.mobile-mode .compact-list-btn,
+.bmcf-overlay.mobile-mode .settings-btn,
+.bmcf-overlay.mobile-mode .close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+.bmcf-overlay.mobile-mode .bmcf-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.bmcf-overlay.mobile-mode .bmcf-input {
+  height: 36px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.bmcf-overlay.mobile-mode .filter-select {
+  height: 36px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.bmcf-overlay.mobile-mode .bmcf-btn {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 0.85em;
+  min-width: 100px;
 }
 
 .bmcf-btn:hover {

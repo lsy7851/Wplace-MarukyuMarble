@@ -44,11 +44,8 @@ export const useTemplateStore = defineStore('template', () => {
         templates.value = result.templates.map(t => Template.fromJSON(t));
       }
 
-      // Tile blobs are loaded on-demand from IndexedDB
-      console.log(`Loaded ${templates.value.length} templates`);
     } catch (e) {
       error.value = `Failed to load templates: ${e.message}`;
-      console.error(error.value, e);
     } finally {
       isLoading.value = false;
     }
@@ -67,10 +64,8 @@ export const useTemplateStore = defineStore('template', () => {
       const cleanMetadata = JSON.parse(JSON.stringify(metadata));
 
       await chrome.storage.sync.set({ templates: cleanMetadata });
-      console.log(`Saved ${metadata.length} templates to chrome.storage.sync`);
     } catch (e) {
       error.value = `Failed to save templates: ${e.message}`;
-      console.error(error.value, e);
       throw e;
     }
   }
@@ -94,11 +89,7 @@ export const useTemplateStore = defineStore('template', () => {
         for (const [tileKey, blob] of tilesIterable) {
           await db.saveTile(template.id, tileKey, blob);
         }
-        const tileCount = tiles instanceof Map ? tiles.size : Object.keys(tiles).length;
-        console.log(`Saved ${tileCount} tiles to IndexedDB for template: ${template.displayName}`);
       }
-
-      console.log(`Added template: ${template.displayName}`);
     } catch (error) {
       // Rollback: Remove from templates array if save failed
       const index = templates.value.findIndex(t => t.id === template.id);
@@ -109,12 +100,11 @@ export const useTemplateStore = defineStore('template', () => {
       // Attempt to clean up any partially saved tiles from IndexedDB
       try {
         await db.deleteTemplateTiles(template.id);
-      } catch (cleanupError) {
-        console.warn('Failed to clean up tiles after template add failure:', cleanupError);
+      } catch {
+        // Ignore cleanup errors
       }
 
-      console.error(`Failed to add template: ${template.displayName}`, error);
-      throw error; // Re-throw to let caller handle
+      throw error;
     }
   }
 
@@ -135,7 +125,6 @@ export const useTemplateStore = defineStore('template', () => {
     tileProgress.value.clear();
 
     await saveTemplates();
-    console.log(`Deleted template: ${template.displayName}`);
   }
 
   /**
@@ -144,18 +133,11 @@ export const useTemplateStore = defineStore('template', () => {
    * @param {boolean} enabled - New enabled state
    */
   async function setTemplateEnabled(index, enabled) {
-    if (index < 0 || index >= templates.value.length) {
-      console.error(`Invalid template index: ${index}`);
-      return;
-    }
+    if (index < 0 || index >= templates.value.length) return;
 
     templates.value[index].enabled = enabled;
-
-    // Clear tile progress cache when enabling/disabling
     tileProgress.value.clear();
-
     await saveTemplates();
-    console.log(`Template ${templates.value[index].displayName} ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   /**
@@ -164,15 +146,11 @@ export const useTemplateStore = defineStore('template', () => {
    * @param {string} newName - New display name
    */
   async function renameTemplate(index, newName) {
-    if (index < 0 || index >= templates.value.length) {
-      console.error(`Invalid template index: ${index}`);
-      return;
-    }
+    if (index < 0 || index >= templates.value.length) return;
 
     templates.value[index].displayName = newName;
     templates.value[index].updatedAt = new Date().toISOString();
     await saveTemplates();
-    console.log(`Renamed template to: ${newName}`);
   }
 
   /**
@@ -208,20 +186,13 @@ export const useTemplateStore = defineStore('template', () => {
    * @param {string[]} enhancedColors - Array of "r,g,b" strings
    */
   async function updateTemplateColors(index, disabledColors, enhancedColors) {
-    if (index < 0 || index >= templates.value.length) {
-      console.error(`Invalid template index: ${index}`);
-      return;
-    }
+    if (index < 0 || index >= templates.value.length) return;
 
     templates.value[index].disabledColors = new Set(disabledColors);
     templates.value[index].enhancedColors = new Set(enhancedColors);
     templates.value[index].updatedAt = new Date().toISOString();
-
-    // Clear tile progress cache when colors change
     tileProgress.value.clear();
-
     await saveTemplates();
-    console.log(`Updated colors for template: ${templates.value[index].displayName}`);
   }
 
   /**
@@ -238,7 +209,6 @@ export const useTemplateStore = defineStore('template', () => {
    */
   function clearTileProgress() {
     tileProgress.value.clear();
-    console.log('Tile progress cache cleared');
   }
 
   /**
@@ -257,8 +227,6 @@ export const useTemplateStore = defineStore('template', () => {
   function setCurrentTemplateIndex(index) {
     if (index >= -1 && index < templates.value.length) {
       currentTemplateIndex.value = index;
-    } else {
-      console.error(`Invalid template index: ${index}`);
     }
   }
 

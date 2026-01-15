@@ -43,7 +43,7 @@ export default defineUnlistedScript(() => {
           break;
 
         default:
-          console.warn('⚠️ [MAIN] Unknown message type:', message.type);
+          // Unknown message type - ignore
       }
     } else if (message.source === MESSAGE_SOURCE && message.type === 'TILE_PROCESSED') {
       // Message from Vue app with processed tile
@@ -52,10 +52,7 @@ export default defineUnlistedScript(() => {
       const queueEntry = tileBlobQueue.get(blobID);
       if (queueEntry) {
         tileBlobQueue.delete(blobID);
-        console.log(`✅ [MAIN] Received processed tile blob ${blobID}`);
         queueEntry.resolve(processedBlob);
-      } else {
-        console.warn(`⚠️ [MAIN] No queue entry for blob ${blobID}`);
       }
     }
   });
@@ -86,8 +83,7 @@ export default defineUnlistedScript(() => {
         .filter(s => !s.includes('.')); // 확장자 제외
 
       return pathParts[pathParts.length - 1] || 'unknown';
-    } catch (error) {
-      console.error('❌ [MAIN] Failed to extract endpoint:', error);
+    } catch {
       return 'unknown';
     }
   }
@@ -138,8 +134,6 @@ export default defineUnlistedScript(() => {
    * This works regardless of bundling, minification, or global variable exposure.
    */
   (function setupMapLibreInterceptor() {
-    console.log('🔧 [MAIN][TRANSFORM_HOOK] Setting up Object.prototype.transform interceptor...');
-
     let hooked = false;
 
     Object.defineProperty(Object.prototype, 'transform', {
@@ -157,8 +151,6 @@ export default defineUnlistedScript(() => {
 
           hooked = true;
           const mapInstance = this;
-
-          console.log('🎯 [MAIN][TRANSFORM_HOOK] MapLibre GL Map instance captured! Version:', mapInstance.version || 'unknown');
 
           // Store globally for easy access
           window.mmmap = mapInstance;
@@ -187,8 +179,6 @@ export default defineUnlistedScript(() => {
         });
       }
     });
-
-    console.log('✅ [MAIN][TRANSFORM_HOOK] Hook installed, waiting for MapLibre GL Map...');
   })();
 
   /**
@@ -203,7 +193,6 @@ export default defineUnlistedScript(() => {
 
     // Validate coordinates
     if (typeof lat !== 'number' || typeof lng !== 'number') {
-      console.error('❌ [MAIN] Invalid coordinates:', { lat, lng });
       sendToIsolated('FLY_TO_ERROR', {
         error: 'Invalid coordinates',
         lat,
@@ -214,7 +203,6 @@ export default defineUnlistedScript(() => {
 
     // Check if map is ready
     if (!window.mmmap || typeof window.mmmap.flyTo !== 'function') {
-      console.error('❌ [MAIN] Map not ready for flyTo');
       sendToIsolated('FLY_TO_ERROR', {
         error: 'Map not ready',
         isMapDefined: !!window.mmmap,
@@ -234,7 +222,6 @@ export default defineUnlistedScript(() => {
       sendToIsolated('FLY_TO_SUCCESS', { lat, lng, zoom });
 
     } catch (error) {
-      console.error('❌ [MAIN] FlyTo failed:', error);
       sendToIsolated('FLY_TO_ERROR', {
         error: error.message,
         lat,
@@ -251,7 +238,6 @@ export default defineUnlistedScript(() => {
 
   // 원본 fetch가 없으면 종료
   if (typeof originalFetch !== 'function') {
-    console.error('❌ [MAIN] window.fetch is not available!');
     return;
   }
 
@@ -269,7 +255,6 @@ export default defineUnlistedScript(() => {
     try {
       response = await originalFetch.apply(this, args);
     } catch (error) {
-      console.error('❌ [MAIN] Fetch failed:', error);
       throw error; // 에러를 페이지에 전달
     }
 
@@ -290,7 +275,6 @@ export default defineUnlistedScript(() => {
             // 사용자 정보 API
             // 로그인 상태 확인
             if (jsonData.status && jsonData.status.toString()[0] !== '2') {
-              console.warn('⚠️ [MAIN] User not logged in (non-2xx status)');
               sendToIsolated('USER_NOT_LOGGED_IN', {
                 status: jsonData.status
               });
@@ -350,8 +334,8 @@ export default defineUnlistedScript(() => {
                 pixelY: parseInt(y, 10),
                 url: url
               });
-            } catch (error) {
-              console.error('❌ [MAIN] Failed to parse pixel data:', error);
+            } catch {
+              // Ignore parse errors
             }
             break;
 
@@ -360,8 +344,8 @@ export default defineUnlistedScript(() => {
             break;
         }
 
-      } catch (error) {
-        console.error('❌ [MAIN] Failed to parse JSON:', error);
+      } catch {
+        // Ignore JSON parse errors
       }
     }
 
@@ -395,8 +379,6 @@ export default defineUnlistedScript(() => {
           }
         }
 
-        console.log(`🔍 [MAIN] Parsed tile URL: ${url} -> tileX=${tileX}, tileY=${tileY}`);
-
         // Return Promise that resolves with processed blob
         return new Promise((resolve, reject) => {
           const blobID = crypto.randomUUID();
@@ -417,8 +399,6 @@ export default defineUnlistedScript(() => {
           // Get original blob and send to Vue app for processing
           clonedResponse.blob()
             .then(blob => {
-              console.log(`📤 [MAIN] Sending tile ${blobID} for processing (${tileX},${tileY})`);
-
               window.postMessage({
                 source: MESSAGE_SOURCE,
                 type: 'TILE_RENDER_REQUEST',
@@ -430,7 +410,6 @@ export default defineUnlistedScript(() => {
               }, '*');
             })
             .catch(error => {
-              console.error('❌ [MAIN] Failed to read blob:', error);
               tileBlobQueue.delete(blobID);
               reject(error);
             });
@@ -438,7 +417,6 @@ export default defineUnlistedScript(() => {
           // Timeout after 10 seconds
           setTimeout(() => {
             if (tileBlobQueue.has(blobID)) {
-              console.warn(`⚠️ [MAIN] Timeout processing tile ${blobID}, returning original`);
               tileBlobQueue.delete(blobID);
               resolve(response);
             }
@@ -454,9 +432,6 @@ export default defineUnlistedScript(() => {
   // NOTE: fetch를 읽기 전용으로 잠그지 않음
   // Wplace.live도 fetch를 오버라이드할 수 있어야 함
   // document_start로 먼저 실행되므로 우리가 먼저 오버라이드하면 충분함
-
-  console.log('✅ [MAIN] API Interceptor installed successfully');
-  console.log('🎯 [MAIN] Fetch override active - ready to intercept API calls');
 
   // 초기화 완료 알림
   sendToIsolated('INTERCEPTOR_READY', {

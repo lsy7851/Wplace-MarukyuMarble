@@ -19,17 +19,12 @@ const canvasOverlay = useCanvasOverlay();
 // Load templates from chrome.storage.sync on app mount
 onMounted(async () => {
   await templateStore.loadTemplates();
-  console.log('[App] Templates loaded on mount');
-
-  // Setup canvas overlay after templates are loaded
   canvasOverlay.setupOverlay();
-  console.log('[App] Canvas overlay initialized');
 });
 
 // Cleanup on unmount
 onUnmounted(() => {
   canvasOverlay.teardownOverlay();
-  console.log('[App] Canvas overlay cleaned up');
 });
 </script>
 

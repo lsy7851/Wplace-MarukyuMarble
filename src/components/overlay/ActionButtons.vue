@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, computed } from 'vue';
 import { useLocationSearchStore } from '@/stores/locationSearchStore.js';
 import { useCoordinateStore } from '@/stores/coordinateStore.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';
@@ -7,6 +7,7 @@ import { useColorFilterStore } from '@/stores/colorFilterStore.js';
 import { useNavigation } from '@/composables/useNavigation.js';
 import { useImportExport } from '@/composables/useImportExport.js';
 import { tileToLatLng } from '@/utils/coordinates.js';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps({
   icons: {
@@ -21,6 +22,8 @@ const props = defineProps({
 
 const locationSearchStore = useLocationSearchStore();
 const coordinateStore = useCoordinateStore();
+const settingsStoreInstance = useSettingsStore();
+const { errorMapEnabled } = storeToRefs(settingsStoreInstance);
 const { navigateToLocation } = useNavigation();
 const { importFromFile } = useImportExport();
 
@@ -54,7 +57,6 @@ const handleFlyTo = async () => {
     // Navigate to the location using settings-based navigation method
     await navigateToLocation(lat, lng, 13.62);
   } catch (error) {
-    console.error('❌ [ActionButtons] Failed to fly to coordinates:', error);
     alert(`Failed to navigate: ${error.message}`);
   }
 };
@@ -115,12 +117,7 @@ const handleScreenshot = async () => {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    
-    // Success feedback (using alert for now, could be toast)
-    console.log(`📸 Saved template screenshot for ${t.name || 'Template'}`);
-    
   } catch (e) {
-    console.error('Screenshot failed:', e);
     alert(`Failed to create screenshot: ${e.message}`);
   }
 };
@@ -132,18 +129,15 @@ const handleClearStorage = async () => {
       const settingsStore = useSettingsStore();
       const colorFilterStore = useColorFilterStore();
       
-      // 1. Clear IndexedDB (Tiles) - "marukyu-marble" is our specific DB, safe to clear.
+      // 1. Clear IndexedDB (Tiles)
       await db.clearAllTiles();
-      console.log('🧹 IndexedDB cleared');
-      
-      // 2. Clear chrome.storage.sync (Metadata/Settings) - Extension isolated, safe to clear.
+
+      // 2. Clear chrome.storage.sync (Metadata/Settings)
       await chrome.storage.sync.clear();
-      console.log('🧹 chrome.storage.sync cleared');
 
       // 3. Reset Pinia stores to defaults
       await settingsStore.resetSettings();
       await colorFilterStore.resetSettings();
-      console.log('🧹 Pinia stores reset');
       
       // 4. Clear localStorage (Legacy keys cleanup) - TARGETED CLEAR ONLY
       // Most settings are now in chrome.storage.sync, but we still clean up legacy keys
@@ -173,7 +167,6 @@ const handleClearStorage = async () => {
         localStorage.removeItem(key);
         deletedCount++;
       });
-      console.log(`🧹 localStorage cleared (${deletedCount} keys removed)`);
       
       // 5. Clear sessionStorage (Session data) - TARGETED CLEAR ONLY
       const sessionKeysToRemove = [];
@@ -184,13 +177,11 @@ const handleClearStorage = async () => {
         }
       }
       sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
-      console.log(`🧹 sessionStorage cleared`);
-      
+
       alert('Extension storage cleared successfully!\nThe page will now reload.');
       window.location.reload();
       
     } catch (e) {
-      console.error('Failed to clear storage:', e);
       alert(`Error clearing storage: ${e.message}`);
     }
   }
@@ -207,15 +198,9 @@ const handleImport = () => {
     if (!file) return;
 
     try {
-      console.log(`📥 Importing templates from: ${file.name}`);
       const result = await importFromFile(file);
-      
-      const message = `✅ Import Complete!\n\nImported: ${result.imported} template(s)\nSkipped: ${result.skipped} template(s)`;
-      alert(message);
-      
-      console.log(`✅ Import successful: ${result.imported} imported, ${result.skipped} skipped`);
+      alert(`✅ Import Complete!\n\nImported: ${result.imported} template(s)\nSkipped: ${result.skipped} template(s)`);
     } catch (error) {
-      console.error('❌ Import failed:', error);
       alert(`❌ Import failed: ${error.message}`);
     }
   };
@@ -223,10 +208,19 @@ const handleImport = () => {
   input.click();
 };
 
-const emit = defineEmits(['open-settings']);
+const emit = defineEmits(['open-settings', 'open-wrong-pixels', 'toggle-error-map']);
 
 const handleSettings = () => {
   emit('open-settings');
+};
+
+const handleWrongPixels = () => {
+  emit('open-wrong-pixels');
+};
+
+const handleErrorMapToggle = async () => {
+  const newState = await settingsStoreInstance.toggleErrorMapMode();
+  emit('toggle-error-map', newState);
 };
 </script>
 
@@ -260,6 +254,21 @@ const handleSettings = () => {
         title="Screenshot current template area (auto-detects coordinates)"
         @click="handleScreenshot"
       >📸</button>
+
+      <button
+        id="bm-button-wrong-pixels"
+        class="bm-help"
+        title="View Wrong Pixels Coordinates"
+        @click="handleWrongPixels"
+      >❌</button>
+
+      <button
+        id="bm-button-error-map"
+        class="bm-help"
+        :class="{ 'error-map-active': errorMapEnabled }"
+        title="Error Map View (Green=correct, Red=wrong)"
+        @click="handleErrorMapToggle"
+      >🗺️</button>
 
       <button
         id="bm-button-clear-storage"
@@ -354,5 +363,16 @@ const handleSettings = () => {
   width: 16px;
   height: 16px;
   stroke: currentColor;
+}
+
+/* Error Map active state */
+#bm-button-error-map.error-map-active {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: white !important;
+  border-color: #059669 !important;
+}
+
+#bm-button-error-map.error-map-active:hover {
+  background: linear-gradient(135deg, #059669, #047857) !important;
 }
 </style>

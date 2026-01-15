@@ -51,7 +51,6 @@ export function useScreenshot() {
             // Fallback: estimate from pixelCount or assume standard size if not found?
             // Try to detect from IndexedDB tiles if available (for legacy templates)
             try {
-                console.log('⚠️ Template dimensions missing. Calculating from IndexedDB tiles...');
                 const tileKeys = await db.getTemplateTileKeys(template.id);
 
                 if (tileKeys && tileKeys.length > 0) {
@@ -123,20 +122,17 @@ export function useScreenshot() {
                             // template.imageWidth = width;
                             // template.imageHeight = height;
 
-                            console.log(`📏 Calculated missing dimensions: ${width}x${height}`);
                         }
                     }
                 }
-            } catch (calcError) {
-                console.warn('Failed to calculate template dimensions from DB:', calcError);
+            } catch {
+                // Ignore calculation errors
             }
 
             if (!width || !height) {
                 throw new Error('Template dimensions (width/height) are missing and could not be calculated.');
             }
         }
-
-        console.log(`📸 Starting screenshot: Pos(${tx},${ty}) Pix(${px},${py}) Size(${width}x${height})`);
 
         // Calculate bounds in global pixels
         const startX = tx * tileSize + px;
@@ -218,8 +214,7 @@ export function useScreenshot() {
                 ctx.drawImage(bitmap, srcX, srcY, drawW, drawH, dstX, dstY, drawW, drawH);
             }
 
-        } catch (e) {
-            console.warn(`Failed to fetch tile ${tx},${ty}:`, e);
+        } catch {
             // Continue without this tile (will be transparent)
         }
     }

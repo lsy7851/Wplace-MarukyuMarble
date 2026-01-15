@@ -10,11 +10,13 @@ import { useTemplateStore } from '@/stores/templateStore';
  * - Automatic LRU eviction when cache is full
  * - Cache hit/miss statistics
  * - Tile refresh pause/resume functionality
+ * - Force refresh single tile capability
  *
  * Reference: old-src/tileManager.js:1-457
  */
+
 // Global cache storage (Singleton pattern)
-const cache = new Map(); // key → {blob, timestamp}
+const cache = new Map(); // key → blob (direct storage, matching legacy)
 const accessOrder = new Map(); // key → lastAccessTime (for LRU)
 const frozenCache = new Map(); // key → blob (for pause functionality)
 
@@ -22,29 +24,29 @@ const frozenCache = new Map(); // key → blob (for pause functionality)
 const hits = ref(0);
 const misses = ref(0);
 const maxSize = ref(500);
+const frozenCacheMaxSize = 100; // Separate limit for frozen cache (matching legacy)
 const enabled = ref(true);
 const paused = ref(false);
+const isInitialized = ref(false);
+
+// Original renderer reference for force refresh
+let originalRenderer = null;
+let isCapturingState = false; // Flag to avoid recursion during capture
+
+// Canvas state tracking
+let lastCanvasChangeTime = 0;
 
 // Cache version for invalidation
 const CACHE_VERSION = '1.0';
 
-/**
- * Tile Cache Composable
- *
- * LRU cache system for rendered tiles to improve performance
- * - Max 500 tiles cached
- * - Automatic LRU eviction when cache is full
- * - Cache hit/miss statistics
- * - Tile refresh pause/resume functionality
- *
- * Reference: old-src/tileManager.js:1-457
- */
 export function useTileCache() {
   const settingsStore = useSettingsStore();
   const templateStore = useTemplateStore();
 
   /**
    * Computed statistics
+   * Matches legacy getSmartCacheStats() format
+   * Reference: old-src/tileManager.js:206-216
    */
   const stats = computed(() => {
     const total = hits.value + misses.value;
@@ -52,7 +54,6 @@ export function useTileCache() {
 
     return {
       enabled: enabled.value,
-      paused: paused.value,
       size: cache.size,
       maxSize: maxSize.value,
       hits: hits.value,
@@ -65,70 +66,78 @@ export function useTileCache() {
    * Initialize cache from store
    */
   function initialize() {
+    if (isInitialized.value) return;
+
     try {
       // Check version and clear if outdated
       const storedVersion = settingsStore.tileCacheVersion;
       if (storedVersion !== CACHE_VERSION) {
-        console.log('[Tile Cache] Version mismatch, clearing cache');
-        clear();
+        clearSmartCache();
         settingsStore.updateTileCacheVersion(CACHE_VERSION);
       }
+
+      // Load enabled/paused state from store
+      enabled.value = settingsStore.smartCacheEnabled ?? true;
+      paused.value = settingsStore.tileRefreshPaused ?? false;
 
       // Load statistics from store
       const statsData = settingsStore.tileCacheStats || { hits: 0, misses: 0 };
       hits.value = statsData.hits || 0;
       misses.value = statsData.misses || 0;
 
-      console.log(`[Tile Cache] Initialized - Enabled: ${enabled.value}, Size: ${cache.size}`);
+      isInitialized.value = true;
     } catch (error) {
-      console.warn('Failed to initialize tile cache:', error);
-      clear();
+      clearSmartCache();
     }
   }
 
   /**
+   * Set original renderer function for force refresh capability
+   * @param {Function} renderer - The original drawTemplateOnTile function
+   */
+  function setOriginalRenderer(renderer) {
+    originalRenderer = renderer;
+  }
+
+  /**
    * Generate cache key for a tile
-   * @param {[number, number]} tileCoords - Tile coordinates [tileX, tileY]
+   * Format matches legacy: ${coordsKey}_${templateHash}_${contentHash}
+   * Reference: old-src/tileManager.js:81-106
+   *
+   * @param {[number, number]|string} tileCoords - Tile coordinates [tileX, tileY] or string "XXXX,YYYY"
    * @param {Blob} tileBlob - Original tile blob (for content hash)
    * @returns {string} Cache key
    */
   function generateCacheKey(tileCoords, tileBlob = null) {
-    // Tile coordinates
-    const [tileX, tileY] = tileCoords;
-    const coordsKey = `${String(tileX).padStart(4, '0')},${String(tileY).padStart(4, '0')}`;
+    // Tile coordinates - handle both array and string inputs (legacy compatibility)
+    // Reference: old-src/tileManager.js:82-85
+    const coordsKey = Array.isArray(tileCoords)
+      ? `${String(tileCoords[0]).padStart(4, '0')},${String(tileCoords[1]).padStart(4, '0')}`
+      : String(tileCoords);
 
     // Template state hash (enabled templates + their settings)
-    const templateHash = templateStore.templates
-      .filter(t => t.enabled)
-      .map(t => {
-        // Include color filter state in hash
-        const disabledColors = Array.from(t.disabledColors).sort().join(',');
-        const enhancedColors = Array.from(t.enhancedColors).sort().join(',');
-        return `${t.id}_${t.sortID}_${disabledColors}_${enhancedColors}`;
-      })
-      .sort()
-      .join('|');
+    // Null check for templates array (legacy compatibility)
+    // Reference: old-src/tileManager.js:87-95
+    let templateHash = '';
+    const templates = templateStore.templates;
+    if (templates && templates.length > 0) {
+      templateHash = templates
+        .filter(t => t.enabled !== false)  // Legacy: enabled !== false (undefined = enabled)
+        .map(t => `${t.name || 'unnamed'}_${t.sortID || 0}`)  // Legacy format: name_sortID
+        .sort()
+        .join('|');
+    }
 
     // Content hash (blob size and type)
+    // Reference: old-src/tileManager.js:97-103
     let contentHash = 'nodata';
     if (tileBlob && tileBlob.size) {
       contentHash = `${tileBlob.size}_${tileBlob.type}`;
     }
 
-    // Settings hash (visual settings that affect rendering)
-    const settingsHash = [
-      settingsStore.errorMapEnabled,
-      settingsStore.showCorrectPixels,
-      settingsStore.showWrongPixels,
-      settingsStore.showUnpaintedAsWrong,
-      settingsStore.enhanceWrongColors,
-      settingsStore.crosshairColor?.rgb?.[0],
-      settingsStore.crosshairColor?.rgb?.[1],
-      settingsStore.crosshairColor?.rgb?.[2],
-      settingsStore.crosshairBorder
-    ].join('_');
-
-    return `${coordsKey}_${templateHash}_${contentHash}_${settingsHash}`;
+    // Legacy format: coordsKey_templateHash_contentHash (no settingsHash)
+    // Settings changes are handled by invalidateForSettingsChange() clearing the cache
+    return `${coordsKey}_${templateHash}_${contentHash}`;
   }
 
   /**
@@ -157,12 +166,23 @@ export function useTileCache() {
       accessOrder.delete(key);
     }
 
-    console.log(`[Tile Cache] Evicted ${entriesToRemove.length} LRU entries, size now: ${cache.size}`);
+  }
+
+  /**
+   * Generate tile key for frozen cache (simpler than full cache key)
+   * @param {[number, number]|string} tileCoords - Tile coordinates
+   * @returns {string} Tile key "XXXX,YYYY"
+   */
+  function getTileKey(tileCoords) {
+    // Handle both array and string inputs (legacy compatibility)
+    return Array.isArray(tileCoords)
+      ? `${String(tileCoords[0]).padStart(4, '0')},${String(tileCoords[1]).padStart(4, '0')}`
+      : String(tileCoords);
   }
 
   /**
    * Get tile from cache
-   * @param {[number, number]} tileCoords - Tile coordinates
+   * @param {[number, number]|string} tileCoords - Tile coordinates
    * @param {Blob} tileBlob - Original tile blob
    * @returns {Blob|null} Cached tile or null if not found
    */
@@ -171,9 +191,8 @@ export function useTileCache() {
 
     // If paused, return frozen cache
     if (paused.value) {
-      const tileKey = `${String(tileCoords[0]).padStart(4, '0')},${String(tileCoords[1]).padStart(4, '0')}`;
+      const tileKey = getTileKey(tileCoords);
       if (frozenCache.has(tileKey)) {
-        console.log(`[Tile Cache] Frozen cache hit for tile: ${tileKey}`);
         return frozenCache.get(tileKey);
       }
       return null;
@@ -184,12 +203,10 @@ export function useTileCache() {
     if (cache.has(key)) {
       updateAccess(key);
       hits.value++;
-      console.log(`[Tile Cache] HIT for key: ${key.substring(0, 40)}...`);
-      return cache.get(key).blob;
+      return cache.get(key);
     }
 
     misses.value++;
-    console.log(`[Tile Cache] MISS for key: ${key.substring(0, 40)}...`);
     return null;
   }
 
@@ -205,22 +222,20 @@ export function useTileCache() {
     try {
       const key = generateCacheKey(tileCoords, tileBlob);
 
-      // Store in main cache
-      cache.set(key, {
-        blob: processedBlob,
-        timestamp: Date.now()
-      });
+      // Store in main cache (direct blob storage, matching legacy)
+      cache.set(key, processedBlob);
 
       updateAccess(key);
       evictLRU();
 
       // Also store in frozen cache for pause functionality
-      if (!paused.value) {
-        const tileKey = `${String(tileCoords[0]).padStart(4, '0')},${String(tileCoords[1]).padStart(4, '0')}`;
+      // Only if not paused and not currently capturing state (avoid recursion)
+      if (!paused.value && !isCapturingState) {
+        const tileKey = getTileKey(tileCoords);
         frozenCache.set(tileKey, processedBlob);
 
-        // Limit frozen cache size to prevent memory issues
-        if (frozenCache.size > 100) {
+        // Limit frozen cache size to prevent memory issues (matching legacy: 100 tiles)
+        if (frozenCache.size > frozenCacheMaxSize) {
           const firstKey = frozenCache.keys().next().value;
           frozenCache.delete(firstKey);
         }
@@ -230,13 +245,42 @@ export function useTileCache() {
       if ((hits.value + misses.value) % 50 === 0) {
         saveStats();
       }
-    } catch (error) {
-      console.warn('Failed to store tile in cache:', error);
+    } catch {
+      // Ignore cache storage failures
     }
   }
 
   /**
-   * Clear entire cache
+   * Set capturing state flag (prevents frozen cache updates during state capture)
+   * @param {boolean} capturing - Whether currently capturing state
+   */
+  function setCapturingState(capturing) {
+    isCapturingState = capturing;
+  }
+
+  /**
+   * Clear smart tile cache only (preserves frozen cache)
+   */
+  function clearSmartCache() {
+    cache.clear();
+    accessOrder.clear();
+    hits.value = 0;
+    misses.value = 0;
+    saveStats();
+  }
+
+  /**
+   * Clear frozen tile cache only (preserves smart cache)
+   * @returns {number} Number of tiles that were cleared
+   */
+  function clearFrozenCache() {
+    const previousSize = frozenCache.size;
+    frozenCache.clear();
+    return previousSize;
+  }
+
+  /**
+   * Clear entire cache (both smart and frozen)
    */
   function clear() {
     cache.clear();
@@ -245,16 +289,15 @@ export function useTileCache() {
     hits.value = 0;
     misses.value = 0;
     saveStats();
-    console.log('[Tile Cache] Cache cleared');
   }
 
   /**
-   * Invalidate cache (e.g., when settings change)
+   * Invalidate cache when visual settings change
+   * This ensures tiles are reprocessed when Map View or Enhanced modes change
    */
-  function invalidate() {
-    if (cache.size > 0) {
-      console.log('[Tile Cache] Invalidating cache due to settings change');
-      clear();
+  function invalidateForSettingsChange() {
+    if (enabled.value && cache.size > 0) {
+      clearSmartCache();
     }
   }
 
@@ -265,11 +308,13 @@ export function useTileCache() {
   function toggle() {
     enabled.value = !enabled.value;
 
+    // Persist to settings store
+    settingsStore.updateSmartCacheEnabled(enabled.value);
+
     if (!enabled.value) {
-      clear();
+      clearSmartCache();
     }
 
-    console.log(`[Tile Cache] Toggled ${enabled.value ? 'ON' : 'OFF'}`);
     return enabled.value;
   }
 
@@ -279,16 +324,45 @@ export function useTileCache() {
    */
   function togglePause() {
     paused.value = !paused.value;
-
-    if (!paused.value) {
-      // Resume: clear frozen cache to allow fresh renders
-      frozenCache.clear();
-      console.log('[Tile Cache] Resumed tile refresh');
-    } else {
-      console.log('[Tile Cache] Paused tile refresh (frozen state captured)');
-    }
-
+    settingsStore.updateTileRefreshPaused(paused.value);
     return paused.value;
+  }
+
+  /**
+   * Force refresh a single tile even when paused (for testing/debugging)
+   * @param {Blob} tileBlob - The tile blob data
+   * @param {[number, number]} tileCoords - The tile coordinates
+   * @returns {Promise<Blob>} The processed tile blob
+   */
+  async function forceRefreshSingleTile(tileBlob, tileCoords) {
+    if (originalRenderer) {
+      return await originalRenderer(tileBlob, tileCoords);
+    }
+    return tileBlob;
+  }
+
+  /**
+   * Get performance statistics for tile processing
+   * Matches legacy format: {paused, cachedTiles, message}
+   * Reference: old-src/tileManager.js:433-441
+   * @returns {Object} Performance stats including paused state and cached tiles count
+   */
+  function getTilePerformanceStats() {
+    return {
+      paused: paused.value,
+      cachedTiles: frozenCache.size,
+      message: paused.value
+        ? `Tile processing is paused. ${frozenCache.size} tiles cached.`
+        : 'Tile processing is active'
+    };
+  }
+
+  /**
+   * Get the number of tiles currently in the frozen cache
+   * @returns {number} Number of frozen cached tiles
+   */
+  function getCachedTileCount() {
+    return frozenCache.size;
   }
 
   /**
@@ -301,44 +375,18 @@ export function useTileCache() {
         misses: misses.value
       };
       settingsStore.updateTileCacheStats(statsData);
-    } catch (error) {
-      console.warn('Failed to save cache statistics:', error);
+    } catch {
+      // Ignore save failures
     }
   }
 
   /**
-   * Notify cache that canvas has changed (pixels painted)
-   * This is mainly for statistics tracking
+   * Notify cache that canvas has changed (pixels painted/modified)
+   * Note: Cache no longer blocks real-time updates, so this is mainly for statistics
    */
   function notifyCanvasChange() {
-    console.log('[Tile Cache] Canvas change detected');
-    // Cache is not invalidated automatically - relies on content hash
+    lastCanvasChangeTime = Date.now();
   }
-
-  /**
-   * Get cache size in bytes (approximate)
-   * @returns {number} Approximate cache size in bytes
-   */
-  function getSizeInBytes() {
-    let totalSize = 0;
-    for (const [, entry] of cache) {
-      if (entry.blob && entry.blob.size) {
-        totalSize += entry.blob.size;
-      }
-    }
-    return totalSize;
-  }
-
-  /**
-   * Get cache size in human-readable format
-   * @returns {string} Cache size (e.g., "12.5 MB")
-   */
-  const sizeFormatted = computed(() => {
-    const bytes = getSizeInBytes();
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  });
 
   // Initialize on creation
   initialize();
@@ -348,23 +396,30 @@ export function useTileCache() {
     get,
     set,
     clear,
-    invalidate,
+    clearSmartCache,
+    clearFrozenCache,
+    invalidateForSettingsChange,
 
     // Cache management
     toggle,
     togglePause,
     notifyCanvasChange,
+    setOriginalRenderer,
+    setCapturingState,
 
-    // Statistics
+    // Force refresh (when paused)
+    forceRefreshSingleTile,
+
+    // Statistics & Performance
     stats,
-    sizeFormatted,
     hits,
     misses,
     enabled,
     paused,
+    getTilePerformanceStats,
+    getCachedTileCount,
 
     // Internal (for testing)
-    generateCacheKey,
-    getSizeInBytes
+    generateCacheKey
   };
 }

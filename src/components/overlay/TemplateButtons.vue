@@ -17,6 +17,7 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  minimized: Boolean,
 });
 
 const templateStore = useTemplateStore();
@@ -40,7 +41,6 @@ const handleFileChange = (event) => {
   if (file) {
     selectedFile.value = file;
     uploadFileName.value = file.name;
-    console.log(`[Template Upload] File selected: ${file.name}`);
   }
 };
 
@@ -78,14 +78,7 @@ const handleCreate = async () => {
   }
 
   try {
-    console.log(`[Template Create] Processing: ${file.name}`);
-    console.log(`[Template Create] Position: tile(${coords.tileX},${coords.tileY}) pixel(${coords.pixelX},${coords.pixelY})`);
-
-    const result = await createTemplateTiles(file, [coords.tileX, coords.tileY, coords.pixelX, coords.pixelY], {
-      onProgress: (progress) => {
-        console.log(`[Template Create] Progress: ${progress}%`);
-      }
-    });
+    const result = await createTemplateTiles(file, [coords.tileX, coords.tileY, coords.pixelX, coords.pixelY]);
 
     const template = new Template({
       id: `template-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -103,8 +96,6 @@ const handleCreate = async () => {
     });
 
     await templateStore.addTemplate(template, result.tiles);
-
-    console.log(`[Template Create] Success: ${template.displayName}`);
     alert(`Template "${template.displayName}" created successfully!\n${template.validPixelCount} pixels`);
 
     selectedFile.value = null;
@@ -114,19 +105,16 @@ const handleCreate = async () => {
     }
 
   } catch (error) {
-    console.error('[Template Create] Failed:', error);
     alert(`Failed to create template: ${error.message}`);
   }
 };
 
 const handleManage = () => {
   showManageModal.value = true;
-  console.log('[Template Buttons] Opening Manage Templates modal');
 };
 
 const handlePause = () => {
   isPaused.value = tileCache.togglePause();
-  console.log(`[Template Buttons] Tile refresh ${isPaused.value ? 'paused' : 'resumed'}`);
 };
 
 const handleColorFilter = () => {
@@ -135,10 +123,10 @@ const handleColorFilter = () => {
 </script>
 
 <template>
-  <div id="bm-contain-buttons-template">
+  <div id="bm-contain-buttons-template" :class="{ 'is-minimized': minimized }">
     <!-- Upload Template Button (Row 1 - spans all 3 columns) -->
     <div>
-      <button @click="handleUploadClick">
+      <button @click="handleUploadClick" v-if="!minimized">
         <span v-html="icons.uploadIcon"></span>
         <template v-if="uploadFileName">
           {{ uploadFileName }}
@@ -157,26 +145,32 @@ const handleColorFilter = () => {
     </div>
 
     <!-- Row 2: Create, Manage, Pause Tiles buttons -->
-    <button id="bm-button-create" @click="handleCreate">
+    <button id="bm-button-create" @click="handleCreate" v-if="!minimized">
       <span v-html="icons.createIcon"></span>
       Create
     </button>
-    <button id="bm-button-manage" @click="handleManage">
+    <button id="bm-button-manage" @click="handleManage" v-if="!minimized">
       <span v-html="icons.manageIcon"></span>
       Manage
     </button>
     <button
       id="bm-button-pause-tiles"
       @click="handlePause"
-      :class="{paused: isPaused}">
+      :class="{paused: isPaused}"
+      v-if="!minimized">
       <span v-html="icons.pauseIcon"></span>
       Pause
     </button>
 
     <!-- Row 3: Color Filter button (spans all 3 columns) -->
-    <button id="bm-button-color-filter" @click="handleColorFilter">
+    <!-- Row 3: Color Filter button (spans all 3 columns) -->
+    <button
+      id="bm-button-color-filter"
+      @click="handleColorFilter"
+      :class="{ 'minimized': minimized }"
+      :title="minimized ? 'Color Filter' : ''">
       <span v-html="icons.colorFilterIcon"></span>
-      Color Filter
+      <span v-if="!minimized">Color Filter</span>
     </button>
 
     <!-- Color Filter Modal -->
@@ -346,5 +340,43 @@ input[type="file"][id*="template"] {
 #bm-button-pause-tiles.paused:active,
 #bm-button-pause-tiles.paused:focus-visible {
   background-color: #3d8b40 !important;
+}
+
+/* Minimized State: Split Layout implementation */
+#bm-contain-buttons-template.is-minimized {
+  position: absolute;
+  top: 100%; /* Position below the main overlay */
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  margin-top: 12px; /* Gap between square and button */
+  display: block;
+  z-index: 9002;
+}
+
+#bm-button-color-filter.minimized {
+  width: 56px !important;
+  height: 38px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  
+  /* Legacy Blue-Purple Gradient (Violet-500 to Blue-500 match) */
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6) !important;
+  animation: none !important;
+  
+  /* Center icon */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  border-radius: 6px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+#bm-button-color-filter.minimized span:deep(svg) {
+  width: 18px !important;
+  height: 18px !important;
+  margin: 0 !important;
+  display: block !important;
 }
 </style>

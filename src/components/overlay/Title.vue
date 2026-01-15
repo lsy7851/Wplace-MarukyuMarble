@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 
 const props = defineProps({
   minimized: Boolean,
@@ -18,9 +19,9 @@ const toggleMinimized = () => {
 };
 </script>
 <template>
-  <div id="bm-title-container">
-    <p class="icon" @click="toggleMinimized">⑨</p>
-    <h1>Marukyu Marble</h1>
+  <div id="bm-title-container" :class="{ 'is-minimized': minimized }">
+    <p class="icon" @click="toggleMinimized" :title="minimized ? 'Click to maximize' : 'Click to minimize'">⑨</p>
+    <h1 v-show="!minimized">Marukyu Marble</h1>
   </div>
 </template>
 
@@ -43,7 +44,15 @@ const toggleMinimized = () => {
     height: 42px;
     font-size: 42px;
     line-height: 42px;
+    transition: transform 0.2s ease;
+  }
+
+  .icon:hover {
+    transform: scale(1.1);
+  }
+
+  &.is-minimized {
+    justify-content: center;
   }
 }
-
 </style>

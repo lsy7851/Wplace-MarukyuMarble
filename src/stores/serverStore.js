@@ -25,7 +25,6 @@ export const useServerStore = defineStore('server', () => {
 
         tileServerBaseUrl.value = cleanUrl;
         isDetected.value = true;
-        console.log(`[ServerStore] Tile server URL updated: ${cleanUrl}`);
     }
 
     return {

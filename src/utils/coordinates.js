@@ -69,9 +69,7 @@ export function tileToLatLng(tileX, tileY, pixelX, pixelY) {
     throw new Error('Invalid coordinates: all parameters must be numbers');
   }
 
-  if (!isValidTileCoord(tileX, tileY, pixelX, pixelY)) {
-    console.warn('⚠️ [coordinates] Coordinates out of valid range:', { tileX, tileY, pixelX, pixelY });
-  }
+  // Note: coordinates may be out of valid range but still process
 
   const { METERS_PER_PIXEL: z, HALF_EARTH_CIRCUMFERENCE: ys } = WPLACE_CONSTANTS;
 
@@ -157,7 +155,6 @@ export function parseWplaceUrl(url) {
     const zoomMatch = url.match(/zoom=([^&]+)/);
 
     if (!latMatch || !lngMatch) {
-      console.warn('⚠️ [coordinates] URL does not contain lat/lng parameters');
       return null;
     }
 
@@ -166,14 +163,12 @@ export function parseWplaceUrl(url) {
     const zoom = zoomMatch ? parseFloat(zoomMatch[1]) : undefined;
 
     if (!isValidLatLng(lat, lng)) {
-      console.warn('⚠️ [coordinates] Invalid or out-of-range lat/lng in URL');
       return null;
     }
 
     return { lat, lng, ...(zoom !== undefined && !isNaN(zoom) && { zoom }) };
 
-  } catch (error) {
-    console.error('❌ [coordinates] Failed to parse URL:', error);
+  } catch {
     return null;
   }
 }

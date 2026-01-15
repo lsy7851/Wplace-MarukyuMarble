@@ -147,7 +147,7 @@ export default defineUnlistedScript(() => {
   }
 
   // Vue App 초기화 실행
-  initVueApp().catch(err => {
-    console.error('❌ [MAIN/VueApp] Failed to initialize Vue app:', err);
+  initVueApp().catch(() => {
+    // Initialization error silently ignored
   });
 });

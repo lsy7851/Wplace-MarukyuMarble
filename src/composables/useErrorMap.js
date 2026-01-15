@@ -24,113 +24,104 @@ export function useErrorMap() {
    * @returns {Promise<{correctMap: Array, wrongMap: Array}>}
    */
   async function analyzePixels(canvasCtx, template, templateBitmap, coords, drawSize) {
+    // ─────────────────────────────────────────────────────────────
+    // Constants
+    // ─────────────────────────────────────────────────────────────
     const SHREAD_SIZE = Template.SHREAD_SIZE;
+    const SHREAD_CENTER = 1;
+    const ALPHA_THRESHOLD = 64;
+
     const correctMap = [];
     const wrongMap = [];
 
     try {
-      // Get canvas pixel data (original tile, not template overlay)
-      const canvasData = canvasCtx.getImageData(0, 0, drawSize, drawSize);
-      const canvasPixels = canvasData.data;
+      // ─────────────────────────────────────────────────────────────
+      // Load pixel data from canvas and template
+      // ─────────────────────────────────────────────────────────────
+      const canvasPixels = canvasCtx.getImageData(0, 0, drawSize, drawSize).data;
 
-      // Get template pixel data
       const tempCanvas = new OffscreenCanvas(templateBitmap.width, templateBitmap.height);
       const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
       tempCtx.imageSmoothingEnabled = false;
       tempCtx.drawImage(templateBitmap, 0, 0);
+
       const templateData = tempCtx.getImageData(0, 0, templateBitmap.width, templateBitmap.height);
       const templatePixels = templateData.data;
+      const templateWidth = templateBitmap.width;
+      const templateHeight = templateBitmap.height;
 
-      // Calculate offset for template position within tile
+      // Canvas offset for this template tile
       const offsetX = coords.pixelX * SHREAD_SIZE;
       const offsetY = coords.pixelY * SHREAD_SIZE;
 
-      // Iterate through template pixels
-      for (let y = 0; y < templateBitmap.height; y++) {
-        for (let x = 0; x < templateBitmap.width; x++) {
-          // Only check center pixels of 3×3 blocks (shread system)
-          if ((x % SHREAD_SIZE) !== 1 || (y % SHREAD_SIZE) !== 1) {
-            continue;
-          }
+      // ─────────────────────────────────────────────────────────────
+      // Iterate template pixels (center of each 3×3 block only)
+      // ─────────────────────────────────────────────────────────────
+      for (let y = 0; y < templateHeight; y++) {
+        for (let x = 0; x < templateWidth; x++) {
+          // Only process center pixels of shread blocks
+          const isCenterPixel = (x % SHREAD_SIZE === SHREAD_CENTER) && (y % SHREAD_SIZE === SHREAD_CENTER);
+          if (!isCenterPixel) continue;
 
-          // Global coordinates in canvas
+          // Calculate global canvas position
           const gx = x + offsetX;
           const gy = y + offsetY;
+          const inBounds = gx >= 0 && gy >= 0 && gx < drawSize && gy < drawSize;
+          if (!inBounds) continue;
 
-          // Bounds check
-          if (gx < 0 || gy < 0 || gx >= drawSize || gy >= drawSize) {
-            continue;
-          }
-
-          // Template pixel
-          const tIdx = (y * templateBitmap.width + x) * 4;
+          // Read template pixel
+          const tIdx = (y * templateWidth + x) * 4;
           const tr = templatePixels[tIdx];
           const tg = templatePixels[tIdx + 1];
           const tb = templatePixels[tIdx + 2];
           const ta = templatePixels[tIdx + 3];
+          const templateColorKey = `${tr},${tg},${tb}`;
 
-          // Skip fully transparent template pixels
-          if (ta < 64) {
-            // Check if canvas has color here (wrong pixel in transparent area)
-            const cIdx = (gy * drawSize + gx) * 4;
-            const pa = canvasPixels[cIdx + 3];
-
-            if (pa >= 64) {
-              // Canvas has pixel where template is transparent
-              const pr = canvasPixels[cIdx];
-              const pg = canvasPixels[cIdx + 1];
-              const pb = canvasPixels[cIdx + 2];
-              const colorKey = `${pr},${pg},${pb}`;
-
-              // Only mark as wrong if it's a valid palette color
-              if (template.colorPalette && template.colorPalette[colorKey]) {
-                wrongMap.push({ x: gx, y: gy, color: `${tr},${tg},${tb}`, inTransparent: true });
-              }
-            }
-            continue;
-          }
-
-          // Skip disabled colors
-          if (template.isColorDisabled([tr, tg, tb])) {
-            continue;
-          }
-
-          // Canvas pixel at same position
+          // Read canvas pixel at same position
           const cIdx = (gy * drawSize + gx) * 4;
           const pr = canvasPixels[cIdx];
           const pg = canvasPixels[cIdx + 1];
           const pb = canvasPixels[cIdx + 2];
           const pa = canvasPixels[cIdx + 3];
 
-          const templateColorKey = `${tr},${tg},${tb}`;
-
-          // Check if canvas pixel is painted
-          if (pa < 64) {
-            // Unpainted pixel
-            if (settingsStore.settings.showUnpaintedAsWrong) {
-              wrongMap.push({
-                x: gx,
-                y: gy,
-                color: templateColorKey,
-                unpainted: true
-              });
+          // ─────────────────────────────────────────────────────────
+          // Handle transparent template pixels
+          // ─────────────────────────────────────────────────────────
+          if (ta < ALPHA_THRESHOLD) {
+            // Check for wrong pixel in transparent area (canvas painted where shouldn't be)
+            const canvasIsPainted = pa >= ALPHA_THRESHOLD;
+            if (canvasIsPainted) {
+              const canvasColorKey = `${pr},${pg},${pb}`;
+              const isValidPaletteColor = template.colorPalette && template.colorPalette[canvasColorKey];
+              if (isValidPaletteColor) {
+                wrongMap.push({ x: gx, y: gy, color: templateColorKey, inTransparent: true });
+              }
             }
-          } else if (pr === tr && pg === tg && pb === tb) {
-            // Correct pixel (colors match exactly)
+            continue;
+          }
+
+          // Skip disabled colors
+          if (template.isColorDisabled([tr, tg, tb])) continue;
+
+          // ─────────────────────────────────────────────────────────
+          // Compare: unpainted / correct / wrong
+          // ─────────────────────────────────────────────────────────
+          const canvasIsUnpainted = pa < ALPHA_THRESHOLD;
+          const colorsMatch = pr === tr && pg === tg && pb === tb;
+
+          if (canvasIsUnpainted) {
+            if (settingsStore.showUnpaintedAsWrong) {
+              wrongMap.push({ x: gx, y: gy, color: templateColorKey, unpainted: true });
+            }
+          } else if (colorsMatch) {
             correctMap.push({ x: gx, y: gy, color: templateColorKey });
           } else {
-            // Wrong pixel (colors don't match)
-            wrongMap.push({
-              x: gx,
-              y: gy,
-              color: templateColorKey,
-              unpainted: false
-            });
+            wrongMap.push({ x: gx, y: gy, color: templateColorKey, unpainted: false });
           }
         }
       }
-    } catch (error) {
-      console.error('Failed to analyze pixels for error map:', error);
+    } catch {
+      // Ignore analysis errors
     }
 
     return { correctMap, wrongMap };
@@ -145,7 +136,6 @@ export function useErrorMap() {
    */
   function drawErrorMap(ctx, correctMap, wrongMap, template) {
     const SHREAD_SIZE = Template.SHREAD_SIZE;
-    const settings = settingsStore.settings;
 
     // Helper: Check if color is disabled
     const isColorDisabled = (colorKey) => {
@@ -157,7 +147,7 @@ export function useErrorMap() {
     ctx.globalCompositeOperation = 'source-over';
 
     // Draw wrong pixels (red overlay)
-    if (settings.showWrongPixels && wrongMap.length > 0) {
+    if (settingsStore.showWrongPixels && wrongMap.length > 0) {
       for (const { x, y, color, unpainted } of wrongMap) {
         // Skip disabled colors
         if (isColorDisabled(color)) continue;
@@ -176,7 +166,7 @@ export function useErrorMap() {
     }
 
     // Draw correct pixels (green overlay)
-    if (settings.showCorrectPixels && correctMap.length > 0) {
+    if (settingsStore.showCorrectPixels && correctMap.length > 0) {
       ctx.fillStyle = 'rgba(0, 128, 0, 0.6)';
       const offset = Math.floor(SHREAD_SIZE / 2);
 
@@ -200,15 +190,13 @@ export function useErrorMap() {
    * @param {number} drawSize - Canvas size
    */
   async function applyErrorMap(canvasCtx, overlayCtx, template, templateBitmap, coords, drawSize) {
-    const settings = settingsStore.settings;
-
     // Skip if error map disabled
-    if (!settings.errorMapEnabled) {
+    if (!settingsStore.errorMapEnabled) {
       return;
     }
 
     // Skip if both overlays are disabled
-    if (!settings.showWrongPixels && !settings.showCorrectPixels) {
+    if (!settingsStore.showWrongPixels && !settingsStore.showCorrectPixels) {
       return;
     }
 

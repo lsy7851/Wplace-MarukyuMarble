@@ -25,12 +25,9 @@ export function useCanvasOverlay() {
     baseCanvas.value = document.querySelector('div#map canvas.maplibregl-canvas');
 
     if (!baseCanvas.value) {
-      console.warn('MapLibre GL canvas not found. Retrying in 1s...');
       setTimeout(setupOverlay, 1000);
       return;
     }
-
-    console.log('MapLibre GL canvas found');
 
     // Create overlay canvas
     overlayCanvas.value = document.createElement('canvas');
@@ -52,8 +49,6 @@ export function useCanvasOverlay() {
     const mapContainer = baseCanvas.value.parentElement;
     mapContainer.appendChild(overlayCanvas.value);
 
-    console.log('Overlay canvas created and mounted');
-
     // Watch for canvas resize
     resizeObserver = new ResizeObserver(() => {
       if (baseCanvas.value && overlayCanvas.value) {
@@ -63,8 +58,6 @@ export function useCanvasOverlay() {
         const baseRect = baseCanvas.value.getBoundingClientRect();
         overlayCanvas.value.style.width = baseRect.width + 'px';
         overlayCanvas.value.style.height = baseRect.height + 'px';
-
-        console.log('Overlay canvas resized');
       }
     });
 
@@ -73,18 +66,11 @@ export function useCanvasOverlay() {
     // Hook into MapLibre GL events if available
     if (window.mmmap) {
       mapMoveHandler = () => {
-        // Clear overlay on map move/zoom
-        // Tiles will be re-rendered when API interceptor receives new tile data
         clearOverlay();
-        console.log('Map moved/zoomed - overlay cleared');
       };
 
       window.mmmap.on('moveend', mapMoveHandler);
       window.mmmap.on('zoomend', mapMoveHandler);
-
-      console.log('MapLibre GL event handlers attached');
-    } else {
-      console.warn('window.mmmap not available yet - map event handlers not attached');
     }
 
     isInitialized.value = true;
@@ -111,7 +97,6 @@ export function useCanvasOverlay() {
     }
 
     isInitialized.value = false;
-    console.log('Overlay canvas torn down');
   }
 
   /**
@@ -125,13 +110,9 @@ export function useCanvasOverlay() {
    * @param {[number, number]} tileCoords - [tileX, tileY]
    */
   async function renderTile(tileBlob, tileCoords) {
-    if (!overlayCanvas.value) {
-      console.warn('Overlay canvas not initialized');
-      return;
-    }
+    if (!overlayCanvas.value) return;
 
     try {
-      // Use template renderer to process tile
       const processedBlob = await renderer.drawTemplateOnTile(tileBlob, tileCoords);
 
       // Draw to overlay canvas
@@ -151,16 +132,12 @@ export function useCanvasOverlay() {
         // const screenPos = window.mmmap.project([worldX, worldY]);
         // ctx.drawImage(bitmap, screenPos.x, screenPos.y);
 
-        // Temporary: draw at origin
         ctx.drawImage(bitmap, 0, 0);
       } else {
-        // Fallback: draw at origin
         ctx.drawImage(bitmap, 0, 0);
       }
-
-      console.log(`Rendered tile ${tileCoords[0]},${tileCoords[1]} on overlay`);
-    } catch (e) {
-      console.error('Failed to render tile:', e);
+    } catch {
+      // Ignore render failures
     }
   }
 
@@ -171,7 +148,6 @@ export function useCanvasOverlay() {
     if (overlayCanvas.value) {
       const ctx = overlayCanvas.value.getContext('2d');
       ctx.clearRect(0, 0, overlayCanvas.value.width, overlayCanvas.value.height);
-      console.log('Overlay canvas cleared');
     }
   }
 

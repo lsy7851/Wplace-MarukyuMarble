@@ -46,9 +46,7 @@ async function finishRename(template, commit = true) {
   if (newName !== template.displayName) {
     try {
       await templateStore.renameTemplateById(template.id, newName);
-      console.log(`Renamed template ${template.id} to "${newName}"`);
     } catch (error) {
-      console.error('Failed to rename template:', error);
       alert(`Failed to rename template: ${error.message}`);
     }
   }
@@ -75,7 +73,6 @@ function handleRenameKeydown(event, template) {
 async function toggleTemplate(template) {
   const newState = !template.enabled;
   await templateStore.updateTemplateState(template.id, newState);
-  console.log(`${newState ? 'Enabled' : 'Disabled'} template: ${template.displayName}`);
 }
 
 /**
@@ -95,8 +92,6 @@ function flyToTemplate(template) {
 
   // Close modal
   emit('update:modelValue', false);
-
-  console.log(`Flying to ${template.displayName} at tile(${tileX},${tileY}) pixel(${pixelX},${pixelY})`);
 }
 
 /**
@@ -105,9 +100,7 @@ function flyToTemplate(template) {
 async function handleExportTemplate(template) {
   try {
     await exportTemplate(template);
-    console.log(`Exported template: ${template.displayName}`);
   } catch (error) {
-    console.error('Failed to export template:', error);
     alert(`Failed to export template: ${error.message}`);
   }
 }
@@ -123,15 +116,11 @@ async function deleteTemplate(template) {
       const index = templateStore.templates.findIndex(t => t.id === template.id);
       if (index !== -1) {
         await templateStore.deleteTemplate(index);
-        console.log(`Deleted template: ${template.displayName}`);
-
-        // Close modal if no templates remain
         if (templateStore.templates.length === 0) {
           emit('update:modelValue', false);
         }
       }
     } catch (error) {
-      console.error('Failed to delete template:', error);
       alert(`Failed to delete template: ${error.message}`);
     }
   }
@@ -146,7 +135,6 @@ async function enableAllTemplates() {
       await templateStore.updateTemplateState(template.id, true);
     }
   }
-  console.log('Enabled all templates');
 }
 
 /**
@@ -158,7 +146,6 @@ async function disableAllTemplates() {
       await templateStore.updateTemplateState(template.id, false);
     }
   }
-  console.log('Disabled all templates');
 }
 
 /**

@@ -48,6 +48,12 @@ const STORAGE_KEYS = {
   // Wrong color settings
   ENHANCE_WRONG_COLORS: `${KEY_PREFIX}EnhanceWrongColors`,
 
+  // Error map settings
+  ERROR_MAP_ENABLED: `${KEY_PREFIX}ErrorMapEnabled`,
+  SHOW_WRONG_PIXELS: `${KEY_PREFIX}ShowWrongPixels`,
+  SHOW_CORRECT_PIXELS: `${KEY_PREFIX}ShowCorrectPixels`,
+  SHOW_UNPAINTED_AS_WRONG: `${KEY_PREFIX}ShowUnpaintedAsWrong`,
+
   // Navigation settings
   NAVIGATION_METHOD: `${KEY_PREFIX}NavigationMethod`,
 
@@ -94,6 +100,12 @@ const DEFAULTS = {
   // Wrong color settings
   enhanceWrongColors: false,
 
+  // Error map settings
+  errorMapEnabled: false,
+  showWrongPixels: true,
+  showCorrectPixels: true,
+  showUnpaintedAsWrong: false,
+
   // Navigation
   navigationMethod: 'flyto', // 'flyto' | 'openurl'
 
@@ -139,6 +151,12 @@ export const useSettingsStore = defineStore('settings', () => {
   // Wrong color settings
   const enhanceWrongColors = ref(DEFAULTS.enhanceWrongColors);
 
+  // Error map settings
+  const errorMapEnabled = ref(DEFAULTS.errorMapEnabled);
+  const showWrongPixels = ref(DEFAULTS.showWrongPixels);
+  const showCorrectPixels = ref(DEFAULTS.showCorrectPixels);
+  const showUnpaintedAsWrong = ref(DEFAULTS.showUnpaintedAsWrong);
+
   // Navigation settings
   const navigationMethod = ref(DEFAULTS.navigationMethod);
 
@@ -160,8 +178,6 @@ export const useSettingsStore = defineStore('settings', () => {
     try {
       const storageKeys = Object.values(STORAGE_KEYS);
       const result = await chromeStorageCompat.sync.get(storageKeys);
-
-      console.log(result);
 
       // Crosshair settings
       if (result[STORAGE_KEYS.CROSSHAIR_COLOR]) {
@@ -239,6 +255,20 @@ export const useSettingsStore = defineStore('settings', () => {
         enhanceWrongColors.value = result[STORAGE_KEYS.ENHANCE_WRONG_COLORS];
       }
 
+      // Error map settings
+      if (result[STORAGE_KEYS.ERROR_MAP_ENABLED] !== undefined) {
+        errorMapEnabled.value = result[STORAGE_KEYS.ERROR_MAP_ENABLED];
+      }
+      if (result[STORAGE_KEYS.SHOW_WRONG_PIXELS] !== undefined) {
+        showWrongPixels.value = result[STORAGE_KEYS.SHOW_WRONG_PIXELS];
+      }
+      if (result[STORAGE_KEYS.SHOW_CORRECT_PIXELS] !== undefined) {
+        showCorrectPixels.value = result[STORAGE_KEYS.SHOW_CORRECT_PIXELS];
+      }
+      if (result[STORAGE_KEYS.SHOW_UNPAINTED_AS_WRONG] !== undefined) {
+        showUnpaintedAsWrong.value = result[STORAGE_KEYS.SHOW_UNPAINTED_AS_WRONG];
+      }
+
       // Navigation settings
       if (result[STORAGE_KEYS.NAVIGATION_METHOD] !== undefined) {
         navigationMethod.value = result[STORAGE_KEYS.NAVIGATION_METHOD];
@@ -253,10 +283,7 @@ export const useSettingsStore = defineStore('settings', () => {
       }
 
       isInitialized.value = true;
-      console.log('✅ Settings loaded from chrome.storage.sync');
-    } catch (error) {
-      console.error('❌ Failed to load settings:', error);
-      // Use defaults on error
+    } catch {
       isInitialized.value = true;
     }
   }
@@ -295,6 +322,11 @@ export const useSettingsStore = defineStore('settings', () => {
 
         [STORAGE_KEYS.ENHANCE_WRONG_COLORS]: enhanceWrongColors.value,
 
+        [STORAGE_KEYS.ERROR_MAP_ENABLED]: errorMapEnabled.value,
+        [STORAGE_KEYS.SHOW_WRONG_PIXELS]: showWrongPixels.value,
+        [STORAGE_KEYS.SHOW_CORRECT_PIXELS]: showCorrectPixels.value,
+        [STORAGE_KEYS.SHOW_UNPAINTED_AS_WRONG]: showUnpaintedAsWrong.value,
+
         [STORAGE_KEYS.NAVIGATION_METHOD]: navigationMethod.value,
 
         [STORAGE_KEYS.TEMPLATE_COLOR_SORT]: templateColorSort.value,
@@ -302,10 +334,7 @@ export const useSettingsStore = defineStore('settings', () => {
       };
 
       await chromeStorageCompat.sync.set(plainSettings);
-
-      console.log('✅ All settings saved to chrome.storage.sync');
     } catch (error) {
-      console.error('❌ Failed to save settings:', error);
       throw error;
     }
   }
@@ -324,7 +353,6 @@ export const useSettingsStore = defineStore('settings', () => {
 
       await chromeStorageCompat.sync.set({ [key]: plainValue });
     } catch (error) {
-      console.error(`❌ Failed to save setting ${key}:`, error);
       throw error;
     }
   }
@@ -447,6 +475,25 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   /**
+   * Update error map enabled
+   * @param {boolean} enabled
+   */
+  async function updateErrorMapEnabled(enabled) {
+    errorMapEnabled.value = enabled;
+    await saveSetting(STORAGE_KEYS.ERROR_MAP_ENABLED, enabled);
+  }
+
+  /**
+   * Toggle error map mode on/off
+   * @returns {boolean} New state
+   */
+  async function toggleErrorMapMode() {
+    const newState = !errorMapEnabled.value;
+    await updateErrorMapEnabled(newState);
+    return newState;
+  }
+
+  /**
    * Update navigation method
    * @param {'flyto' | 'openurl'} method
    */
@@ -531,6 +578,11 @@ export const useSettingsStore = defineStore('settings', () => {
 
       enhanceWrongColors.value = settings.enhanceWrongColors;
 
+      errorMapEnabled.value = settings.errorMapEnabled;
+      showWrongPixels.value = settings.showWrongPixels;
+      showCorrectPixels.value = settings.showCorrectPixels;
+      showUnpaintedAsWrong.value = settings.showUnpaintedAsWrong;
+
       navigationMethod.value = settings.navigationMethod;
 
       templateColorSort.value = settings.templateColorSort;
@@ -538,10 +590,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
       // Save all to storage
       await saveAllSettings();
-
-      console.log('✅ Settings applied successfully');
     } catch (error) {
-      console.error('❌ Failed to apply settings:', error);
       throw error;
     }
   }
@@ -575,16 +624,18 @@ export const useSettingsStore = defineStore('settings', () => {
 
       enhanceWrongColors.value = DEFAULTS.enhanceWrongColors;
 
+      errorMapEnabled.value = DEFAULTS.errorMapEnabled;
+      showWrongPixels.value = DEFAULTS.showWrongPixels;
+      showCorrectPixels.value = DEFAULTS.showCorrectPixels;
+      showUnpaintedAsWrong.value = DEFAULTS.showUnpaintedAsWrong;
+
       navigationMethod.value = DEFAULTS.navigationMethod;
 
       templateColorSort.value = DEFAULTS.templateColorSort;
       compactSort.value = DEFAULTS.compactSort;
 
       await saveAllSettings();
-
-      console.log('✅ Settings reset to defaults');
     } catch (error) {
-      console.error('❌ Failed to reset settings:', error);
       throw error;
     }
   }
@@ -617,6 +668,11 @@ export const useSettingsStore = defineStore('settings', () => {
       smartDetectionEnabled: smartDetectionEnabled.value,
 
       enhanceWrongColors: enhanceWrongColors.value,
+
+      errorMapEnabled: errorMapEnabled.value,
+      showWrongPixels: showWrongPixels.value,
+      showCorrectPixels: showCorrectPixels.value,
+      showUnpaintedAsWrong: showUnpaintedAsWrong.value,
 
       navigationMethod: navigationMethod.value,
 
@@ -663,6 +719,11 @@ export const useSettingsStore = defineStore('settings', () => {
 
     enhanceWrongColors,
 
+    errorMapEnabled,
+    showWrongPixels,
+    showCorrectPixels,
+    showUnpaintedAsWrong,
+
     navigationMethod,
 
     templateColorSort,
@@ -691,6 +752,9 @@ export const useSettingsStore = defineStore('settings', () => {
     updateSmartDetectionEnabled,
 
     updateEnhanceWrongColors,
+
+    updateErrorMapEnabled,
+    toggleErrorMapMode,
 
     updateNavigationMethod,
 

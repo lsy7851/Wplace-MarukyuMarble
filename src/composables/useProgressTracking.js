@@ -24,18 +24,14 @@ export function useProgressTracking() {
    * @returns {Object} Per-color statistics {colorKey: {totalRequired, painted, needsCrosshair, percentage, remaining, wrong}}
    */
   function calculateColorStats(template, onlyEnabledTemplates = true) {
-    if (!template) {
-      console.warn('[Progress Tracking] No template provided');
-      return {};
-    }
+    if (!template) return {};
 
     const colorStats = {};
     const tileProgress = templateStore.tileProgress;
-    const includeWrong = settingsStore.settings.includeWrongColorsInProgress || false;
+    const includeWrong = settingsStore.enhanceWrongColors || false;
 
     // Check if we have tile progress data
     if (!tileProgress || tileProgress.size === 0) {
-      console.warn('[Progress Tracking] No tile progress data available');
       return getFallbackStats(template);
     }
 
@@ -87,21 +83,18 @@ export function useProgressTracking() {
       }
     }
 
-    console.log(`[Progress Tracking] Aggregated from ${tileProgress.size} tiles`);
-    console.log(`  Total painted: ${totalPainted.toLocaleString()}`);
-    console.log(`  Total required: ${totalRequired.toLocaleString()}`);
-    console.log(`  Total wrong: ${totalWrong.toLocaleString()}`);
-
     // Build color palette if needed
     const colorPalette = template.colorPalette || {};
     if (Object.keys(colorPalette).length === 0) {
-      console.warn('[Progress Tracking] Color palette empty');
       return {};
     }
 
     // Calculate per-color statistics
+    // NOTE: colorPalette format is {"r,g,b": count} where count is a NUMBER, not an object
+    // (created in useImageProcessing.js:61)
     for (const [colorKey, paletteInfo] of Object.entries(colorPalette)) {
-      const colorCount = paletteInfo.count || 0;
+      // paletteInfo is a number (pixel count), not an object with {count, enabled}
+      const colorCount = typeof paletteInfo === 'number' ? paletteInfo : (paletteInfo?.count || 0);
 
       let paintedForColor, wrongForColor, needsCrosshair, percentage;
 

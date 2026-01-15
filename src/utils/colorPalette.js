@@ -365,3 +365,12 @@ export function findColorByRGB(rgb) {
   const key = getColorKey(rgb);
   return colorPalette.find(c => getColorKey(c.rgb) === key) || null;
 }
+
+/**
+ * Find color info by color key string
+ * @param {string} colorKey - Color key string "r,g,b"
+ * @returns {object|null} Color info object or null if not found
+ */
+export function findColorByKey(colorKey) {
+  return colorPalette.find(c => getColorKey(c.rgb) === colorKey) || null;
+}

@@ -38,6 +38,13 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  /**
+   * Mobile mode - compact modal layout
+   */
+  mobileMode: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['update:modelValue', 'close']);
@@ -103,7 +110,7 @@ watch(() => props.modelValue, (isOpen) => {
         <div
           ref="modalRef"
           class="base-modal"
-          :class="{ dragging: isDragging }"
+          :class="{ dragging: isDragging, 'mobile-mode': mobileMode }"
           :style="draggableStyle">
           <!-- Drag Handle -->
           <div
@@ -278,5 +285,47 @@ watch(() => props.modelValue, (isOpen) => {
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+/* ========================================
+   Mobile Mode Styles
+   ======================================== */
+
+.base-modal.mobile-mode {
+  width: min(350px, 96vw);
+  max-height: 70vh;
+  font-size: 12px;
+}
+
+.base-modal.mobile-mode .drag-handle {
+  height: 24px;
+}
+
+.base-modal.mobile-mode .drag-handle::before {
+  width: 40px;
+  height: 4px;
+}
+
+.base-modal.mobile-mode .modal-header {
+  padding: 8px 12px 0 12px;
+}
+
+.base-modal.mobile-mode .modal-title {
+  font-size: 15px;
+}
+
+.base-modal.mobile-mode .modal-body {
+  padding: 8px 12px 12px 12px;
+  max-height: calc(70vh - 100px);
+  overflow-y: auto;
+}
+
+.base-modal.mobile-mode .modal-footer {
+  padding: 8px 12px;
+}
+
+.base-modal.mobile-mode .btn-close {
+  padding: 6px 8px;
+  font-size: 11px;
 }
 </style>

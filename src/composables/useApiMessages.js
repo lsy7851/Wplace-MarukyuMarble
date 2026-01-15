@@ -66,7 +66,7 @@ export function useApiMessages() {
         break;
 
       default:
-        console.warn('⚠️ [useApiMessages] Unknown message type:', type);
+        break;
     }
   }
 
@@ -93,8 +93,7 @@ export function useApiMessages() {
    * Handle USER_NOT_LOGGED_IN message
    * @param {Object} data
    */
-  function handleUserNotLoggedIn(data) {
-    console.warn('⚠️ [useApiMessages] User not logged in:', data.status);
+  function handleUserNotLoggedIn() {
     userStore.clearUserInfo();
   }
 
@@ -116,32 +115,18 @@ export function useApiMessages() {
    * @param {Object} message - { blobID, tileX, tileY, blob }
    */
   async function handleTileRenderRequest(message) {
-    const { blobID, tileX, tileY, blob, url } = message;
-
-    console.log(`🎨 [useApiMessages] Tile render request:`, {
-      blobID,
-      tileX,
-      tileY,
-      url
-    });
+    const { blobID, tileX, tileY, blob } = message;
 
     try {
-      // Call template renderer directly
       const processedBlob = await renderer.drawTemplateOnTile(blob, [tileX, tileY]);
 
-      console.log(`✅ [useApiMessages] Tile processed, size: ${processedBlob.size} bytes`);
-
-      // Send processed blob back to API interceptor
       window.postMessage({
         source: MESSAGE_SOURCE,
         type: 'TILE_PROCESSED',
         blobID,
         processedBlob
       }, '*');
-
-    } catch (e) {
-      console.error('❌ [useApiMessages] Failed to process tile:', e);
-
+    } catch {
       // Return original blob on error
       window.postMessage({
         source: MESSAGE_SOURCE,

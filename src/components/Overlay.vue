@@ -9,22 +9,29 @@ import Header from './overlay/Header.vue';
 import ColorMenu from './overlay/ColorMenu.vue';
 import CoordinatesInput from './overlay/CoordinatesInput.vue';
 import TemplateButtons from './overlay/TemplateButtons.vue';
+import MiniProgressTracker from './overlay/MiniProgressTracker.vue';
 import StatusDisplay from './overlay/StatusDisplay.vue';
 import ActionButtons from './overlay/ActionButtons.vue';
 import LocationSearchModal from './modals/LocationSearchModal.vue';
 import SettingsModal from './modals/SettingsModal.vue';
+import WrongPixelsModal from './modals/WrongPixelsModal.vue';
 import { useSettingsStore } from '@/stores/settingsStore.js';
+import { useTileCache } from '@/composables/useTileCache.js';
 import { storeToRefs } from 'pinia';
 
 const minimized = ref(false);
 const version = '0.91.2';
 const showSettingsModal = ref(false);
+const showWrongPixelsModal = ref(false);
 
 // Settings store
 const settingsStore = useSettingsStore();
 
 // Visibility settings from store
 const showTemplateHeader = computed(() => settingsStore.showTemplateHeader);
+
+// Mobile mode from store
+const mobileMode = computed(() => settingsStore.mobileMode);
 
 // Draggable setup
 const overlayRef = useTemplateRef('overlayRef');
@@ -33,7 +40,7 @@ const dragBarRef = useTemplateRef('dragBarRef');
 const { x, y, style: draggableStyle, isDragging } = useDraggable(overlayRef, {
   initialValue: { x: 80, y: 10 },
   preventDefault: true,
-  handle: dragBarRef,
+  handle: computed(() => dragBarRef.value?.$el),
 });
 
 // todo Implementing Later
@@ -45,13 +52,21 @@ setTimeout(() => {
 setTimeout(() => {
   // initColorMenuResize()
 }, 100);
+
+// Tile cache for invalidation on settings change
+const tileCache = useTileCache();
+
+// Handle error map toggle
+function handleErrorMapToggle() {
+  tileCache.invalidateForSettingsChange();
+}
 </script>
 
 <template>
-  <div id="bm-overlay" ref="overlayRef" :style="draggableStyle">
+  <div id="bm-overlay" ref="overlayRef" :style="draggableStyle" :class="{ 'is-minimized': minimized, 'mobile-mode': mobileMode, 'is-dragging': isDragging }">
     <div id="bm-contain-header">
-      <DragBar ref="dragBarRef" :class="{minimized:minimized}" />
-      <Title v-model:minimized="minimized" :class="{minimized:minimized}" />
+      <DragBar ref="dragBarRef" :minimized="minimized" />
+      <Title v-model:minimized="minimized" />
       <Header
         v-if="settingsStore.showInformationHeader"
         :class="{minimized:minimized}"
@@ -66,10 +81,14 @@ setTimeout(() => {
       <div id="bm-contain-automation">
         <CoordinatesInput :class="{minimized:minimized}" />
         <!-- Color Menu replaced by Modal, but maybe keep slot or remove if unused -->
-        <ColorMenu :class="{minimized:minimized}" />
+        <ColorMenu :minimized="minimized" @request-maximize="minimized = false" />
         <TemplateButtons
           :class="{minimized:minimized}"
+          :minimized="minimized"
           :icons="icons" />
+        <MiniProgressTracker
+          :class="{minimized:minimized}"
+          :minimized="minimized" />
         <StatusDisplay
           :class="{minimized:minimized}"
           :version="version" />
@@ -77,7 +96,9 @@ setTimeout(() => {
           :class="{minimized:minimized}"
           :icons="icons"
           :version="version"
-          @open-settings="showSettingsModal = true" />
+          @open-settings="showSettingsModal = true"
+          @open-wrong-pixels="showWrongPixelsModal = true"
+          @toggle-error-map="handleErrorMapToggle" />
       </div>
     </div>
 
@@ -85,7 +106,10 @@ setTimeout(() => {
     <LocationSearchModal />
 
     <!-- Settings Modal -->
-    <SettingsModal v-model="showSettingsModal" />
+    <SettingsModal v-model="showSettingsModal" :mobile-mode="mobileMode" />
+
+    <!-- Wrong Pixels Modal -->
+    <WrongPixelsModal v-model="showWrongPixelsModal" :mobile-mode="mobileMode" />
 
   </div>
 </template>
@@ -103,7 +127,7 @@ setTimeout(() => {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(16px);
   z-index: 9000;
-  transition: opacity 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+  transition: opacity 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, width 0.3s ease, height 0.3s ease;
   max-width: 320px;
   width: auto;
   /* Performance optimizations for smooth dragging */
@@ -376,17 +400,57 @@ div:has(> #bm-button-teleport) {
   background-color: #b62525;
 }
 
-/* Minimized state styles */
-.minimized {
+/* Minimized state styles - hide specific elements */
+#bm-contain-header > .minimized,
+#bm-contain-automation > .minimized:not(:has(#bm-button-color-filter)) {
   display: none !important;
 }
 
+/* Disable transitions during drag */
+#bm-overlay.is-dragging {
+  transition: none !important;
+}
+
 /* When overlay is minimized, adjust overlay dimensions */
-#bm-overlay:has(.minimized) {
+#bm-overlay.is-minimized {
   width: 72px;
-  height: 76px;
-  max-width: 72px;
   min-width: 72px;
+  max-width: 72px;
   padding: 6px;
+  gap: 0;
+  width: 72px;
+  min-width: 72px;
+  max-width: 72px;
+  padding: 6px;
+  gap: 0;
+  overflow: visible !important; /* Allow the color filter button to be seen outside */
+  height: 76px !important; /* Legacy fixed height for better drag area */
+}
+
+/* Update header container in minimized mode */
+#bm-contain-header > .minimized {
+  display: none !important;
+}
+
+/* ... existing rules ... */
+
+/* Mobile mode - overlay width stays the same, only internal elements adjust */
+#bm-overlay.mobile-mode {
+  padding: 8px;
+}
+
+#bm-overlay.mobile-mode #bm-contain-header {
+  margin-bottom: 0.25em;
+}
+
+/* Mobile mode buttons - larger touch targets for easier tapping */
+#bm-overlay.mobile-mode button {
+  min-height: 36px;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Mobile mode - compact spacing */
+#bm-overlay.mobile-mode #bm-contain-automation {
+  gap: 4px;
 }
 </style>

@@ -65,7 +65,6 @@ export function useImportExport() {
       };
     }
 
-    console.log(`Exported ${templatesToExport.length} templates`);
     return exportData;
   }
 
@@ -84,8 +83,6 @@ export function useImportExport() {
       throw new Error(`Unsupported format: ${json.whoami}`);
     }
 
-    console.log(`Importing from ${json.whoami} v${json.scriptVersion}`);
-
     let imported = 0;
     let skipped = 0;
 
@@ -96,8 +93,6 @@ export function useImportExport() {
 
         // Parse coordinates first for duplicate check
         const coords = templateData.coords.split(',').map(s => parseInt(s.trim()));
-
-        console.log(`Processing template: "${templateData.name}" (${templateData.pixelCount} pixels) at [${coords.join(', ')}]`);
 
         // Check for duplicates (same name + pixel count + coordinates)
         // Templates with same name/pixels but different positions are NOT duplicates
@@ -111,7 +106,6 @@ export function useImportExport() {
         );
 
         if (duplicate) {
-          console.log(`⏭️ Skipping duplicate: "${templateData.name}" (already exists at same position)`);
           skipped++;
           continue;
         }
@@ -122,8 +116,6 @@ export function useImportExport() {
         let colorPalette = {};
 
         if (templateData.tiles) {
-          console.log(`📊 Building colorPalette for "${templateData.name}" from ${Object.keys(templateData.tiles).length} tiles...`);
-
           for (const [tileKey, base64Data] of Object.entries(templateData.tiles)) {
             try {
               const blob = await base64ToBlob(base64Data);
@@ -166,14 +158,10 @@ export function useImportExport() {
                   colorPalette[colorKey] = (colorPalette[colorKey] || 0) + 1;
                 }
               }
-            } catch (e) {
-              console.error(`❌ Failed to scan tile ${tileKey}:`, e);
+            } catch {
+              // Ignore tile scan failures
             }
           }
-
-          const totalColors = Object.keys(colorPalette).length;
-          const totalPixels = Object.values(colorPalette).reduce((sum, count) => sum + count, 0);
-          console.log(`✅ Built colorPalette: ${totalColors} colors, ${totalPixels} pixels`);
         }
 
         // Create template instance
@@ -202,16 +190,12 @@ export function useImportExport() {
 
         // Add to store
         await templateStore.addTemplate(template);
-
-        console.log(`✅ Imported: "${template.displayName}"`);
         imported++;
-      } catch (e) {
-        console.error(`❌ Failed to import template "${templateData.name}":`, e);
+      } catch {
         skipped++;
       }
     }
 
-    console.log(`Import complete: ${imported} imported, ${skipped} skipped`);
     return { imported, skipped };
   }
 
@@ -250,8 +234,6 @@ export function useImportExport() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
-    console.log(`Exported to file: ${filename}`);
   }
 
   /**
@@ -323,9 +305,8 @@ export function useImportExport() {
 
       // Create blob
       return new Blob([array], { type: 'image/png' });
-    } catch (error) {
-      console.error('Failed to convert base64 to blob:', error);
-      throw error;
+    } catch {
+      throw new Error('Failed to convert base64 to blob');
     }
   }
 

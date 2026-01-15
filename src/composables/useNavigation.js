@@ -63,8 +63,7 @@ export function useNavigation() {
       sendToMain('GET_MAP_STATUS', {});
       const status = await waitForMainResponse('MAP_STATUS', 2000);
       return status.isReady;
-    } catch (error) {
-      console.warn('⚠️ [useNavigation] Failed to check map status:', error);
+    } catch {
       return false;
     }
   }
@@ -88,7 +87,6 @@ export function useNavigation() {
         })
       ]);
     } catch (error) {
-      console.error('❌ [useNavigation] flyTo failed:', error);
       throw error;
     }
   }
@@ -104,7 +102,6 @@ export function useNavigation() {
       const url = buildWplaceUrl(lat, lng, zoom);
       window.location.href = url;
     } catch (error) {
-      console.error('❌ [useNavigation] URL navigation failed:', error);
       throw error;
     }
   }
@@ -141,13 +138,11 @@ export function useNavigation() {
         // Auto: Try flyTo, fall back to URL
         try {
           await flyToLocation(lat, lng, zoom);
-        } catch (flyToError) {
-          console.warn('⚠️ [useNavigation] flyTo failed, using URL navigation');
+        } catch {
           navigateByUrl(lat, lng, zoom);
         }
       }
     } catch (error) {
-      console.error('❌ [useNavigation] Navigation failed:', error);
       throw error;
     }
   }

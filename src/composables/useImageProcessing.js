@@ -19,15 +19,12 @@ export function useImageProcessing() {
    */
   async function createTemplateTiles(file, coords, options = {}) {
     const { onProgress } = options;
-    console.log(`Processing image: ${file.name || 'blob'} (${(file.size / 1024).toFixed(2)} KB)`);
 
     // STEP 1: Create ImageBitmap
     let bitmap;
     try {
       bitmap = await createImageBitmap(file);
-      console.log(`ImageBitmap created: ${bitmap.width}×${bitmap.height}`);
-    } catch (e) {
-      console.warn('createImageBitmap failed, using fallback:', e);
+    } catch {
       bitmap = await loadImageViaCanvas(file);
     }
 
@@ -64,9 +61,6 @@ export function useImageProcessing() {
       }
     }
 
-    console.log(`Pixel analysis: total=${totalPixels}, valid=${validPixels}, transparent=${transparentPixels}`);
-    console.log(`Color palette: ${Object.keys(colorPalette).length} unique colors`);
-
     // STEP 3: Chunk into tiles
     // Uses world coordinates (absolute pixel positions) like old-src
     const TILE_SIZE = Template.TILE_SIZE;  // 1000
@@ -88,8 +82,6 @@ export function useImageProcessing() {
     const estimatedTilesX = Math.ceil((endPixelX - startPixelX) / TILE_SIZE);
     const estimatedTilesY = Math.ceil((endPixelY - startPixelY) / TILE_SIZE);
     const estimatedTiles = estimatedTilesX * estimatedTilesY;
-
-    console.log(`Chunking into ~${estimatedTiles} tiles (${estimatedTilesX}×${estimatedTilesY})`);
 
     // Loop using world coordinates (like old-src)
     for (let pixelY = basePixelY; pixelY < basePixelY + height; ) {
@@ -164,8 +156,6 @@ export function useImageProcessing() {
       // Advance Y by what we drew
       pixelY += drawSizeY;
     }
-
-    console.log(`Chunking complete: ${processedTiles} tiles created`);
 
     return {
       tiles,
@@ -265,7 +255,6 @@ export function useImageProcessing() {
    * @param {Function} onProgress - Progress callback
    */
   async function applyColorFilterToExistingTiles(template, onProgress) {
-    console.log(`Applying color filter to existing tiles for template ${template.id}`);
 
     const tileKeys = await db.getTemplateTileKeys(template.id);
     const totalTiles = tileKeys.length;
@@ -297,8 +286,6 @@ export function useImageProcessing() {
         onProgress(Math.round((processedTiles / totalTiles) * 100));
       }
     }
-
-    console.log(`Color filter applied to ${processedTiles} tiles`);
   }
 
   return {

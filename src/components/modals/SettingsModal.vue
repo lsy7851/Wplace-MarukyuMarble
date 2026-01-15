@@ -4,6 +4,7 @@
     title="Settings"
     :close-on-backdrop="false"
     :close-on-esc="true"
+    :mobile-mode="mobileMode"
     @close="handleCancel">
     <!-- Scrollable Content -->
     <div class="settings-content">
@@ -235,6 +236,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  mobileMode: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Emits
@@ -359,9 +364,7 @@ async function handleApply() {
   try {
     await settingsStore.applySettings(tempSettings.value);
     isOpen.value = false;
-    console.log('✅ Settings applied successfully');
-  } catch (error) {
-    console.error('❌ Failed to apply settings:', error);
+  } catch {
     alert('Failed to apply settings. Please try again.');
   }
 }
