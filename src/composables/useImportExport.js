@@ -1,6 +1,7 @@
 import { Template } from '@/models/Template';
 import { useTemplateStore } from '@/stores/templateStore';
 import { useIndexedDB } from './useIndexedDB';
+import { useStatusStore } from '@/stores/statusStore';
 
 /**
  * Import/Export composable
@@ -12,6 +13,7 @@ import { useIndexedDB } from './useIndexedDB';
 export function useImportExport() {
   const templateStore = useTemplateStore();
   const db = useIndexedDB();
+  const statusStore = useStatusStore();
 
   /**
    * Export templates to JSON
@@ -221,19 +223,27 @@ export function useImportExport() {
    * @param {string} filename - Output filename
    */
   async function exportToFile(templateIndices = [], filename = 'marukyu-marble-templates.json') {
-    const data = await exportTemplates(templateIndices);
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
+    try {
+      const data = await exportTemplates(templateIndices);
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
 
-    // Create download link
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      const count = templateIndices.length || templateStore.templates.length;
+      statusStore.handleDisplayStatus(`Exported ${count} template(s) to ${filename}`);
+    } catch (error) {
+      statusStore.handleDisplayError(`Failed to export templates`);
+      throw error;
+    }
   }
 
   /**
@@ -242,9 +252,22 @@ export function useImportExport() {
    * @returns {Promise<{imported: number, skipped: number}>}
    */
   async function importFromFile(file) {
-    const text = await file.text();
-    const json = JSON.parse(text);
-    return await importTemplates(json);
+    try {
+      const text = await file.text();
+      const json = JSON.parse(text);
+      const result = await importTemplates(json);
+
+      if (result.imported > 0) {
+        statusStore.handleDisplayStatus(`Imported ${result.imported} template(s) from ${file.name}!`);
+      } else if (result.skipped > 0) {
+        statusStore.handleDisplayStatus(`No new templates imported (${result.skipped} duplicates skipped)`);
+      }
+
+      return result;
+    } catch (error) {
+      statusStore.handleDisplayError(`Failed to import JSON - please check the file format`);
+      throw error;
+    }
   }
 
   /**

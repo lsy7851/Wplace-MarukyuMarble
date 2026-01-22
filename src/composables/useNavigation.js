@@ -4,6 +4,7 @@
  */
 import { buildWplaceUrl, tileToLatLng } from '@/utils/coordinates.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';
+import { useStatusStore } from '@/stores/statusStore.js';
 import { storeToRefs } from 'pinia';
 
 /**
@@ -11,6 +12,7 @@ import { storeToRefs } from 'pinia';
  */
 export function useNavigation() {
   const settingsStore = useSettingsStore();
+  const statusStore = useStatusStore();
   const { navigationMethod } = storeToRefs(settingsStore);
 
   /**
@@ -153,9 +155,11 @@ export function useNavigation() {
    * @param {Array} coords - [tileX, tileY, pixelX, pixelY]
    * @param {number} [zoom=13.62] - Zoom level
    * @param {Object} [options] - Navigation options
+   * @param {boolean} [options.silent=false] - Suppress status message
    */
   async function flyToCoordinates(coords, zoom = 13.62, options = {}) {
     if (!Array.isArray(coords) || coords.length !== 4) {
+      statusStore.handleDisplayError('❌ Invalid coordinates!');
       throw new Error('Invalid coordinates array. Expected [tileX, tileY, pixelX, pixelY]');
     }
 
@@ -166,6 +170,13 @@ export function useNavigation() {
 
     // Navigate to location
     await navigateToLocation(lat, lng, zoom, options);
+
+    // Show status message unless silent
+    if (!options.silent) {
+      const method = options.method || navigationMethod.value;
+      const action = method === 'openurl' ? 'Navigating' : 'Flying';
+      statusStore.handleDisplayStatus(`🧭 ${action} to Tile ${tileX},${tileY} (${pixelX}, ${pixelY})!`);
+    }
   }
 
   return {

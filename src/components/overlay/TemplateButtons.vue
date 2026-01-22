@@ -3,6 +3,7 @@ import { defineProps, ref } from 'vue';
 import { useTemplateStore } from '@/stores/templateStore';
 import { useUserStore } from '@/stores/userStore';
 import { useCoordinateStore } from '@/stores/coordinateStore';
+import { useStatusStore } from '@/stores/statusStore';
 import { useImageProcessing } from '@/composables/useImageProcessing';
 import { useTileCache } from '@/composables/useTileCache';
 import { Template } from '@/models/Template';
@@ -23,6 +24,7 @@ const props = defineProps({
 const templateStore = useTemplateStore();
 const userStore = useUserStore();
 const coordinateStore = useCoordinateStore();
+const statusStore = useStatusStore();
 const { createTemplateTiles } = useImageProcessing();
 const tileCache = useTileCache();
 
@@ -47,13 +49,13 @@ const handleFileChange = (event) => {
 const handleCreate = async () => {
   // Validate file selection
   if (!selectedFile.value) {
-    alert('Please upload a template image first.');
+    statusStore.handleDisplayError('No file selected!');
     return;
   }
 
   // Validate coordinate input
   if (!coordinateStore.hasInputCoords) {
-    alert('Please enter template coordinates in all four fields (Tile X, Tile Y, Pixel X, Pixel Y).');
+    statusStore.handleDisplayError('Coordinates are malformed!');
     return;
   }
 
@@ -62,18 +64,18 @@ const handleCreate = async () => {
 
   // Additional validation: check if coordinates are valid numbers
   if (coords.tileX === null || coords.tileY === null || coords.pixelX === null || coords.pixelY === null) {
-    alert('Please enter valid coordinates.');
+    statusStore.handleDisplayError('Please enter valid coordinates.');
     return;
   }
 
   // Validate coordinate ranges
   if (coords.tileX < 0 || coords.tileX > 2047 || coords.tileY < 0 || coords.tileY > 2047) {
-    alert('Tile coordinates must be between 0 and 2047.');
+    statusStore.handleDisplayError('Tile coordinates must be between 0 and 2047.');
     return;
   }
 
   if (coords.pixelX < 0 || coords.pixelX > 999 || coords.pixelY < 0 || coords.pixelY > 999) {
-    alert('Pixel coordinates must be between 0 and 999.');
+    statusStore.handleDisplayError('Pixel coordinates must be between 0 and 999.');
     return;
   }
 
@@ -96,7 +98,8 @@ const handleCreate = async () => {
     });
 
     await templateStore.addTemplate(template, result.tiles);
-    alert(`Template "${template.displayName}" created successfully!\n${template.validPixelCount} pixels`);
+    const [tx, ty, px, py] = template.coords;
+    statusStore.handleDisplayStatus(`✅ Template #${templateStore.templates.length} created at (${tx},${ty}) - ${template.validPixelCount} pixels`);
 
     selectedFile.value = null;
     uploadFileName.value = '';
@@ -105,7 +108,7 @@ const handleCreate = async () => {
     }
 
   } catch (error) {
-    alert(`Failed to create template: ${error.message}`);
+    statusStore.handleDisplayError(`Failed to create template: ${error.message}`);
   }
 };
 

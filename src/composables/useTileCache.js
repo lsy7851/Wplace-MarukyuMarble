@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useTemplateStore } from '@/stores/templateStore';
+import { useStatusStore } from '@/stores/statusStore';
 
 /**
  * Tile Cache Composable
@@ -325,6 +326,15 @@ export function useTileCache() {
   function togglePause() {
     paused.value = !paused.value;
     settingsStore.updateTileRefreshPaused(paused.value);
+
+    // Status message for pause toggle
+    const statusStore = useStatusStore();
+    if (paused.value) {
+      statusStore.handleDisplayStatus(`🧊 Tile refresh paused! Showing frozen template view with ${frozenCache.size} cached tiles.`);
+    } else {
+      statusStore.handleDisplayStatus(`▶️ Tile refresh resumed - templates now update in real-time`);
+    }
+
     return paused.value;
   }
 

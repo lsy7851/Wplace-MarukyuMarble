@@ -3,6 +3,7 @@ import { colorPalette, getColorKey } from '@/utils/colorPalette.js';
 import { useTemplateStore } from '@/stores/templateStore.js';
 import { useColorFilterStore } from '@/stores/colorFilterStore.js';
 import { useTileCache } from '@/composables/useTileCache.js';
+import { useStatusStore } from '@/stores/statusStore.js';
 
 // ========================================
 // SINGLETON STATE - Shared across all component instances
@@ -31,6 +32,7 @@ export function useColorFilter() {
   const templateStore = useTemplateStore();
   const colorFilterStore = useColorFilterStore();
   const tileCache = useTileCache();
+  const statusStore = useStatusStore();
 
   // NOTE: State refs are defined OUTSIDE this function (singleton pattern)
   // This ensures ColorMenu and ColorFilterModal share the same state
@@ -391,7 +393,9 @@ export function useColorFilter() {
     const targetKey = colorKey === 'transparent' ? '0,0,0' : colorKey;
 
     const index = disabledColors.value.indexOf(targetKey);
-    if (index > -1) {
+    const isEnabling = index > -1;
+
+    if (isEnabling) {
       disabledColors.value.splice(index, 1);
     } else {
       disabledColors.value.push(targetKey);
@@ -399,6 +403,11 @@ export function useColorFilter() {
 
     // Auto-save immediately
     await saveTemplateColors();
+
+    // Find color name
+    const colorInfo = colorPalette.find(c => getColorKey(c.rgb) === targetKey || (colorKey === 'transparent' && c.name === 'Transparent'));
+    const colorName = colorInfo?.name || targetKey;
+    statusStore.handleDisplayStatus(`Color ${isEnabling ? 'enabled' : 'disabled'}: ${colorName}`);
   }
 
   /**
@@ -409,6 +418,8 @@ export function useColorFilter() {
     const targetKey = colorKey === 'transparent' ? '0,0,0' : colorKey;
 
     const index = enhancedColors.value.indexOf(targetKey);
+    const isEnabling = index === -1;
+
     if (index > -1) {
       enhancedColors.value.splice(index, 1);
     } else {
@@ -417,6 +428,11 @@ export function useColorFilter() {
 
     // Auto-save immediately
     await saveTemplateColors();
+
+    // Find color name
+    const colorInfo = colorPalette.find(c => getColorKey(c.rgb) === targetKey || (colorKey === 'transparent' && c.name === 'Transparent'));
+    const colorName = colorInfo?.name || targetKey;
+    statusStore.handleDisplayStatus(`✅ Enhanced mode ${isEnabling ? 'enabled' : 'disabled'} for: ${colorName}`);
   }
 
   /**
@@ -424,11 +440,15 @@ export function useColorFilter() {
    */
   function toggleColorExcluded(colorKey) {
     const index = excludedColors.value.indexOf(colorKey);
-    if (index > -1) {
+    const wasExcluded = index > -1;
+
+    if (wasExcluded) {
       excludedColors.value.splice(index, 1);
     } else {
       excludedColors.value.push(colorKey);
     }
+
+    statusStore.handleDisplayStatus(`Color ${wasExcluded ? 'included in' : 'excluded from'} progress calculation`);
   }
 
   /**
@@ -437,6 +457,7 @@ export function useColorFilter() {
   async function enableAllColors() {
     disabledColors.value = [];
     await saveTemplateColors();
+    statusStore.handleDisplayStatus('Enabling all colors...');
   }
 
   /**
@@ -445,6 +466,7 @@ export function useColorFilter() {
   async function disableAllColors() {
     disabledColors.value = filteredColors.value.map(c => c.colorKey);
     await saveTemplateColors();
+    statusStore.handleDisplayStatus('Disabling all colors...');
   }
 
   /**

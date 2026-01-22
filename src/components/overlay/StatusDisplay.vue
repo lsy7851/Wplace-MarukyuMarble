@@ -1,5 +1,6 @@
 <script setup>
-import { defineProps } from 'vue';
+import { computed } from 'vue';
+import { useStatusDisplay } from '@/composables/useStatusDisplay.js';
 
 const props = defineProps({
   version: {
@@ -7,12 +8,24 @@ const props = defineProps({
     required: true
   }
 });
+
+const { displayText, hasMessage } = useStatusDisplay();
+
+// Show displayText if there's a message, otherwise show empty for placeholder
+const textareaValue = computed(() => {
+  return hasMessage.value ? displayText.value : '';
+});
+
+const placeholderText = computed(() => {
+  return `Status: Sleeping...\nVersion: ${props.version}`;
+});
 </script>
 
 <template>
   <textarea
     id="bm-output-status"
-    :placeholder="`Status: Sleeping...\nVersion: ${version}`"
+    :value="textareaValue"
+    :placeholder="placeholderText"
     readonly
   ></textarea>
 </template>

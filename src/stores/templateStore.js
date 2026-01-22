@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { Template } from '@/models/Template';
 import { useIndexedDB } from '@/composables/useIndexedDB';
+import { useStatusStore } from '@/stores/statusStore';
 
 export const useTemplateStore = defineStore('template', () => {
   // State
@@ -14,6 +15,15 @@ export const useTemplateStore = defineStore('template', () => {
 
   // IndexedDB composable
   const db = useIndexedDB();
+
+  // Status store (lazy loaded to avoid circular dependency)
+  let statusStore = null;
+  function getStatusStore() {
+    if (!statusStore) {
+      statusStore = useStatusStore();
+    }
+    return statusStore;
+  }
 
   // Computed
   const enabledTemplates = computed(() => {
@@ -114,17 +124,25 @@ export const useTemplateStore = defineStore('template', () => {
    */
   async function deleteTemplate(index) {
     const template = templates.value[index];
+    const templateName = template.displayName;
 
-    // Delete tile blobs from IndexedDB
-    await db.deleteTemplateTiles(template.id);
+    try {
+      // Delete tile blobs from IndexedDB
+      await db.deleteTemplateTiles(template.id);
 
-    // Remove from array
-    templates.value.splice(index, 1);
+      // Remove from array
+      templates.value.splice(index, 1);
 
-    // Clear tile progress cache
-    tileProgress.value.clear();
+      // Clear tile progress cache
+      tileProgress.value.clear();
 
-    await saveTemplates();
+      await saveTemplates();
+
+      getStatusStore().handleDisplayStatus(`Successfully deleted template "${templateName}"`);
+    } catch (e) {
+      getStatusStore().handleDisplayError(`Failed to delete template. Check console for details.`);
+      throw e;
+    }
   }
 
   /**
@@ -135,9 +153,12 @@ export const useTemplateStore = defineStore('template', () => {
   async function setTemplateEnabled(index, enabled) {
     if (index < 0 || index >= templates.value.length) return;
 
+    const templateName = templates.value[index].displayName;
     templates.value[index].enabled = enabled;
     tileProgress.value.clear();
     await saveTemplates();
+
+    getStatusStore().handleDisplayStatus(`${enabled ? 'Enabled' : 'Disabled'} template "${templateName}"!`);
   }
 
   /**
@@ -151,6 +172,8 @@ export const useTemplateStore = defineStore('template', () => {
     templates.value[index].displayName = newName;
     templates.value[index].updatedAt = new Date().toISOString();
     await saveTemplates();
+
+    getStatusStore().handleDisplayStatus(`Renamed to "${newName}"`);
   }
 
   /**

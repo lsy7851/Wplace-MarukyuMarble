@@ -1,6 +1,7 @@
 import { computed } from 'vue';
 import { useServerStore } from '@/stores/serverStore';
 import { useIndexedDB } from '@/composables/useIndexedDB';
+import { useStatusStore } from '@/stores/statusStore';
 
 /**
  * Screenshot composable
@@ -9,6 +10,7 @@ import { useIndexedDB } from '@/composables/useIndexedDB';
 export function useScreenshot() {
     const serverStore = useServerStore();
     const db = useIndexedDB();
+    const statusStore = useStatusStore();
 
     /**
      * Take a high-res screenshot of the template area by fetching tiles from server
@@ -182,6 +184,36 @@ export function useScreenshot() {
     }
 
     /**
+     * Take screenshot and download as file
+     * @param {Object} template - The template object
+     * @returns {Promise<void>}
+     */
+    async function saveTemplateScreenshot(template) {
+        try {
+            const blob = await takeTemplateScreenshot(template);
+
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const filename = `${template.displayName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_screenshot.png`;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            const [tx, ty, px, py] = template.coords;
+            const width = template.imageWidth || '?';
+            const height = template.imageHeight || '?';
+            statusStore.handleDisplayStatus(`📸 Saved template area screenshot!\nLocation: Tile ${tx},${ty} • Pixel ${px},${py}\nSize: ${width}×${height}px`);
+        } catch (error) {
+            statusStore.handleDisplayError(`Failed to save screenshot: ${error.message}`);
+            throw error;
+        }
+    }
+
+    /**
      * Helper to fetch a single tile and draw specific part of it to canvas
      */
     async function fetchTileAndDraw(tx, ty, baseUrl, ctx, globalStartX, globalStartY, tileSize, canvasW, canvasH) {
@@ -220,6 +252,7 @@ export function useScreenshot() {
     }
 
     return {
-        takeTemplateScreenshot
+        takeTemplateScreenshot,
+        saveTemplateScreenshot
     }
 }

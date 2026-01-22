@@ -4,6 +4,7 @@ import { useLocationSearchStore } from '@/stores/locationSearchStore.js';
 import { useCoordinateStore } from '@/stores/coordinateStore.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';
 import { useColorFilterStore } from '@/stores/colorFilterStore.js';
+import { useStatusStore } from '@/stores/statusStore.js';
 import { useNavigation } from '@/composables/useNavigation.js';
 import { useImportExport } from '@/composables/useImportExport.js';
 import { tileToLatLng } from '@/utils/coordinates.js';
@@ -23,6 +24,7 @@ const props = defineProps({
 const locationSearchStore = useLocationSearchStore();
 const coordinateStore = useCoordinateStore();
 const settingsStoreInstance = useSettingsStore();
+const statusStore = useStatusStore();
 const { errorMapEnabled } = storeToRefs(settingsStoreInstance);
 const { navigateToLocation } = useNavigation();
 const { importFromFile } = useImportExport();
@@ -41,7 +43,7 @@ const handleFlyTo = async () => {
 
   // Check if coordinates are available
   if (!coordinateStore.hasCoords) {
-    alert('No coordinates detected. Please click on the canvas first.');
+    statusStore.handleDisplayError('Coordinates are malformed!');
     return;
   }
 
@@ -57,7 +59,7 @@ const handleFlyTo = async () => {
     // Navigate to the location using settings-based navigation method
     await navigateToLocation(lat, lng, 13.62);
   } catch (error) {
-    alert(`Failed to navigate: ${error.message}`);
+    statusStore.handleDisplayError(`Failed to navigate: ${error.message}`);
   }
 };
 
@@ -93,13 +95,13 @@ const handleScreenshot = async () => {
     }
     
     if (!t) {
-      alert('No template loaded.');
+      statusStore.handleDisplayError('No template loaded.');
       return;
     }
     
     // Check for coordinates
     if (!t.coords || t.coords.length !== 4) {
-      alert('Template coordinates not available.');
+      statusStore.handleDisplayError('Template coordinates not available.');
       return;
     }
     
@@ -118,7 +120,7 @@ const handleScreenshot = async () => {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (e) {
-    alert(`Failed to create screenshot: ${e.message}`);
+    statusStore.handleDisplayError(`Failed to create screenshot: ${e.message}`);
   }
 };
 
@@ -178,11 +180,11 @@ const handleClearStorage = async () => {
       }
       sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
 
-      alert('Extension storage cleared successfully!\nThe page will now reload.');
-      window.location.reload();
-      
+      statusStore.handleDisplayStatus('🧹 Storage cleared!');
+      setTimeout(() => window.location.reload(), 500);
+
     } catch (e) {
-      alert(`Error clearing storage: ${e.message}`);
+      statusStore.handleDisplayError('Failed to clear storage.');
     }
   }
 };
@@ -199,9 +201,9 @@ const handleImport = () => {
 
     try {
       const result = await importFromFile(file);
-      alert(`✅ Import Complete!\n\nImported: ${result.imported} template(s)\nSkipped: ${result.skipped} template(s)`);
+      statusStore.handleDisplayStatus(`✅ Import Complete! Imported: ${result.imported} template(s), Skipped: ${result.skipped}`);
     } catch (error) {
-      alert(`❌ Import failed: ${error.message}`);
+      statusStore.handleDisplayError(`Import failed: ${error.message}`);
     }
   };
   
@@ -221,6 +223,13 @@ const handleWrongPixels = () => {
 const handleErrorMapToggle = async () => {
   const newState = await settingsStoreInstance.toggleErrorMapMode();
   emit('toggle-error-map', newState);
+
+  // Status message for error map toggle
+  if (newState) {
+    statusStore.handleDisplayStatus('🗺️ Error Map enabled! Green=correct, Red=wrong pixels');
+  } else {
+    statusStore.handleDisplayStatus('🗺️ Error Map disabled');
+  }
 };
 </script>
 
