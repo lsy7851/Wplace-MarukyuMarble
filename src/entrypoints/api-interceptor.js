@@ -1,4 +1,28 @@
 /**
+ * Marukyu Marble - API Interceptor
+ *
+ * * [ LICENSE NOTICE: MPL-2.0 ]
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * Original work Copyright (c) SwingTheVine
+ * Derived from works by Hao-1337 and pixelkat5
+ * Modified work Copyright (c) Seris0
+ * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
+ *
+ * * [ THIRD-PARTY CODE ATTRIBUTION ]
+ * This file incorporates code from the following third-party source:
+ * - Script: Wplace Zoom Plus & Location Manager
+ * - Author: Kur0 (Greasyfork)
+ * - Source: https://greasyfork.org/en/scripts/548945-wplace-zoom-plus-location-manager
+ * - License: MIT License
+ * * The third-party code (setupMapLibreInterceptor and related logic) is used
+ * under the terms of the MIT License. The rest of this file and the combined
+ * work are governed by the Mozilla Public License, v. 2.0.
+ */
+
+/**
  * API Interceptor - MAIN World Unlisted Script
  * @description Runs in page context (MAIN world) to intercept Wplace.live fetch requests
  * @note This is an unlisted script injected by content script using WXT's injectScript
@@ -98,7 +122,7 @@ export default defineUnlistedScript(() => {
    * Original script: https://greasyfork.org/en/scripts/548945-wplace-zoom-plus-location-manager
    * Licensed under MIT License
    *
-   * Copyright (c) 2024 Kur0
+   * Copyright (c) Kur0
    *
    * Permission is hereby granted, free of charge, to any person obtaining a copy
    * of this software and associated documentation files (the "Software"), to deal

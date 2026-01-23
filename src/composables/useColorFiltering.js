@@ -1,3 +1,13 @@
+/**
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * Original work Copyright (c) SwingTheVine
+ * Derived from works by Hao-1337 and pixelkat5
+ * Modified work Copyright (c) Seris0
+ * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
+ */
 import { computed } from 'vue';
 import { useTemplateStore } from '@/stores/templateStore';
 import { colorPalette as GLOBAL_PALETTE, getColorKey } from '@/utils/colorpalette';
