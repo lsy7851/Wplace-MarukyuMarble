@@ -404,3 +404,12 @@ FodyWeavers.xsd
 
 # JetBrains .idea
 .idea
+
+# WXT build output
+.output/
+.wxt/
+
+# pnpm
+pnpm-lock.yaml
+
+.claude/*.local.json
