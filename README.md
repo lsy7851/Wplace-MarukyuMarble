@@ -2,9 +2,8 @@
 
 <div align="center">
 
-![License](https://img.shields.io/badge/license-MPL--2.0-blue.svg)
-![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)
-![Wplace.live](https://img.shields.io/badge/Wplace.live-supported-green.svg)
+![License](https://img.shields.io/github/license/lsy7851/Wplace-MarukyuMarble)
+![Status](https://img.shields.io/badge/Status-WIP-orange)
 
 **Wplace.live template overlay tool - Chrome Extension (WXT + Vue 3)**
 
@@ -19,8 +18,11 @@ Based on [Blue Marble](https://github.com/SwingTheVine/Wplace-BlueMarble) by Swi
 
 ## ⚠️ **Important Notice**
 
-This project is a **fork** of Skirk Marble, which itself is derived from the original Blue Marble project and its community forks.
+This project is a **fork** of Skirk Marble,
+which itself is derived from the original Blue Marble project and its community forks.
 
+The documentation is currently being modified.
+Consequently, content retained from the original project may not accurately reflect the current codebase or policies.
 ### 📜 Project Lineage
 
 ```
