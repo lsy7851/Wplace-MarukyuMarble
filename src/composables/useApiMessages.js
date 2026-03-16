@@ -66,11 +66,6 @@ export function useApiMessages() {
         handleTileServerDetected(data);
         break;
 
-
-      case 'TILE_SERVER_DETECTED':
-        handleTileServerDetected(data);
-        break;
-
       case 'TILE_RENDER_REQUEST':
         handleTileRenderRequest(message);
         break;
