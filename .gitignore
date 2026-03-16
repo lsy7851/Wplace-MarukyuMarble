@@ -11,7 +11,7 @@
 *.user
 *.userosscache
 *.sln.docstates
-storage/
+/storage/
 Reseign/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
