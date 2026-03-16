@@ -13,6 +13,7 @@ import { ref, computed } from 'vue';
 import { Template } from '@/models/Template';
 import { useIndexedDB } from '@/composables/useIndexedDB';
 import { useStatusStore } from '@/stores/statusStore';
+import { chromeStorageCompat } from '@/utils/storageCompat.js';
 
 export const useTemplateStore = defineStore('template', () => {
   // State
@@ -59,7 +60,7 @@ export const useTemplateStore = defineStore('template', () => {
 
     try {
       // Load metadata from chrome.storage.sync
-      const result = await chrome.storage.sync.get('templates');
+      const result = await chromeStorageCompat.sync.get('templates');
       if (result.templates) {
         templates.value = result.templates.map(t => Template.fromJSON(t));
       }
@@ -83,7 +84,7 @@ export const useTemplateStore = defineStore('template', () => {
       // This removes any non-serializable properties that might cause postMessage to fail
       const cleanMetadata = JSON.parse(JSON.stringify(metadata));
 
-      await chrome.storage.sync.set({ templates: cleanMetadata });
+      await chromeStorageCompat.sync.set({ templates: cleanMetadata });
     } catch (e) {
       error.value = `Failed to save templates: ${e.message}`;
       throw e;
