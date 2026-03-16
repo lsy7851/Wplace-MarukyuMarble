@@ -11,9 +11,9 @@
 import { Template } from '@/models/Template';
 import { useTemplateStore } from '@/stores/templateStore';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { useIndexedDB } from './useIndexedDB';
-import { useTileCache } from './useTileCache';
-import { useErrorMap } from './useErrorMap';
+import { useIndexedDB } from '@/composables/useIndexedDB';
+import { useTileCache } from '@/composables/useTileCache';
+import { useErrorMap } from '@/composables/useErrorMap';
 
 /**
  * Template rendering composable

@@ -16,7 +16,7 @@ import { onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '@/stores/userStore.js';
 import { useCoordinateStore } from '@/stores/coordinateStore.js';
 import { useServerStore } from '@/stores/serverStore.js';
-import { useTemplateRenderer } from './useTemplateRenderer';
+import { useTemplateRenderer } from '@/composables/useTemplateRenderer';
 
 const MESSAGE_SOURCE = 'marukyu-marble-main';
 
