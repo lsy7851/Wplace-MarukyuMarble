@@ -36,7 +36,7 @@ import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useSettingsStore } from '@/stores/settingsStore.js';
 import { useTemplateStore } from '@/stores/templateStore.js';
-import { useProgressTracking } from '@/composables/useProgressTracking.js';
+import { useProgressTracking } from '@/composables/features/useProgressTracking.js';
 
 // Props
 const props = defineProps({

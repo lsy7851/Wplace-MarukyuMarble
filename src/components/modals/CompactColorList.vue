@@ -136,7 +136,7 @@
  */
 import { ref, computed, watch } from 'vue';
 import { useDraggable } from '@vueuse/core';
-import { useColorFilter } from '@/composables/useColorFilter.js';
+import { useColorFilter } from '@/composables/features/useColorFilter.js';
 import { useColorFilterStore } from '@/stores/colorFilterStore.js';
 
 // Props

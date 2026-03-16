@@ -10,7 +10,7 @@
  */
 import { computed } from 'vue';
 import { useServerStore } from '@/stores/serverStore';
-import { useIndexedDB } from '@/composables/useIndexedDB';
+import { useIndexedDB } from '@/composables/storage/useIndexedDB';
 import { useStatusStore } from '@/stores/statusStore';
 
 /**

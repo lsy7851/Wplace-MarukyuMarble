@@ -10,7 +10,7 @@
  */
 import { Template } from '@/models/Template';
 import { useTemplateStore } from '@/stores/templateStore';
-import { useIndexedDB } from '@/composables/useIndexedDB';
+import { useIndexedDB } from '@/composables/storage/useIndexedDB';
 
 /**
  * Pixel progress counting composable

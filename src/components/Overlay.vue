@@ -26,7 +26,7 @@ import LocationSearchModal from './modals/LocationSearchModal.vue';
 import SettingsModal from './modals/SettingsModal.vue';
 import WrongPixelsModal from './modals/WrongPixelsModal.vue';
 import { useSettingsStore } from '@/stores/settingsStore.js';
-import { useTileCache } from '@/composables/useTileCache.js';
+import { useTileCache } from '@/composables/storage/useTileCache.js';
 import { storeToRefs } from 'pinia';
 
 const minimized = ref(false);

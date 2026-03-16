@@ -215,10 +215,10 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useDraggable } from '@vueuse/core';
 import ColorFilterItem from '@/components/color-filter/ColorFilterItem.vue';
-import { useColorFilter } from '@/composables/useColorFilter.js';
+import { useColorFilter } from '@/composables/features/useColorFilter.js';
 import { useTemplateStore } from '@/stores/templateStore.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';
-import { useTileCache } from '@/composables/useTileCache.js';
+import { useTileCache } from '@/composables/storage/useTileCache.js';
 
 // Props
 const props = defineProps({

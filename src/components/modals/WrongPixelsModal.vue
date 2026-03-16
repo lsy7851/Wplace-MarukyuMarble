@@ -102,7 +102,7 @@
 import { ref, computed, watch } from 'vue';
 import BaseModal from './BaseModal.vue';
 import { useTemplateStore } from '@/stores/templateStore.js';
-import { useNavigation } from '@/composables/useNavigation.js';
+import { useNavigation } from '@/composables/ui/useNavigation.js';
 import { findColorByKey } from '@/utils/colorPalette.js';
 
 // Props

@@ -15,8 +15,8 @@ import { useCoordinateStore } from '@/stores/coordinateStore.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';
 import { useColorFilterStore } from '@/stores/colorFilterStore.js';
 import { useStatusStore } from '@/stores/statusStore.js';
-import { useNavigation } from '@/composables/useNavigation.js';
-import { useImportExport } from '@/composables/useImportExport.js';
+import { useNavigation } from '@/composables/ui/useNavigation.js';
+import { useImportExport } from '@/composables/features/useImportExport.js';
 import { tileToLatLng } from '@/utils/coordinates.js';
 import { storeToRefs } from 'pinia';
 
@@ -75,8 +75,8 @@ const handleFlyTo = async () => {
 
 const { takeTemplateScreenshot } = useScreenshot();
 import { useTemplateStore } from '@/stores/templateStore';
-import { useScreenshot } from '@/composables/useScreenshot';
-import { useIndexedDB } from '@/composables/useIndexedDB';
+import { useScreenshot } from '@/composables/features/useScreenshot';
+import { useIndexedDB } from '@/composables/storage/useIndexedDB';
 
 const handleScreenshot = async () => {
   const templateStore = useTemplateStore();

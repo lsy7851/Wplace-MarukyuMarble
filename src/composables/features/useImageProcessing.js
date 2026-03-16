@@ -9,7 +9,7 @@
  * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
  */
 import { Template } from '@/models/Template';
-import { useIndexedDB } from '@/composables/useIndexedDB';
+import { useIndexedDB } from '@/composables/storage/useIndexedDB';
 
 /**
  * Image processing composable for template chunking

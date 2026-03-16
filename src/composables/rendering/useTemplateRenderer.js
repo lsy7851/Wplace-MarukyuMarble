@@ -11,9 +11,9 @@
 import { Template } from '@/models/Template';
 import { useTemplateStore } from '@/stores/templateStore';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { useIndexedDB } from '@/composables/useIndexedDB';
-import { useTileCache } from '@/composables/useTileCache';
-import { useErrorMap } from '@/composables/useErrorMap';
+import { useIndexedDB } from '@/composables/storage/useIndexedDB';
+import { useTileCache } from '@/composables/storage/useTileCache';
+import { useErrorMap } from '@/composables/rendering/useErrorMap';
 import { useEnhancedRendering } from '@/composables/rendering/useEnhancedRendering';
 import { usePixelProgress } from '@/composables/rendering/usePixelProgress';
 

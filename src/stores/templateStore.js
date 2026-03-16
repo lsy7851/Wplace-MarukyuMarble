@@ -11,7 +11,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { Template } from '@/models/Template';
-import { useIndexedDB } from '@/composables/useIndexedDB';
+import { useIndexedDB } from '@/composables/storage/useIndexedDB';
 import { useStatusStore } from '@/stores/statusStore';
 import { chromeStorageCompat } from '@/utils/storageCompat.js';
 

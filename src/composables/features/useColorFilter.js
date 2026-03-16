@@ -13,7 +13,7 @@ import { createSharedComposable } from '@vueuse/core';
 import { colorPalette, getColorKey } from '@/utils/colorPalette.js';
 import { useTemplateStore } from '@/stores/templateStore.js';
 import { useColorFilterStore } from '@/stores/colorFilterStore.js';
-import { useTileCache } from '@/composables/useTileCache.js';
+import { useTileCache } from '@/composables/storage/useTileCache.js';
 import { useStatusStore } from '@/stores/statusStore.js';
 
 /**

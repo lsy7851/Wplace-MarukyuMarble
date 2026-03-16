@@ -11,9 +11,9 @@
  */
 import { onMounted, onUnmounted } from 'vue';
 import Overlay from '@/components/Overlay.vue';
-import { useApiMessages } from '@/composables/useApiMessages.js';
+import { useApiMessages } from '@/composables/ui/useApiMessages.js';
 import { useTemplateStore } from '@/stores/templateStore';
-import { useCanvasOverlay } from '@/composables/useCanvasOverlay';
+import { useCanvasOverlay } from '@/composables/ui/useCanvasOverlay';
 
 // Initialize API message listener
 // This will receive messages from API Interceptor (MAIN world)
