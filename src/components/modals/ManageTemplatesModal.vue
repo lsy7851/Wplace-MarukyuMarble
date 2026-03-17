@@ -11,9 +11,9 @@
  */
 import { ref, computed } from 'vue';
 import { useTemplateStore } from '@/stores/templateStore';
-import { useNavigation } from '@/composables/useNavigation';
+import { useNavigation } from '@/composables/ui/useNavigation';
 import { useCoordinateStore } from '@/stores/coordinateStore';
-import { useImportExport } from '@/composables/useImportExport';
+import { useImportExport } from '@/composables/features/useImportExport';
 import BaseModal from './BaseModal.vue';
 import * as icons from '@@/old-src/icons.js';
 

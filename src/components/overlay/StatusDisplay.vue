@@ -10,7 +10,8 @@
  * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
  */
 import { computed } from 'vue';
-import { useStatusDisplay } from '@/composables/useStatusDisplay.js';
+import { useStatusStore } from '@/stores/statusStore.js';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps({
   version: {
@@ -19,7 +20,8 @@ const props = defineProps({
   }
 });
 
-const { displayText, hasMessage } = useStatusDisplay();
+const statusStore = useStatusStore();
+const { displayText, hasMessage } = storeToRefs(statusStore);
 
 // Show displayText if there's a message, otherwise show empty for placeholder
 const textareaValue = computed(() => {

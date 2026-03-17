@@ -15,6 +15,8 @@ pnpm dev:firefox      # Firefox development build
 pnpm build            # Production build
 pnpm build:firefox    # Firefox production build
 pnpm zip              # Create extension zip for distribution
+pnpm format           # Format src/ with Prettier
+pnpm format:check     # Check formatting without writing
 ```
 
 **Load in Chrome**: Open `chrome://extensions/`, enable Developer mode, Load unpacked → `.output/chrome-mv3/`
@@ -35,14 +37,14 @@ ISOLATED World (content.js)          MAIN World (api-interceptor.js, vue-app.js)
 
 - **ISOLATED world** (`src/entrypoints/content.js`): Injects scripts/CSS, proxies `chrome.storage` requests
 - **MAIN world**: `api-interceptor.js` intercepts Wplace API calls, `vue-app.js` runs the Vue application
-- **Storage compatibility**: `src/utils/storageCompat.js` provides `chrome.storage`-like API for MAIN world
+- **Storage compatibility**: `src/utils/storageCompat.js` provides `chrome.storage`-like API for MAIN world. All stores must use `chromeStorageCompat` instead of `chrome.storage` directly.
 
 ### State Management (Pinia Stores)
 
 | Store | Purpose |
 |-------|---------|
 | `templateStore` | Template CRUD, enabled/disabled state |
-| `settingsStore` | User preferences (synced via `chrome.storage.sync`) |
+| `settingsStore` | User preferences (synced via `chrome.storage.sync`), delegates to `stores/settings/` sub-modules |
 | `userStore` | User info from intercepted API |
 | `colorFilterStore` | Active color filters |
 | `coordinateStore` | Current tile/pixel coordinates |
@@ -70,10 +72,46 @@ ISOLATED World (content.js)          MAIN World (api-interceptor.js, vue-app.js)
 | `src/entrypoints/content.js` | ISOLATED world entry, CSS/script injection |
 | `src/entrypoints/api-interceptor.js` | MAIN world, fetch interception |
 | `src/entrypoints/vue-app.js` | Vue app initialization |
-| `src/composables/useTemplateRenderer.js` | Core canvas rendering pipeline |
-| `src/composables/useTileCache.js` | LRU tile caching |
 | `src/models/Template.js` | Template class with serialization |
 | `wxt.config.js` | WXT framework configuration |
+
+### Composables Directory Structure
+
+```
+src/composables/
+├── rendering/                    # Tile rendering pipeline
+│   ├── useTemplateRenderer.js    # Orchestrator: cache, matching, pipeline
+│   ├── useEnhancedRendering.js   # Crosshair/color highlight rendering
+│   ├── usePixelProgress.js       # Pixel progress counting
+│   └── useErrorMap.js            # Error map overlay
+├── storage/                      # Data persistence
+│   ├── useIndexedDB.js           # IndexedDB tile storage
+│   └── useTileCache.js           # LRU memory cache
+├── features/                     # Feature-specific composables
+│   ├── useColorFilter.js         # Color filter UI logic (shared singleton)
+│   ├── useImportExport.js        # Template JSON import/export
+│   ├── useImageProcessing.js     # Image chunking
+│   ├── useScreenshot.js          # Screenshot capture
+│   └── useProgressTracking.js    # Progress aggregation
+└── ui/                           # UI interaction
+    ├── useApiMessages.js          # postMessage handlers
+    ├── useCanvasOverlay.js        # MapLibre overlay
+    ├── useChargeTimer.js          # Charge countdown
+    └── useNavigation.js           # Map navigation
+```
+
+### Settings Store Structure
+
+```
+src/stores/settings/
+├── storageKeys.js           # STORAGE_KEYS and DEFAULTS constants
+├── crosshairSettings.js     # Crosshair color, border, size, radius
+├── uiSettings.js            # UI toggles, visibility, nav, sorting
+├── performanceSettings.js   # Tile refresh, smart cache, detection
+└── errorMapSettings.js      # Error map, wrong colors display
+```
+
+`settingsStore.js` is the composition root that delegates to these sub-modules while maintaining the same public API.
 
 ## Coordinate System
 
@@ -88,5 +126,6 @@ ISOLATED World (content.js)          MAIN World (api-interceptor.js, vue-app.js)
 - Pinia stores use setup syntax (not options)
 - Composables prefix: `use*` (e.g., `useTemplateRenderer`)
 - Path aliases: `@/` and `~/` both resolve to `src/`
+- All `src/` internal imports use `@/` alias (no relative `./` between composable siblings)
 - Storage keys prefix: `mm*` (Marukyu Marble)
-
+- Code formatting: Prettier (config in `.prettierrc`)

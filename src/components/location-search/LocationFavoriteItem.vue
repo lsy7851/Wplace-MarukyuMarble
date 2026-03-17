@@ -124,14 +124,6 @@ function handleRemoveClick(event) {
   margin-bottom: 2px;
 }
 
-.location-address {
-  font-size: 11px;
-  color: #94a3b8;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .favorite-star {
   font-size: 20px;
   color: #64748b;

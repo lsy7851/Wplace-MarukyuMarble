@@ -12,7 +12,7 @@
 import { computed } from 'vue';
 import { useLocationSearchStore } from '@/stores/locationSearchStore.js';
 import { useLocationFavoritesStore } from '@/stores/locationFavoritesStore.js';
-import { useNavigation } from '@/composables/useNavigation.js';
+import { useNavigation } from '@/composables/ui/useNavigation.js';
 import LocationItem from './LocationItem.vue';
 
 const locationSearchStore = useLocationSearchStore();

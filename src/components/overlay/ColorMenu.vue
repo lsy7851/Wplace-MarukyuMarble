@@ -10,7 +10,7 @@
  * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
  */
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { useColorFilter } from '@/composables/useColorFilter.js';
+import { useColorFilter } from '@/composables/features/useColorFilter.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';
 
 // Props

@@ -9,7 +9,7 @@
  * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
  */
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useTemplateRenderer } from './useTemplateRenderer';
+import { useTemplateRenderer } from '@/composables/rendering/useTemplateRenderer';
 
 /**
  * Canvas overlay composable

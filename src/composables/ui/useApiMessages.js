@@ -16,7 +16,7 @@ import { onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '@/stores/userStore.js';
 import { useCoordinateStore } from '@/stores/coordinateStore.js';
 import { useServerStore } from '@/stores/serverStore.js';
-import { useTemplateRenderer } from './useTemplateRenderer';
+import { useTemplateRenderer } from '@/composables/rendering/useTemplateRenderer';
 
 const MESSAGE_SOURCE = 'marukyu-marble-main';
 
@@ -61,11 +61,6 @@ export function useApiMessages() {
       case 'PIXEL_DATA':
         handlePixelData(data);
         break;
-
-      case 'TILE_SERVER_DETECTED':
-        handleTileServerDetected(data);
-        break;
-
 
       case 'TILE_SERVER_DETECTED':
         handleTileServerDetected(data);

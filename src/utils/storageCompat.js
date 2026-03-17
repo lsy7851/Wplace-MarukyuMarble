@@ -11,6 +11,18 @@
 /**
  * Chrome Storage Compatibility Layer for MAIN World
  *
+ * In Chrome extensions, content scripts run in two isolated JavaScript contexts:
+ * - ISOLATED world: Has access to chrome.* APIs (storage, runtime, etc.)
+ * - MAIN world: Has access to the page's window object but NO chrome.* APIs
+ *
+ * Since our Vue app and Pinia stores run in the MAIN world (to intercept
+ * fetch and access the page's DOM/canvas), they cannot use chrome.storage
+ * directly. This module bridges the gap by sending postMessage requests to
+ * the ISOLATED world's content.js, which proxies the chrome.storage calls.
+ *
+ * All stores should use chromeStorageCompat instead of chrome.storage directly
+ * to ensure consistent behavior across both worlds.
+ *
  * MAIN world에서는 chrome.* API를 사용할 수 없으므로
  * postMessage를 통해 ISOLATED world에 storage 요청을 전달
  */
