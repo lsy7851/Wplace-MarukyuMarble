@@ -1,5 +1,10 @@
 <h1>Reporting A Security Vulnerability</h1>
-<a href="" target="_blank" rel="noopener noreferrer"><img alt="CodeQL" src="https://github.com/SwingTheVine/Wplace-BlueMarble/actions/workflows/github-code-scanning/codeql/badge.svg"></a>
 <p>
-  Since this is a userscript, there will not be many vulnerabilities. The user is in charge of their own security, by choosing which scripts to run. Regardless, if you do find a security vulnerability in Blue Marble, please report it on the GitHub Security Advisory <a href="https://github.com/SwingTheVine/Wplace-BlueMarble/security/advisories/new">"Report a Vulnerability"</a> tab.
+  Marukyu Marble is a Chrome extension that runs with access to page content on Wplace.live. As a browser extension, it has access to web page data and browser APIs, so security issues could have real impact.
+</p>
+<p>
+  If you discover a security vulnerability, please report it through the GitHub Security Advisory <a href="https://github.com/lsy7851/Wplace-SkirkMarble/security/advisories/new" target="_blank" rel="noopener noreferrer">"Report a Vulnerability"</a> tab rather than public issues.
+</p>
+<p>
+  This is a personal project maintained in my spare time, so response times may vary. That said, I will do my best to address reported vulnerabilities.
 </p>
