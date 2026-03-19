@@ -10,7 +10,7 @@
 Fork of [Skirk Marble](https://github.com/Seris0/Wplace-SkirkMarble) by Seris0
 Based on [Blue Marble](https://github.com/SwingTheVine/Wplace-BlueMarble) by SwingTheVine
 
-[Features](#-features) • [Installation](#-installation) • [Credits](#-credits) • [License](#-license)
+[Features](#-features-plan) • [Installation](#-installation) • [Credits](#-credits) • [License](#-license)
 
 </div>
 
@@ -21,8 +21,6 @@ Based on [Blue Marble](https://github.com/SwingTheVine/Wplace-BlueMarble) by Swi
 This project is a **fork** of Skirk Marble,
 which itself is derived from the original Blue Marble project and its community forks.
 
-The documentation is currently being modified.
-Consequently, content retained from the original project may not accurately reflect the current codebase or policies.
 ### 📜 Project Lineage
 
 ```
@@ -37,7 +35,7 @@ Blue Marble (SwingTheVine - Original)
 
 ---
 
-## ✨ Features
+## ✨ Features (Plan)
 
 ### 🎨 Template Management
 - Upload and overlay image templates on Wplace.live canvas
@@ -122,18 +120,6 @@ See [Building from Source](./docs/BUILDING.md) for instructions.
 
 Contributions are welcome! Please read our [Contributing Guidelines](./docs/CONTRIBUTING.md) first.
 
-### Before Contributing
-- This project follows MPL-2.0 license
-- All contributions must maintain proper attribution
-- Respect the project's heritage and upstream contributors
-
-### How to Contribute
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ---
 
 ## 🙏 Credits
@@ -150,8 +136,6 @@ See [CREDITS.md](./CREDITS.md) for details.
 ## 📜 License
 
 [Mozilla Public License 2.0](./LICENSE.txt) - See [NOTICE](./NOTICE) for copyright details.
-
-
 
 ---
 

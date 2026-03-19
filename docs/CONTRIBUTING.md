@@ -15,6 +15,7 @@ Thank you for wanting to contribute to Marukyu Marble!
 - One feature per PR — don't bundle unrelated changes together.
 - Write clear commit messages that explain what changed and why. "Added some things" is not a good commit message.
 - Add comments where the logic isn't obvious. We may ask for clarification if the code is hard to follow.
+- Maintain proper attribution and respect upstream contributors.
 
 ## How To Contribute
 
