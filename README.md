@@ -10,7 +10,7 @@
 Fork of [Skirk Marble](https://github.com/Seris0/Wplace-SkirkMarble) by Seris0
 Based on [Blue Marble](https://github.com/SwingTheVine/Wplace-BlueMarble) by SwingTheVine
 
-[Features](#-features) • [Installation](#-installation) • [Credits](#-credits) • [License](#-license)
+[Features](#-features-plan) • [Installation](#-installation) • [Credits](#-credits) • [License](#-license)
 
 </div>
 
@@ -21,8 +21,6 @@ Based on [Blue Marble](https://github.com/SwingTheVine/Wplace-BlueMarble) by Swi
 This project is a **fork** of Skirk Marble,
 which itself is derived from the original Blue Marble project and its community forks.
 
-The documentation is currently being modified.
-Consequently, content retained from the original project may not accurately reflect the current codebase or policies.
 ### 📜 Project Lineage
 
 ```
@@ -37,7 +35,7 @@ Blue Marble (SwingTheVine - Original)
 
 ---
 
-## ✨ Features
+## ✨ Features (Plan)
 
 ### 🎨 Template Management
 - Upload and overlay image templates on Wplace.live canvas
@@ -64,7 +62,6 @@ Blue Marble (SwingTheVine - Original)
 - Mobile mode support
 
 ### 💾 Data Management
-- Automatic settings persistence (TamperMonkey + localStorage fallback)
 - Template import/export
 - Wrong color statistics and filtering
 
@@ -72,29 +69,9 @@ Blue Marble (SwingTheVine - Original)
 
 ## 🚀 Installation
 
-### Development Build
+This extension is not published on the Chrome Web Store. You need to build it yourself from source.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/YourUsername/Wplace-MarukyuMarble.git
-   cd Wplace-MarukyuMarble
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
-
-3. **Run development build**
-   ```bash
-   pnpm dev
-   ```
-
-4. **Load in Chrome**
-   - Open `chrome://extensions/`
-   - Enable "Developer mode"
-   - Click "Load unpacked"
-   - Select `.output/chrome-mv3/` directory
+See [Building from Source](./docs/BUILDING.md) for instructions.
 
 ---
 
@@ -139,39 +116,9 @@ Blue Marble (SwingTheVine - Original)
 
 ---
 
-## 🔧 Building from Source
-
-```bash
-# Clone the repository
-git clone https://github.com/YourUsername/Wplace-MarukyuMarble.git
-cd Wplace-MarukyuMarble
-
-# Install dependencies
-npm install
-
-# Build
-npm run build
-
-# The output will be in dist/MarukyuMarble.user.js
-```
-
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please read our [Contributing Guidelines](./docs/CONTRIBUTING.md) first.
-
-### Before Contributing
-- This project follows MPL-2.0 license
-- All contributions must maintain proper attribution
-- Respect the project's heritage and upstream contributors
-
-### How to Contribute
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ---
 
@@ -190,31 +137,18 @@ See [CREDITS.md](./CREDITS.md) for details.
 
 [Mozilla Public License 2.0](./LICENSE.txt) - See [NOTICE](./NOTICE) for copyright details.
 
-
-
 ---
 
 ## 📞 Support
 
-### Documentation
-- [User Guide](./docs/USER_GUIDE.md)
-- [FAQ](./docs/FAQ.md)
-- [Troubleshooting](./docs/TROUBLESHOOTING.md)
-
-### Get Help
-- 🐛 [Report a Bug](https://github.com/YourUsername/Wplace-MarukyuMarble/issues/new?template=bug_report.md)
-- 💡 [Request a Feature](https://github.com/YourUsername/Wplace-MarukyuMarble/issues/new?template=feature_request.md)
-- 💬 [Ask a Question](https://github.com/YourUsername/Wplace-MarukyuMarble/discussions)
-
----
-
-
+- 🐛 [Report a Bug](https://github.com/lsy7851/Wplace-MarukyuMarble/issues/new?template=bug-report.md)
+- 💡 [Request a Feature](https://github.com/lsy7851/Wplace-MarukyuMarble/issues/new?template=feature-request.md)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by the Wplace community**
+**Made with ❤️ for the Wplace community**
 
 [⬆ Back to Top](#-marukyu-marble)
 

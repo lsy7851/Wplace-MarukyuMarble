@@ -40,7 +40,7 @@ This project stands on the work of many contributors from the Wplace.live commun
 
 ### Marukyu Marble Contributors
 
-- **Repository**: [YourUsername/Wplace-MarukyuMarble](https://github.com/YourUsername/Wplace-MarukyuMarble)
+- **Repository**: [lsy7851/Wplace-MarukyuMarble](https://github.com/lsy7851/Wplace-MarukyuMarble)
 - **License**: Mozilla Public License 2.0
 - **Focus**: Code quality, bug fixes, documentation, WXT migration
 
@@ -74,7 +74,7 @@ See [NOTICE](./NOTICE) for copyright details.
 2. [Wplace-BM](https://github.com/Hao-1337/Wplace-BM) - Error Map
 3. [Wplace-Red-planet](https://github.com/pixelkat5/Wplace-Red-planet) - Search
 4. [Skirk Marble](https://github.com/Seris0/Wplace-SkirkMarble) - TamperMonkey
-5. [Marukyu Marble](https://github.com/YourUsername/Wplace-MarukyuMarble) - This Fork
+5. [Marukyu Marble](https://github.com/lsy7851/Wplace-MarukyuMarble) - This Fork
 
 ### Family Tree
 
