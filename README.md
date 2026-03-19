@@ -64,7 +64,6 @@ Blue Marble (SwingTheVine - Original)
 - Mobile mode support
 
 ### 💾 Data Management
-- Automatic settings persistence (TamperMonkey + localStorage fallback)
 - Template import/export
 - Wrong color statistics and filtering
 
@@ -72,29 +71,9 @@ Blue Marble (SwingTheVine - Original)
 
 ## 🚀 Installation
 
-### Development Build
+This extension is not published on the Chrome Web Store. You need to build it yourself from source.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/YourUsername/Wplace-MarukyuMarble.git
-   cd Wplace-MarukyuMarble
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
-
-3. **Run development build**
-   ```bash
-   pnpm dev
-   ```
-
-4. **Load in Chrome**
-   - Open `chrome://extensions/`
-   - Enable "Developer mode"
-   - Click "Load unpacked"
-   - Select `.output/chrome-mv3/` directory
+See [Building from Source](./docs/BUILDING.md) for instructions.
 
 ---
 
@@ -139,24 +118,6 @@ Blue Marble (SwingTheVine - Original)
 
 ---
 
-## 🔧 Building from Source
-
-```bash
-# Clone the repository
-git clone https://github.com/YourUsername/Wplace-MarukyuMarble.git
-cd Wplace-MarukyuMarble
-
-# Install dependencies
-npm install
-
-# Build
-npm run build
-
-# The output will be in dist/MarukyuMarble.user.js
-```
-
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please read our [Contributing Guidelines](./docs/CONTRIBUTING.md) first.
@@ -196,25 +157,14 @@ See [CREDITS.md](./CREDITS.md) for details.
 
 ## 📞 Support
 
-### Documentation
-- [User Guide](./docs/USER_GUIDE.md)
-- [FAQ](./docs/FAQ.md)
-- [Troubleshooting](./docs/TROUBLESHOOTING.md)
-
-### Get Help
-- 🐛 [Report a Bug](https://github.com/YourUsername/Wplace-MarukyuMarble/issues/new?template=bug_report.md)
-- 💡 [Request a Feature](https://github.com/YourUsername/Wplace-MarukyuMarble/issues/new?template=feature_request.md)
-- 💬 [Ask a Question](https://github.com/YourUsername/Wplace-MarukyuMarble/discussions)
-
----
-
-
+- 🐛 [Report a Bug](https://github.com/lsy7851/Wplace-MarukyuMarble/issues/new?template=bug-report.md)
+- 💡 [Request a Feature](https://github.com/lsy7851/Wplace-MarukyuMarble/issues/new?template=feature-request.md)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by the Wplace community**
+**Made with ❤️ for the Wplace community**
 
 [⬆ Back to Top](#-marukyu-marble)
 
