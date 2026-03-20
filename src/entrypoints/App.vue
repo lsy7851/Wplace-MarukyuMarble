@@ -42,5 +42,6 @@ onUnmounted(() => {
   <Overlay></Overlay>
 </template>
 
-<style scoped>
+<style>
+@import '@/style.css';
 </style>

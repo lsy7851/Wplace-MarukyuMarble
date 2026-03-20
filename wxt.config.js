@@ -1,6 +1,7 @@
 import { defineConfig } from 'wxt';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import tailwindcss from '@tailwindcss/vite';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +15,7 @@ export default defineConfig({
   srcDir: 'src',
 
   vite: () => ({
+    plugins: [tailwindcss()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

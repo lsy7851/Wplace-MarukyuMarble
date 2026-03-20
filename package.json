@@ -32,11 +32,13 @@
     "format:check": "prettier --check src/"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
     "@wxt-dev/module-vue": "^1.0.3",
     "esbuild": "^0.25.0",
     "jsdoc": "^4.0.4",
     "minami": "^1.2.3",
     "prettier": "^3.8.1",
+    "tailwindcss": "^4.2.2",
     "terser": "^5.43.1",
     "wxt": "^0.19.0"
   },

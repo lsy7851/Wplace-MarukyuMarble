@@ -8,8 +8,67 @@
  * Modified work Copyright (c) Seris0
  * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
  */
+
+/* Tailwind CSS v4 entry point */
+@import 'tailwindcss';
+
+/* ===== Custom Theme ===== */
+@theme {
+  /* Background colors (dark slate palette) */
+  --color-mm-bg-darkest: #0f172a;
+  --color-mm-bg-dark: #1e293b;
+  --color-mm-bg-medium: #293548;
+  --color-mm-bg-border: #334155;
+  --color-mm-bg-muted: #475569;
+  --color-mm-bg-light: #64748b;
+
+  /* Text colors */
+  --color-mm-text-primary: #f1f5f9;
+  --color-mm-text-secondary: #94a3b8;
+  --color-mm-text-muted: #cbd5e1;
+  --color-mm-text-bright: #f8fafc;
+  --color-mm-text-dim: #e2e8f0;
+
+  /* Primary (blue) */
+  --color-mm-blue: #3b82f6;
+  --color-mm-blue-light: #60a5fa;
+  --color-mm-blue-dark: #2563eb;
+  --color-mm-blue-darker: #1d4ed8;
+  --color-mm-blue-btn: #2190ED;
+  --color-mm-blue-btn-hover: #3b9def;
+
+  /* Success (green/emerald) */
+  --color-mm-success: #10b981;
+  --color-mm-success-dark: #059669;
+  --color-mm-success-darker: #047857;
+  --color-mm-success-light: #4CAF50;
+  --color-mm-success-btn: #21c060;
+  --color-mm-success-btn-hover: #1daa55;
+  --color-mm-success-btn-active: #19944a;
+
+  /* Error/Danger (red) */
+  --color-mm-error: #ef4444;
+  --color-mm-error-dark: #dc2626;
+  --color-mm-danger: #d63838;
+  --color-mm-danger-hover: #cb2a2a;
+  --color-mm-danger-active: #b62525;
+  --color-mm-red: #f44336;
+
+  /* Warning (amber/orange) */
+  --color-mm-warning: #fbbf24;
+  --color-mm-warning-accent: #f59e0b;
+  --color-mm-orange: #ff9800;
+  --color-mm-orange-light: #ff8c42;
+
+  /* Font families */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-mono: 'Roboto Mono', monospace, Arial;
+}
+
+/* ===== Overlay container positioning ===== */
 #wxt-my-overlay {
-    position: absolute !important;
-    top:0;
-    left:0;
+  position: absolute !important;
+  top: 0;
+  left: 0;
 }
