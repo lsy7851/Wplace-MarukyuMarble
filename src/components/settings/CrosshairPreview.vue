@@ -1,13 +1,13 @@
 <template>
-  <div class="crosshair-preview">
+  <div class="flex flex-col items-center gap-3">
     <div
       ref="previewRef"
-      class="crosshair-box"
+      class="relative flex size-[60px] items-center justify-center rounded-xl border-2 border-mm-bg-light shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-[0_6px_20px_rgba(0,0,0,0.6)]"
       :style="{ background: backgroundColor }">
       <!-- Crosshair pattern -->
       <div
-        class="crosshair-pattern"
-        :class="{ enhanced: enhancedSize }">
+        class="grid h-full w-full gap-px bg-black/10"
+        :class="enhancedSize ? 'grid-cols-5 grid-rows-5' : 'grid-cols-3 grid-rows-3'">
         <!-- Standard 3x3 pattern or Enhanced 5x5 pattern -->
         <template v-if="!enhancedSize">
           <!-- Row 1 -->
@@ -17,7 +17,7 @@
 
           <!-- Row 2 -->
           <div :style="{ background: pixelColor }"></div>
-          <div class="center-pixel"></div>
+          <div class="box-border border-2 border-white/40 bg-black"></div>
           <div :style="{ background: pixelColor }"></div>
 
           <!-- Row 3 -->
@@ -45,7 +45,7 @@
           <!-- Row 3 (center row) -->
           <div :style="{ background: pixelColor }"></div>
           <div :style="{ background: pixelColor }"></div>
-          <div class="center-pixel"></div>
+          <div class="box-border border-2 border-white/40 bg-black"></div>
           <div :style="{ background: pixelColor }"></div>
           <div :style="{ background: pixelColor }"></div>
 
@@ -65,7 +65,7 @@
         </template>
       </div>
     </div>
-    <div class="color-name">{{ color.name }}</div>
+    <div class="text-base font-bold tracking-tight text-mm-text-primary">{{ color.name }}</div>
   </div>
 </template>
 
@@ -114,62 +114,3 @@ const backgroundColor = computed(() => {
   return '#475569'; // Slate-600
 });
 </script>
-
-<style scoped>
-.crosshair-preview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.color-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: #f1f5f9;
-  letter-spacing: -0.025em;
-}
-
-.crosshair-box {
-  width: 60px;
-  height: 60px;
-  border: 2px solid #64748b;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.crosshair-box:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
-}
-
-/* Crosshair Pattern */
-.crosshair-pattern {
-  display: grid;
-  gap: 1px;
-  background: rgba(0, 0, 0, 0.1);
-  width: 100%;
-  height: 100%;
-}
-
-.crosshair-pattern:not(.enhanced) {
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-}
-
-.crosshair-pattern.enhanced {
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-}
-
-.center-pixel {
-  background: black;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  box-sizing: border-box;
-}
-</style>

@@ -2,31 +2,31 @@
   <!-- Grid View Item -->
   <div
     v-if="!listView"
-    class="bmcf-card"
+    class="relative box-border flex h-[120px] w-full flex-col items-center justify-center overflow-hidden rounded-lg p-[12px_8px_16px_8px] text-center transition-all duration-200 ease-in-out"
     :style="{
       background: `rgb(${color.colorInfo.rgb[0]}, ${color.colorInfo.rgb[1]}, ${color.colorInfo.rgb[2]})`,
       border: `3px solid ${color.isDisabled ? '#f44336' : '#4caf50'}`
     }">
     <!-- Controls Container -->
-    <div class="controls-container">
+    <div class="mt-1.5 flex w-full shrink-0 flex-col items-center gap-0.5">
       <!-- Click Area for Enable/Disable -->
-      <div class="color-click-area" @click="emit('toggle-enabled')">
+      <div class="relative flex h-5 w-full cursor-pointer items-center justify-center" @click="emit('toggle-enabled')">
         <!-- Disabled Overlay -->
-        <div v-if="color.isDisabled" class="disabled-overlay">✕</div>
+        <div v-if="color.isDisabled" class="absolute inset-0 flex items-center justify-center rounded-[5px] bg-[rgba(244,67,54,0.3)] text-base font-bold text-white">✕</div>
       </div>
 
       <!-- Enhanced Checkbox -->
-      <div class="enhanced-container">
+      <div class="flex items-center justify-center gap-1 text-[0.65em] text-white [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)]">
         <input
           :id="`enhanced-${color.colorKey}`"
           type="checkbox"
           :checked="color.isEnhanced"
           :disabled="color.isDisabled"
-          class="enhanced-checkbox"
+          class="size-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           @change="emit('toggle-enhanced')" />
         <label
           :for="`enhanced-${color.colorKey}`"
-          class="enhanced-label"
+          class="cursor-pointer select-none"
           @click.prevent="handleLabelClick">
           Enhanced
         </label>
@@ -34,36 +34,36 @@
     </div>
 
     <!-- Color Name -->
-    <div class="color-name">{{ color.colorInfo.name }}</div>
+    <div class="relative z-[1] mb-1.5 shrink-0 text-center text-[0.75em] font-bold leading-tight text-white [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)]">{{ color.colorInfo.name }}</div>
 
     <!-- Pixel Stats -->
-    <div class="pixel-stats">
+    <div class="relative z-[1] flex min-h-0 grow flex-col justify-center p-[4px_6px] text-center">
       <template v-if="color.stats.totalRequired > 0">
-        <div class="stats-main">
+        <div class="mb-px text-[0.6em] leading-tight text-white/90 [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)]">
           {{ color.stats.painted.toLocaleString() }}/{{ color.stats.totalRequired.toLocaleString() }} ({{ color.stats.percentage }}%)
         </div>
-        <div class="stats-left">
+        <div class="text-[0.54em] text-white/70 [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)]">
           {{ color.stats.needsCrosshair.toLocaleString() }} Left
         </div>
       </template>
       <template v-else>
-        <div class="stats-unused">Not Used</div>
+        <div class="text-[0.65em] text-white/60 [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)]">Not Used</div>
       </template>
     </div>
 
     <!-- Progress Bar -->
-    <div v-if="color.stats.totalRequired > 0" class="progress-track">
+    <div v-if="color.stats.totalRequired > 0" class="pointer-events-none absolute inset-x-5 bottom-1.5 z-[1] h-1 overflow-hidden rounded-sm bg-white/25">
       <div
-        class="progress-fill"
+        class="h-full bg-linear-to-r from-[#4CAF50] via-[#8BC34A] to-[#CDDC39] transition-[width] duration-300 ease-in-out"
         :style="{ width: Math.min(color.stats.percentage, 100) + '%' }"></div>
     </div>
 
     <!-- Premium Droplet Icon -->
-    <div v-if="!color.colorInfo.free" class="droplet-icon">💧</div>
+    <div v-if="!color.colorInfo.free" class="pointer-events-none absolute right-1.5 top-1.5 z-[2] text-xs opacity-80 [text-shadow:1px_1px_2px_rgba(0,0,0,0.5)]">💧</div>
 
     <!-- Exclude Icon -->
     <div
-      class="exclude-icon"
+      class="exclude-icon absolute bottom-1.5 right-1.5 z-[2] cursor-pointer text-sm opacity-70 transition-all duration-200 ease-in-out [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)] hover:scale-120 hover:opacity-100"
       :class="{ excluded: color.isExcluded }"
       :title="color.isExcluded ? 'Click to include in progress' : 'Click to exclude from progress'"
       @click="emit('toggle-excluded')">
@@ -74,34 +74,34 @@
   <!-- List View Item -->
   <div
     v-else
-    class="bmcf-list-item"
+    class="relative flex min-h-[50px] items-center gap-3 rounded-lg bg-white/5 p-[8px_12px] transition-all duration-200 ease-in-out hover:bg-white/[0.08]"
     :style="{
       border: `2px solid ${color.isDisabled ? '#f44336' : '#4caf50'}`,
       opacity: color.isDisabled ? '0.6' : '1'
     }">
     <!-- Color Swatch -->
     <div
-      class="list-color-swatch"
+      class="size-8 shrink-0 rounded-md border border-white/20"
       :style="{
         background: `rgb(${color.colorInfo.rgb[0]}, ${color.colorInfo.rgb[1]}, ${color.colorInfo.rgb[2]})`
       }"></div>
 
     <!-- Info Container -->
-    <div class="list-info-container">
+    <div class="flex min-w-0 flex-1 flex-col gap-1">
       <!-- Top Row: Name + Main Stats -->
-      <div class="list-top-row">
-        <div class="list-color-name">{{ color.colorInfo.name }}</div>
-        <div v-if="color.stats.totalRequired > 0" class="list-main-stats">
+      <div class="flex items-center gap-2">
+        <div class="text-[0.9em] font-semibold text-mm-text-primary">{{ color.colorInfo.name }}</div>
+        <div v-if="color.stats.totalRequired > 0" class="whitespace-nowrap text-[0.8em] text-mm-text-muted">
           {{ color.stats.painted.toLocaleString() }}/{{ color.stats.totalRequired.toLocaleString() }} ({{ color.stats.percentage }}%)
         </div>
-        <div v-else class="list-stats-unused">Not Used</div>
+        <div v-else class="text-[0.8em] text-mm-text-secondary">Not Used</div>
       </div>
 
       <!-- Bottom Row: Left Stats -->
-      <div class="list-bottom-row">
+      <div class="flex items-center">
         <div
           v-if="color.stats.totalRequired > 0"
-          class="list-left-stats"
+          class="text-[0.75em] font-medium"
           :style="{ color: color.stats.needsCrosshair === 0 ? '#4caf50' : '#ff9800' }">
           {{ color.stats.needsCrosshair.toLocaleString() }} Left
         </div>
@@ -109,14 +109,14 @@
     </div>
 
     <!-- Controls Container -->
-    <div class="list-controls-container">
+    <div class="z-[2] flex shrink-0 items-center gap-2">
       <!-- Premium Icon -->
-      <div v-if="!color.colorInfo.free" class="list-droplet-icon">💧</div>
+      <div v-if="!color.colorInfo.free" class="text-sm opacity-80">💧</div>
 
       <!-- Exclude Icon -->
       <div
-        class="list-exclude-icon"
-        :class="{ excluded: color.isExcluded }"
+        class="flex size-5 cursor-pointer items-center justify-center rounded-full bg-black/30 text-base opacity-70 transition-all duration-200 ease-in-out hover:scale-110 hover:opacity-100"
+        :class="{ 'bg-[rgba(244,67,54,0.8)] opacity-100': color.isExcluded }"
         :title="color.isExcluded ? 'Click to include in progress' : 'Click to exclude from progress'"
         @click.stop="emit('toggle-excluded')">
         {{ color.isExcluded ? '🚫' : '👁️' }}
@@ -128,19 +128,19 @@
         type="checkbox"
         :checked="color.isEnhanced"
         :disabled="color.isDisabled"
-        class="list-enhanced-checkbox"
+        class="size-4 cursor-pointer accent-mm-blue disabled:cursor-not-allowed disabled:opacity-50"
         @change="emit('toggle-enhanced')" />
       <label
         :for="`list-enhanced-${color.colorKey}`"
-        class="list-enhanced-label"
+        class="cursor-pointer select-none whitespace-nowrap text-[0.75em] text-mm-text-dim"
         @click.prevent="handleLabelClick">
         Enhanced
       </label>
     </div>
 
     <!-- Click Area for Enable/Disable (Overlay) -->
-    <div class="list-color-click-area" @click="emit('toggle-enabled')">
-      <div v-if="color.isDisabled" class="list-disabled-overlay">✕</div>
+    <div class="absolute inset-0 z-[1] cursor-pointer" @click="emit('toggle-enabled')">
+      <div v-if="color.isDisabled" class="absolute inset-0 flex items-center justify-center rounded-lg bg-[rgba(244,67,54,0.2)] text-2xl font-bold text-white">✕</div>
     </div>
   </div>
 </template>
@@ -183,335 +183,6 @@ function handleLabelClick() {
 </script>
 
 <style scoped>
-/* Grid View Card */
-.bmcf-card {
-  border-radius: 8px;
-  padding: 12px 8px 16px 8px;
-  text-align: center;
-  transition: all 0.2s ease;
-  position: relative;
-  width: 100%;
-  height: 120px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-/* List View Item */
-.bmcf-list-item {
-  min-height: 50px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-  transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.bmcf-list-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.list-color-swatch {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.list-info-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.list-top-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.list-color-name {
-  font-size: 0.9em;
-  font-weight: 600;
-  color: var(--slate-100, #f1f5f9);
-}
-
-.list-main-stats {
-  font-size: 0.8em;
-  color: var(--slate-300, #cbd5e1);
-  white-space: nowrap;
-}
-
-.list-stats-unused {
-  font-size: 0.8em;
-  color: var(--slate-400, #94a3b8);
-}
-
-.list-bottom-row {
-  display: flex;
-  align-items: center;
-}
-
-.list-left-stats {
-  font-size: 0.75em;
-  font-weight: 500;
-}
-
-.list-controls-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  z-index: 2;
-}
-
-.list-droplet-icon {
-  font-size: 14px;
-  opacity: 0.8;
-}
-
-.list-exclude-icon {
-  font-size: 16px;
-  cursor: pointer;
-  opacity: 0.7;
-  transition: all 0.2s ease;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 50%;
-}
-
-.list-exclude-icon:hover {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-.list-exclude-icon.excluded {
-  background: rgba(244, 67, 54, 0.8);
-  opacity: 1;
-}
-
-.list-enhanced-checkbox {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #3b82f6;
-}
-
-.list-enhanced-checkbox:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.list-enhanced-label {
-  font-size: 0.75em;
-  color: var(--slate-200, #e2e8f0);
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-}
-
-.list-color-click-area {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  cursor: pointer;
-  z-index: 1;
-}
-
-.list-disabled-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(244, 67, 54, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 24px;
-  border-radius: 8px;
-}
-
-/* Controls Container */
-.controls-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  width: 100%;
-  flex-shrink: 0;
-  margin-top: 6px;
-}
-
-/* Color Click Area */
-.color-click-area {
-  width: 100%;
-  height: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.disabled-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(244, 67, 54, 0.3);
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-}
-
-/* Enhanced Container */
-.enhanced-container {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.65em;
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-  justify-content: center;
-}
-
-.enhanced-checkbox {
-  width: 12px;
-  height: 12px;
-  cursor: pointer;
-}
-
-.enhanced-checkbox:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.enhanced-label {
-  cursor: pointer;
-  user-select: none;
-}
-
-/* Color Name */
-.color-name {
-  font-size: 0.75em;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-  color: white;
-  font-weight: bold;
-  z-index: 1;
-  position: relative;
-  text-align: center;
-  margin-bottom: 6px;
-  flex-shrink: 0;
-  line-height: 1.1;
-}
-
-/* Pixel Stats */
-.pixel-stats {
-  z-index: 1;
-  position: relative;
-  padding: 4px 6px;
-  text-align: center;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 0;
-}
-
-.stats-main {
-  font-size: 0.6em;
-  color: rgba(255,255,255,0.9);
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-  line-height: 1.1;
-  margin-bottom: 1px;
-}
-
-.stats-left {
-  color: rgba(255,255,255,0.7);
-  font-size: 0.54em;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-}
-
-.stats-unused {
-  font-size: 0.65em;
-  color: rgba(255,255,255,0.6);
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-}
-
-/* Progress Bar */
-.progress-track {
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  bottom: 6px;
-  height: 4px;
-  background: rgba(255,255,255,0.25);
-  border-radius: 2px;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.progress-fill {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #4CAF50, #8BC34A, #CDDC39);
-  transition: width 0.3s ease;
-}
-
-/* Droplet Icon */
-.droplet-icon {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  font-size: 12px;
-  opacity: 0.8;
-  z-index: 2;
-  pointer-events: none;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-}
-
-/* Exclude Icon */
-.exclude-icon {
-  position: absolute;
-  bottom: 6px;
-  right: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  z-index: 2;
-  opacity: 0.7;
-  transition: all 0.2s ease;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-}
-
-.exclude-icon:hover {
-  opacity: 1;
-  transform: scale(1.2);
-}
-
 .exclude-icon.excluded {
   opacity: 1;
   filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.8));

@@ -39,24 +39,24 @@ function isFavorited(location) {
 </script>
 
 <template>
-  <div class="search-results">
+  <div class="search-results max-h-[300px] overflow-y-auto">
     <!-- Loading -->
-    <div v-if="isLoading" class="result-state loading">
+    <div v-if="isLoading" class="p-6 text-center text-sm text-mm-blue">
       Searching...
     </div>
 
     <!-- Error -->
-    <div v-else-if="error" class="result-state error">
+    <div v-else-if="error" class="p-6 text-center text-sm text-mm-error">
       {{ error }}
     </div>
 
     <!-- No results -->
-    <div v-else-if="hasQuery && !hasResults" class="result-state empty">
+    <div v-else-if="hasQuery && !hasResults" class="p-6 text-center text-sm text-mm-text-secondary">
       No results found
     </div>
 
     <!-- Results list -->
-    <div v-else-if="hasResults" class="results-list">
+    <div v-else-if="hasResults" class="flex flex-col gap-2 overflow-x-hidden">
       <LocationItem
         v-for="(result, index) in results"
         :key="index"
@@ -69,11 +69,6 @@ function isFavorited(location) {
 </template>
 
 <style scoped>
-.search-results {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
 .search-results::-webkit-scrollbar {
   width: 8px;
 }
@@ -90,27 +85,5 @@ function isFavorited(location) {
 
 .search-results::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.7);
-}
-
-.result-state {
-  padding: 24px;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 14px;
-}
-
-.result-state.loading {
-  color: #3b82f6;
-}
-
-.result-state.error {
-  color: #ef4444;
-}
-
-.results-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  overflow-x: hidden;
 }
 </style>

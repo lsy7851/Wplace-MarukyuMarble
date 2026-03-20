@@ -66,15 +66,17 @@ async function handleRemove(location) {
 </script>
 
 <template>
-  <div v-if="count > 0" class="favorites-section">
+  <div v-if="count > 0" class="mt-4 border-t border-white/10 pt-3">
     <!-- Header -->
-    <div class="favorites-header">
-      <div class="favorites-title" @click="toggleCollapse">
-        <span class="toggle-icon" :class="{ collapsed: isCollapsed }">▼</span>
+    <div class="mb-3 flex items-center justify-between">
+      <div class="flex cursor-pointer select-none items-center gap-2 font-semibold hover:text-mm-text-muted" @click="toggleCollapse">
+        <span class="text-xs transition-transform duration-200 ease-in-out" :class="{ '-rotate-90': isCollapsed }">▼</span>
         <span>⭐ Favorites</span>
-        <span class="favorites-count">{{ count }}</span>
+        <span class="rounded-xl bg-mm-blue/30 px-2 py-0.5 text-xs font-semibold text-blue-300">{{ count }}</span>
       </div>
-      <button class="btn-clear" @click="handleClearAll">
+      <button
+        class="cursor-pointer rounded-md border border-mm-bg-muted bg-mm-bg-border px-3 py-1.5 font-mono text-xs text-mm-text-primary transition-all duration-[180ms] ease-in-out hover:border-mm-error-dark hover:bg-mm-error-dark"
+        @click="handleClearAll">
         Clear All
       </button>
     </div>
@@ -84,12 +86,12 @@ async function handleRemove(location) {
       v-if="!isCollapsed"
       v-model="filterQuery"
       type="text"
-      class="favorites-filter"
+      class="favorites-filter mb-3 w-full rounded-lg border border-mm-bg-muted bg-mm-bg-darkest/50 px-3 py-2 font-mono text-[13px] text-mm-text-primary transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_2px_rgba(59,130,246,0.2)] focus:outline-none"
       placeholder="Filter favorites..." />
 
     <!-- Favorites List -->
-    <div v-if="!isCollapsed" class="favorites-list">
-      <div v-if="favorites.length === 0" class="no-results">
+    <div v-if="!isCollapsed" class="favorites-list flex max-h-[300px] flex-col gap-2 overflow-y-auto">
+      <div v-if="favorites.length === 0" class="p-4 text-center text-[13px] text-mm-text-secondary">
         No favorites match your filter
       </div>
       <LocationFavoriteItem
@@ -105,94 +107,8 @@ async function handleRemove(location) {
 </template>
 
 <style scoped>
-.favorites-section {
-  margin-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 12px;
-}
-
-.favorites-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.favorites-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  user-select: none;
-}
-
-.favorites-title:hover {
-  color: #cbd5e1;
-}
-
-.toggle-icon {
-  transition: transform 0.2s ease;
-  font-size: 12px;
-}
-
-.toggle-icon.collapsed {
-  transform: rotate(-90deg);
-}
-
-.favorites-count {
-  background: rgba(59, 130, 246, 0.3);
-  color: #93c5fd;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.btn-clear {
-  border: 1px solid #475569;
-  padding: 6px 12px;
-  border-radius: 6px;
-  background: #334155;
-  color: #f1f5f9;
-  font: 12px monospace;
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-
-.btn-clear:hover {
-  background: #dc2626;
-  border-color: #dc2626;
-}
-
-.favorites-filter {
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #475569;
-  background: rgba(15, 23, 42, 0.5);
-  color: #f1f5f9;
-  font: 13px monospace;
-  margin-bottom: 12px;
-  transition: all 0.2s ease;
-}
-
-.favorites-filter:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-  outline: none;
-}
-
 .favorites-filter::placeholder {
   color: #64748b;
-}
-
-.favorites-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 300px;
-  overflow-y: auto;
 }
 
 .favorites-list::-webkit-scrollbar {
@@ -207,12 +123,5 @@ async function handleRemove(location) {
 .favorites-list::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.5);
   border-radius: 6px;
-}
-
-.no-results {
-  padding: 16px;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 13px;
 }
 </style>

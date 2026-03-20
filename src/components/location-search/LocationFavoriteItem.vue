@@ -64,16 +64,18 @@ function handleRemoveClick(event) {
 </script>
 
 <template>
-  <div class="location-item" @click="handleClick">
-    <div class="location-content">
-      <div class="location-name">{{ primaryName }}</div>
-      <div v-if="secondaryInfo" class="location-secondary">{{ secondaryInfo }}</div>
+  <div
+    class="flex cursor-pointer items-center gap-3 rounded-lg border border-white/10 bg-mm-bg-darkest/40 p-3 transition-all duration-200 ease-in-out hover:bg-mm-bg-dark/60"
+    @click="handleClick">
+    <div class="min-w-0 flex-1">
+      <div class="mb-1 text-sm font-semibold text-mm-text-primary">{{ primaryName }}</div>
+      <div v-if="secondaryInfo" class="mb-0.5 text-xs text-mm-text-muted">{{ secondaryInfo }}</div>
     </div>
 
     <span
       v-if="showFavorite"
-      class="favorite-star"
-      :class="{ favorited: isFavorited }"
+      class="cursor-pointer select-none text-xl text-mm-bg-light transition-all duration-200 ease-in-out hover:scale-120 hover:text-mm-warning"
+      :class="{ 'text-mm-warning': isFavorited }"
       :title="isFavorited ? 'Remove from favorites' : 'Add to favorites'"
       @click="handleFavoriteClick">
       ★
@@ -81,78 +83,10 @@ function handleRemoveClick(event) {
 
     <span
       v-if="showRemove"
-      class="remove-btn"
+      class="cursor-pointer select-none text-2xl font-bold leading-none text-mm-bg-light transition-all duration-200 ease-in-out hover:scale-120 hover:text-mm-error"
       title="Remove from favorites"
       @click="handleRemoveClick">
       ×
     </span>
   </div>
 </template>
-
-<style scoped>
-.location-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.location-item:hover {
-  background: rgba(30, 41, 59, 0.6);
-}
-
-.location-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.location-name {
-  font-weight: 600;
-  font-size: 14px;
-  color: #f1f5f9;
-  margin-bottom: 4px;
-}
-
-.location-secondary {
-  font-size: 12px;
-  color: #cbd5e1;
-  margin-bottom: 2px;
-}
-
-.favorite-star {
-  font-size: 20px;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-
-.favorite-star:hover {
-  color: #fbbf24;
-  transform: scale(1.2);
-}
-
-.favorite-star.favorited {
-  color: #fbbf24;
-}
-
-.remove-btn {
-  font-size: 24px;
-  font-weight: bold;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-  line-height: 1;
-}
-
-.remove-btn:hover {
-  color: #ef4444;
-  transform: scale(1.2);
-}
-</style>
