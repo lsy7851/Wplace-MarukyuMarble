@@ -113,50 +113,48 @@ watch(() => props.modelValue, (isOpen) => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="modal-fade">
+  <Transition name="modal-fade">
+    <div
+      v-if="modelValue"
+      class="modal-backdrop">
       <div
-        v-if="modelValue"
-        class="modal-backdrop">
+        ref="modalRef"
+        class="base-modal"
+        :class="{ dragging: isDragging, 'mobile-mode': mobileMode }"
+        :style="draggableStyle">
+        <!-- Drag Handle -->
         <div
-          ref="modalRef"
-          class="base-modal"
-          :class="{ dragging: isDragging, 'mobile-mode': mobileMode }"
-          :style="draggableStyle">
-          <!-- Drag Handle -->
-          <div
-            ref="dragHandleRef"
-            class="drag-handle"></div>
+          ref="dragHandleRef"
+          class="drag-handle"></div>
 
-          <!-- Header -->
-          <div class="modal-header">
-            <h3 class="modal-title">
-              <slot name="title">{{ title }}</slot>
-            </h3>
-            <div class="modal-actions">
-              <slot name="actions"></slot>
-              <button
-                v-if="showClose"
-                class="btn-close"
-                @click="close">
-                ✕
-              </button>
-            </div>
-          </div>
-
-          <!-- Body -->
-          <div class="modal-body">
-            <slot></slot>
-          </div>
-
-          <!-- Footer -->
-          <div v-if="$slots.footer" class="modal-footer">
-            <slot name="footer"></slot>
+        <!-- Header -->
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <slot name="title">{{ title }}</slot>
+          </h3>
+          <div class="modal-actions">
+            <slot name="actions"></slot>
+            <button
+              v-if="showClose"
+              class="btn-close"
+              @click="close">
+              ✕
+            </button>
           </div>
         </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+          <slot></slot>
+        </div>
+
+        <!-- Footer -->
+        <div v-if="$slots.footer" class="modal-footer">
+          <slot name="footer"></slot>
+        </div>
       </div>
-    </Transition>
-  </Teleport>
+    </div>
+  </Transition>
 </template>
 
 <style scoped>

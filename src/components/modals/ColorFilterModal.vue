@@ -1,17 +1,16 @@
 <template>
-  <Teleport to="body">
-    <Transition name="modal-fade">
+  <Transition name="modal-fade">
+    <div
+      v-if="modelValue"
+      class="modal-backdrop"
+      style="pointer-events: none;">
       <div
-        v-if="modelValue"
-        class="modal-backdrop"
-        style="pointer-events: none;">
-        <div
-          id="bm-color-filter-overlay"
-          ref="modalRef"
-          class="bmcf-overlay"
-          :class="{ 'mobile-mode': mobileMode }"
-          :style="draggableStyle"
-          style="pointer-events: auto;">
+        id="bm-color-filter-overlay"
+        ref="modalRef"
+        class="bmcf-overlay"
+        :class="{ 'mobile-mode': mobileMode }"
+        :style="draggableStyle"
+        style="pointer-events: auto;">
           <!-- Header -->
           <div class="bmcf-header" ref="dragHandleRef">
             <!-- Drag Bar -->
@@ -196,9 +195,8 @@
             </button>
           </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+    </div>
+  </Transition>
 </template>
 
 <script setup>

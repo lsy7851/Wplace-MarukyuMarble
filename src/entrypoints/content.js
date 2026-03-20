@@ -12,15 +12,11 @@
  * Marukyu Marble - WXT Content Script (ISOLATED World)
  *
  * ISOLATED world content script that:
- * 1. Manually injects Vue app CSS (assets/vue-app.css)
- * 2. Injects API interceptor into MAIN world
- * 3. Injects Vue app into MAIN world (for Vue DevTools detection)
- * 4. Proxies chrome.storage API for MAIN world via postMessage
+ * 1. Injects API interceptor into MAIN world
+ * 2. Injects Vue app into MAIN world (for Vue DevTools detection)
+ * 3. Proxies chrome.storage API for MAIN world via postMessage
  *
- * CSS Handling:
- * - Vue app (vue-app.js) imports App.vue, generating assets/vue-app.css
- * - This content script manually injects that CSS using chrome.runtime.getURL
- * - CSS is loaded before Vue app runs, ensuring styles are applied
+ * CSS is loaded by vue-app.js directly into Shadow DOM for style isolation.
  */
 import { defineContentScript } from 'wxt/sandbox';
 import { injectScript } from 'wxt/client';
@@ -41,63 +37,11 @@ export default defineContentScript({
     // ===== Setup chrome.storage proxy immediately =====
     setupStorageProxy();
 
-    // ===== Wait for DOM head to be ready =====
-    await waitForDocumentHead();
-
-    // ===== Manually inject CSS =====
-    await injectVueCSS();
-
     // ===== Inject Vue App into MAIN world =====
+    // CSS is now loaded by vue-app.js into Shadow DOM (no longer injected here)
     await injectVueApp();
   },
 });
-
-/**
- * Wait for document.head to be available
- * Needed because runAt: 'document_start' runs before DOM is ready
- */
-function waitForDocumentHead() {
-  return new Promise((resolve) => {
-    if (document.head) {
-      resolve();
-    } else {
-      const observer = new MutationObserver(() => {
-        if (document.head) {
-          observer.disconnect();
-          resolve();
-        }
-      });
-      observer.observe(document.documentElement, {
-        childList: true,
-        subtree: true,
-      });
-    }
-  });
-}
-
-/**
- * Manually inject Vue CSS
- * ISOLATED world can use chrome.runtime.getURL to load extension resources
- */
-function injectVueCSS() {
-  return new Promise((resolve, reject) => {
-    try {
-      const cssUrl = chrome.runtime.getURL('assets/vue-app.css');
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = cssUrl;
-      link.onload = () => {
-        resolve();
-      };
-      link.onerror = () => {
-        reject(new Error('CSS load failed'));
-      };
-      document.head.appendChild(link);
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
 
 /**
  * Inject API Interceptor into MAIN world IMMEDIATELY

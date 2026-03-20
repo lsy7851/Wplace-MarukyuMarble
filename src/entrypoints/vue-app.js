@@ -127,6 +127,31 @@ export default defineUnlistedScript(() => {
     }, 1000);
   }
 
+  // ===== Shadow DOM에 CSS 로드 =====
+  async function loadCSSIntoShadow(shadowRoot) {
+    // vue-app.css URL을 찾기 위해 현재 스크립트의 base URL 사용
+    const currentScript = document.querySelector('script[src*="vue-app.js"]');
+    if (!currentScript) return;
+
+    const baseUrl = new URL('.', currentScript.src).href;
+    const cssUrl = `${baseUrl}assets/vue-app.css`;
+
+    try {
+      const response = await fetch(cssUrl);
+      if (!response.ok) return;
+      let cssText = await response.text();
+
+      // Shadow DOM 내부에서는 :root가 매칭되지 않으므로 :host로 치환
+      cssText = cssText.replaceAll(':root', ':host');
+
+      const style = document.createElement('style');
+      style.textContent = cssText;
+      shadowRoot.prepend(style);
+    } catch {
+      // CSS load failed silently
+    }
+  }
+
   // ===== Vue App 초기화 =====
   async function initVueApp() {
     await waitForDOMReady();
@@ -134,10 +159,20 @@ export default defineUnlistedScript(() => {
     // 맵 초기화 시작 (비동기, 백그라운드에서 실행)
     initializeMapReference();
 
-    // Vue app container 생성
+    // Shadow DOM 호스트 생성
+    const host = document.createElement('marukyu-marble-ui');
+    document.body.appendChild(host);
+
+    // Open Shadow Root 연결
+    const shadowRoot = host.attachShadow({ mode: 'open' });
+
+    // Vue app container를 Shadow Root 내부에 생성
     const container = document.createElement('div');
     container.id = 'wxt-my-overlay';
-    document.body.appendChild(container);
+    shadowRoot.appendChild(container);
+
+    // CSS를 Shadow Root에 로드
+    await loadCSSIntoShadow(shadowRoot);
 
     // Pinia 생성
     const pinia = createPinia();

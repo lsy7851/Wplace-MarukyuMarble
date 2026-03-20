@@ -1,12 +1,11 @@
 <template>
-  <Teleport to="body">
-    <Transition name="compact-fade">
-      <div
-        v-if="modelValue"
-        id="bmcf-compact-list"
-        ref="compactRef"
-        :style="draggableStyle"
-        class="bmcf-compact-list">
+  <Transition name="compact-fade">
+    <div
+      v-if="modelValue"
+      id="bmcf-compact-list"
+      ref="compactRef"
+      :style="draggableStyle"
+      class="bmcf-compact-list">
         <!-- Header -->
         <div class="compact-header" ref="dragHandleRef">
           <!-- Left Section -->
@@ -118,9 +117,8 @@
             </div>
           </div>
         </Transition>
-      </div>
-    </Transition>
-  </Teleport>
+    </div>
+  </Transition>
 </template>
 
 <script setup>
