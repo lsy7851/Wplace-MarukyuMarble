@@ -9,7 +9,7 @@
  * Modified work Copyright (c) Seris0
  * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
  */
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useTemplateStore } from '@/stores/templateStore';
 import { useNavigation } from '@/composables/ui/useNavigation';
 import { useCoordinateStore } from '@/stores/coordinateStore';
@@ -20,11 +20,11 @@ import * as icons from '@@/old-src/icons.js';
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits([ 'update:modelValue' ]);
 
 const templateStore = useTemplateStore();
 const { flyToCoordinates } = useNavigation();
@@ -89,7 +89,7 @@ async function toggleTemplate(template) {
  * Fly to template coordinates
  */
 function flyToTemplate(template) {
-  const [tileX, tileY, pixelX, pixelY] = template.coords;
+  const [ tileX, tileY, pixelX, pixelY ] = template.coords;
 
   // Auto-fill coordinate inputs
   coordinateStore.inputTileX = String(tileX);
@@ -163,7 +163,7 @@ async function disableAllTemplates() {
  */
 function formatCoords(coords) {
   if (!coords || coords.length !== 4) return 'Unknown location';
-  const [tileX, tileY, pixelX, pixelY] = coords;
+  const [ tileX, tileY, pixelX, pixelY ] = coords;
   return `Tile ${tileX},${tileY} • Pixel ${pixelX},${pixelY}`;
 }
 
@@ -188,32 +188,32 @@ function formatPixelCount(template) {
     title="Manage Templates"
     @update:model-value="$emit('update:modelValue', $event)">
     <!-- Template List -->
-    <div class="template-list">
+    <div class="template-list flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
       <div
         v-if="templateStore.templates.length === 0"
-        class="empty-state">
-        <p>No templates yet</p>
-        <p class="hint">Create your first template using the Upload button</p>
+        class="text-center py-10 px-5 text-mm-text-secondary">
+        <p class="my-2">No templates yet</p>
+        <p class="my-2 text-[0.85em] text-mm-bg-light">Create your first template using the Upload button</p>
       </div>
 
       <div
         v-for="template in templateStore.templates"
         :key="template.id"
-        class="template-item">
+        class="flex justify-between items-center p-4 bg-mm-bg-border rounded-xl border border-mm-bg-muted gap-4">
         <!-- Template Info -->
-        <div class="template-info">
+        <div class="flex-1 min-w-0">
           <!-- Name Row with Rename -->
-          <div class="name-row">
+          <div class="flex items-center gap-2 mb-1.5">
             <button
-              class="btn-rename"
               :title="`Rename ${template.displayName}`"
+              class="btn-rename p-1.5 border border-mm-bg-muted rounded-lg cursor-pointer bg-[#1f2937] text-mm-text-dim min-w-8 h-8 flex items-center justify-center shrink-0 hover:bg-[#374151]"
               @click="startRename(template)">
               <span v-html="icons.pencilIcon"></span>
             </button>
 
             <div
               v-if="editingTemplateId !== template.id"
-              class="template-name"
+              class="font-semibold text-[1em] text-mm-text-primary overflow-hidden text-ellipsis whitespace-nowrap flex-1 px-1.5 py-1 rounded-md cursor-pointer hover:bg-white/5"
               @click="startRename(template)">
               {{ template.displayName }}
             </div>
@@ -221,29 +221,29 @@ function formatPixelCount(template) {
             <input
               v-else
               v-model="editingTemplateName"
+              class="w-full font-semibold text-[1em] text-mm-text-primary border border-mm-bg-muted bg-[#1f2937] rounded-md px-2.5 py-1.5 outline-none font-inherit focus:border-mm-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.2)]"
               type="text"
-              class="template-name-input"
-              @keydown="handleRenameKeydown($event, template)"
               @blur="finishRename(template, true)"
+              @keydown="handleRenameKeydown($event, template)"
               @click.stop>
           </div>
 
           <!-- Pixel Count -->
-          <div class="template-pixels">
+          <div class="text-[0.85em] text-mm-text-secondary mb-1">
             {{ formatPixelCount(template) }}
           </div>
 
           <!-- Coordinates -->
-          <div class="template-coords">
+          <div class="text-[0.75em] text-mm-blue-light font-medium">
             📍 {{ formatCoords(template.coords) }}
           </div>
         </div>
 
         <!-- Template Actions -->
-        <div class="template-actions">
+        <div class="flex gap-2 items-center shrink-0">
           <!-- Export Button -->
           <button
-            class="btn-action btn-export"
+            class="btn-action p-2 border-none rounded-lg cursor-pointer min-w-9 h-9 flex items-center justify-center text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 bg-linear-to-br from-[#22c55e] to-[#16a34a]"
             title="Export this template as JSON"
             @click="handleExportTemplate(template)">
             <span v-html="icons.exportIcon"></span>
@@ -251,7 +251,7 @@ function formatPixelCount(template) {
 
           <!-- Fly To Button -->
           <button
-            class="btn-action btn-fly"
+            class="btn-action p-2 border-none rounded-lg cursor-pointer min-w-9 h-9 flex items-center justify-center text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 bg-linear-to-br from-mm-blue to-mm-blue-dark"
             title="Fly to template coordinates"
             @click="flyToTemplate(template)">
             <span v-html="icons.pinIcon"></span>
@@ -259,7 +259,7 @@ function formatPixelCount(template) {
 
           <!-- Delete Button -->
           <button
-            class="btn-action btn-delete"
+            class="btn-action p-2 border-none rounded-lg cursor-pointer min-w-9 h-9 flex items-center justify-center text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 bg-linear-to-br from-mm-error to-mm-error-dark"
             title="Delete this template"
             @click="deleteTemplate(template)">
             <span v-html="icons.deleteIcon"></span>
@@ -267,8 +267,10 @@ function formatPixelCount(template) {
 
           <!-- Toggle Button -->
           <button
-            class="btn-toggle"
-            :class="{ enabled: template.enabled }"
+            :class="template.enabled
+              ? 'bg-linear-to-br from-mm-success to-mm-success-dark text-white'
+              : 'bg-linear-to-br from-mm-bg-light to-mm-bg-muted text-mm-text-dim'"
+            class="px-4 py-2 border-none rounded-lg cursor-pointer text-[0.85em] font-semibold min-w-20 transition-all duration-200 hover:brightness-110"
             @click="toggleTemplate(template)">
             {{ template.enabled ? 'Enabled' : 'Disabled' }}
           </button>
@@ -279,14 +281,14 @@ function formatPixelCount(template) {
     <!-- Footer Actions -->
     <template #footer>
       <button
-        class="btn-footer btn-enable-all"
         :disabled="templateStore.templates.length === 0"
+        class="px-4 py-2.5 border-none rounded-lg cursor-pointer font-semibold text-[0.9em] transition-all duration-200 bg-linear-to-br from-mm-success to-mm-success-dark text-white hover:not-disabled:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
         @click="enableAllTemplates">
         Enable All
       </button>
       <button
-        class="btn-footer btn-disable-all"
         :disabled="templateStore.templates.length === 0"
+        class="px-4 py-2.5 border-none rounded-lg cursor-pointer font-semibold text-[0.9em] transition-all duration-200 bg-linear-to-br from-mm-bg-light to-mm-bg-muted text-mm-text-dim hover:not-disabled:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
         @click="disableAllTemplates">
         Disable All
       </button>
@@ -295,228 +297,19 @@ function formatPixelCount(template) {
 </template>
 
 <style scoped>
-/* Template List */
-.template-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: #94a3b8;
-}
-
-.empty-state p {
-  margin: 8px 0;
-}
-
-.empty-state .hint {
-  font-size: 0.85em;
-  color: #64748b;
-}
-
-/* Template Item */
-.template-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  background: #334155;
-  border-radius: 12px;
-  border: 1px solid #475569;
-  gap: 16px;
-}
-
-/* Template Info */
-.template-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.name-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.btn-rename {
-  padding: 6px;
-  border: 1px solid #475569;
-  border-radius: 8px;
-  cursor: pointer;
-  background: #1f2937;
-  color: #e2e8f0;
-  min-width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.btn-rename:hover {
-  background: #374151;
-}
-
+/* Deep SVG styling for rename button */
 .btn-rename span :deep(svg) {
   width: 16px;
   height: 16px;
   stroke: currentColor;
 }
 
-.template-name {
-  font-weight: 600;
-  font-size: 1em;
-  color: #f1f5f9;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-  padding: 4px 6px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.template-name:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.template-name-input {
-  width: 100%;
-  font-weight: 600;
-  font-size: 1em;
-  color: #f1f5f9;
-  border: 1px solid #475569;
-  background: #1f2937;
-  border-radius: 6px;
-  padding: 6px 10px;
-  outline: none;
-  font-family: inherit;
-}
-
-.template-name-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-
-.template-pixels {
-  font-size: 0.85em;
-  color: #94a3b8;
-  margin-bottom: 4px;
-}
-
-.template-coords {
-  font-size: 0.75em;
-  color: #60a5fa;
-  font-weight: 500;
-}
-
-/* Template Actions */
-.template-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.btn-action {
-  padding: 8px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  min-width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  transition: all 0.2s;
-}
-
-.btn-action:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-}
-
+/* Deep SVG styling for action buttons */
 .btn-action span :deep(svg) {
   width: 18px;
   height: 18px;
   stroke: currentColor;
   fill: none;
-}
-
-.btn-export {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-}
-
-.btn-fly {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-.btn-delete {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-.btn-toggle {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.85em;
-  font-weight: 600;
-  min-width: 80px;
-  background: linear-gradient(135deg, #64748b, #475569);
-  color: #e2e8f0;
-  transition: all 0.2s;
-}
-
-.btn-toggle.enabled {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-}
-
-.btn-toggle:hover {
-  filter: brightness(1.1);
-}
-
-/* Footer Buttons */
-.btn-footer {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9em;
-  transition: all 0.2s;
-}
-
-.btn-footer:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-enable-all {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-}
-
-.btn-enable-all:hover:not(:disabled) {
-  filter: brightness(1.1);
-}
-
-.btn-disable-all {
-  background: linear-gradient(135deg, #64748b, #475569);
-  color: #e2e8f0;
-}
-
-.btn-disable-all:hover:not(:disabled) {
-  filter: brightness(1.1);
 }
 
 /* Scrollbar */

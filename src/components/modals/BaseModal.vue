@@ -10,7 +10,7 @@
  * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
  */
 
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useDraggable } from '@vueuse/core';
 
 const props = defineProps({
@@ -58,7 +58,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:modelValue', 'close']);
+const emit = defineEmits([ 'update:modelValue', 'close' ]);
 
 // Modal and drag handle refs
 const modalRef = ref(null);
@@ -116,27 +116,36 @@ watch(() => props.modelValue, (isOpen) => {
   <Transition name="modal-fade">
     <div
       v-if="modelValue"
-      class="modal-backdrop">
+      class="fixed top-0 left-0 w-full h-full z-2147483646 pointer-events-none flex items-center justify-center">
       <div
         ref="modalRef"
-        class="base-modal"
-        :class="{ dragging: isDragging, 'mobile-mode': mobileMode }"
-        :style="draggableStyle">
+        :class="{
+          'cursor-grabbing **:cursor-grabbing!': isDragging,
+          'mobile-mode w-[min(350px,96vw)]! max-h-[70vh]! text-xs!': mobileMode
+        }"
+        :style="draggableStyle"
+        class="fixed w-[min(480px,94vw)] bg-mm-bg-dark/92 text-mm-text-primary rounded-[14px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.05)] border border-mm-bg-border backdrop-blur-[14px] font-[14px/1.5_Roboto_Mono,monospace,Arial] flex flex-col select-none overflow-hidden pointer-events-auto">
         <!-- Drag Handle -->
         <div
           ref="dragHandleRef"
-          class="drag-handle"></div>
+          :class="{ 'cursor-grabbing!': isDragging }"
+          class="drag-handle mb-[0.4em] bg-linear-to-br from-mm-bg-muted/60 to-mm-bg-light/55 cursor-grab w-full h-7 rounded-t-[14px] opacity-95 flex items-center justify-center"></div>
 
         <!-- Header -->
-        <div class="modal-header">
-          <h3 class="modal-title">
+        <div
+          :class="{ 'mobile-header': mobileMode }"
+          class="flex items-center justify-between px-4 pt-3">
+          <h3
+            :class="{ 'mobile-title': mobileMode }"
+            class="m-0 text-lg font-extrabold tracking-[0.04em] text-mm-text-bright">
             <slot name="title">{{ title }}</slot>
           </h3>
-          <div class="modal-actions">
+          <div class="flex gap-2 items-center">
             <slot name="actions"></slot>
             <button
               v-if="showClose"
-              class="btn-close"
+              :class="{ 'mobile-close': mobileMode }"
+              class="border border-mm-bg-muted px-2.5 py-2 rounded-lg bg-mm-bg-border text-mm-text-primary font-mono text-[13px] cursor-pointer transition-all duration-[0.18s] ease-in-out hover:bg-mm-bg-muted hover:-translate-y-px active:bg-mm-bg-border active:translate-y-0"
               @click="close">
               ✕
             </button>
@@ -144,12 +153,16 @@ watch(() => props.modelValue, (isOpen) => {
         </div>
 
         <!-- Body -->
-        <div class="modal-body">
+        <div
+          :class="{ 'mobile-body': mobileMode }"
+          class="px-4 pt-3 pb-4 overflow-auto flex-1">
           <slot></slot>
         </div>
 
         <!-- Footer -->
-        <div v-if="$slots.footer" class="modal-footer">
+        <div
+          v-if="$slots.footer" :class="{ 'mobile-footer': mobileMode }"
+          class="px-4 py-3 border-t border-white/10 flex justify-end gap-2">
           <slot name="footer"></slot>
         </div>
       </div>
@@ -158,61 +171,7 @@ watch(() => props.modelValue, (isOpen) => {
 </template>
 
 <style scoped>
-/* Backdrop */
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2147483646;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Modal */
-.base-modal {
-  position: fixed;
-  width: min(480px, 94vw);
-  background: rgba(30, 41, 59, 0.92);
-  color: #f1f5f9;
-  border-radius: 14px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  border: 1px solid #334155;
-  backdrop-filter: blur(14px);
-  font: 14px/1.5 Roboto Mono, monospace, Arial;
-  display: flex;
-  flex-direction: column;
-  user-select: none;
-  overflow: hidden;
-  pointer-events: auto;
-}
-
-/* Dragging state */
-.base-modal.dragging {
-  cursor: grabbing;
-}
-
-.base-modal.dragging * {
-  cursor: grabbing !important;
-}
-
-/* Drag Handle */
-.drag-handle {
-  margin-bottom: 0.4em;
-  background: linear-gradient(135deg, rgba(71, 85, 105, 0.6), rgba(100, 116, 139, 0.55));
-  cursor: grab;
-  width: 100%;
-  height: 28px;
-  border-radius: 14px 14px 0 0;
-  opacity: 0.95;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
+/* Drag handle pill indicator */
 .drag-handle::before {
   content: '';
   width: 56px;
@@ -220,69 +179,6 @@ watch(() => props.modelValue, (isOpen) => {
   border-radius: 6px;
   background: linear-gradient(90deg, #94a3b8, #cbd5e1);
   opacity: 0.7;
-}
-
-.dragging .drag-handle {
-  cursor: grabbing;
-}
-
-/* Header */
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px 0 16px;
-}
-
-.modal-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #f8fafc;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.btn-close {
-  border: 1px solid #475569;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: #334155;
-  color: #f1f5f9;
-  font: 13px monospace;
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-
-.btn-close:hover {
-  background: #475569;
-  transform: translateY(-1px);
-}
-
-.btn-close:active {
-  background: #334155;
-  transform: translateY(0px);
-}
-
-/* Body */
-.modal-body {
-  padding: 12px 16px 16px 16px;
-  overflow: auto;
-  flex: 1;
-}
-
-/* Footer */
-.modal-footer {
-  padding: 12px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
 }
 
 /* Transition */
@@ -300,40 +196,34 @@ watch(() => props.modelValue, (isOpen) => {
    Mobile Mode Styles
    ======================================== */
 
-.base-modal.mobile-mode {
-  width: min(350px, 96vw);
-  max-height: 70vh;
-  font-size: 12px;
-}
-
-.base-modal.mobile-mode .drag-handle {
+.mobile-mode .drag-handle {
   height: 24px;
 }
 
-.base-modal.mobile-mode .drag-handle::before {
+.mobile-mode .drag-handle::before {
   width: 40px;
   height: 4px;
 }
 
-.base-modal.mobile-mode .modal-header {
+.mobile-header {
   padding: 8px 12px 0 12px;
 }
 
-.base-modal.mobile-mode .modal-title {
+.mobile-title {
   font-size: 15px;
 }
 
-.base-modal.mobile-mode .modal-body {
+.mobile-body {
   padding: 8px 12px 12px 12px;
   max-height: calc(70vh - 100px);
   overflow-y: auto;
 }
 
-.base-modal.mobile-mode .modal-footer {
+.mobile-footer {
   padding: 8px 12px;
 }
 
-.base-modal.mobile-mode .btn-close {
+.mobile-close {
   padding: 6px 8px;
   font-size: 11px;
 }
