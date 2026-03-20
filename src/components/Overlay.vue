@@ -73,8 +73,17 @@ function handleErrorMapToggle() {
 </script>
 
 <template>
-  <div id="bm-overlay" ref="overlayRef" :style="draggableStyle" :class="{ 'is-minimized': minimized, 'mobile-mode': mobileMode, 'is-dragging': isDragging }">
-    <div id="bm-contain-header">
+  <div
+    id="bm-overlay"
+    ref="overlayRef"
+    class="fixed bg-linear-to-br from-mm-bg-darkest to-mm-bg-dark text-mm-text-primary p-2 rounded-2xl border border-mm-bg-border shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.05)] backdrop-blur-lg z-9000 transition-[opacity,background,box-shadow,width,height] duration-300 ease-in-out max-w-80 w-auto will-change-transform backface-hidden [-webkit-backface-visibility:hidden] transform-3d font-sans tracking-tight flex-col gap-2"
+    :style="draggableStyle"
+    :class="{
+      'is-minimized': minimized,
+      'mobile-mode': mobileMode,
+      'transition-none!': isDragging
+    }">
+    <div id="bm-contain-header" class="mb-2">
       <DragBar ref="dragBarRef" :minimized="minimized" />
       <Title v-model:minimized="minimized" />
       <Header
@@ -125,89 +134,17 @@ function handleErrorMapToggle() {
 </template>
 
 <style scoped>
-
-/* The entire overlay */
-#bm-overlay {
-  position: fixed;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: #f1f5f9;
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid #334155;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(16px);
-  z-index: 9000;
-  transition: opacity 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, width 0.3s ease, height 0.3s ease;
-  max-width: 320px;
-  width: auto;
-  /* Performance optimizations for smooth dragging */
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
-  -webkit-transform-style: preserve-3d;
-}
-
-/* Smooth transitions for minimize/maximize functionality */
+/* Smooth transitions for minimize/maximize child elements */
 #bm-overlay hr,
 #bm-contain-automation,
 #bm-contain-buttons-action {
   transition: opacity 0.2s ease, height 0.2s ease;
 }
 
-/* The entire overlay BUT it is cascading */
-div#bm-overlay {
-  /* Modern font stack consistent with other overlays */
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  letter-spacing: -0.01em;
-
-  flex-direction: column;
-  gap: .5rem;
-
-  padding: .5rem;
-}
-
 /* Disable interactions during drag for better performance */
 #bm-overlay:has(#bm-bar-drag.dragging) {
   pointer-events: none;
   user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
-
-
-/* The container for the overlay header */
-#bm-contain-header {
-  margin-bottom: 0.5em;
-}
-
-/* When minimized, adjust header container */
-#bm-contain-header[style*="text-align: center"] {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Ensure overlay maintains consistent width when minimized */
-#bm-overlay[style*="padding: 5px"] {
-  width: auto !important;
-  max-width: 100px;
-  min-width: 150px;
-}
-
-/* When overlay is minimized, adjust image styling */
-#bm-contain-header[style*="text-align: center"] img {
-  margin-right: 0;
-  margin-left: 0;
-  display: block;
-  margin: 0 auto;
-}
-
-/* Ensure drag bar remains functional when minimized */
-#bm-bar-drag {
-  transition: margin-bottom 0.2s ease;
 }
 
 /* The Blue Marble header */
@@ -229,8 +166,7 @@ div#bm-overlay {
   margin-right: 0.5ch;
 }
 
-/* Favorite (Star) button image */
-/* Templates (Person) button image */
+/* SVG icons in buttons */
 #bm-button-favorite svg,
 #bm-button-template svg {
   height: 1em;
@@ -241,14 +177,13 @@ div#bm-overlay {
   vertical-align: bottom;
 }
 
-
 /* All small elements */
 #bm-overlay small {
   font-size: x-small;
   color: lightgray;
 }
 
-/* Color filter overlay styles */
+/* Color filter overlay scrollbar */
 #bm-color-filter-overlay {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   border: 2px solid rgba(255, 255, 255, 0.1);
@@ -271,46 +206,39 @@ div#bm-overlay {
 #bm-color-filter-overlay::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
 }
-/* The Blue Marble image */
+
+/* Blue Marble image */
 #bm-overlay img {
   height: 2rem;
   transition: opacity 0.2s ease;
 }
 
-
-/* All overlay buttons */
+/* All overlay buttons - cascading base styles */
 #bm-overlay button {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: .25rem;
-
   padding: .125rem .5rem;
-
   background-color: #2190ED;
   border-radius: .25rem;
-
   transition: background-color 0.25s;
-
-  /* Handle text overflow */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0; /* Allow flex items to shrink below content size */
+  min-width: 0;
 }
 
-/* All overlay buttons when hovered/focused */
-#bm-overlay button:hover, #bm-overlay button:focus-visible {
+#bm-overlay button:hover,
+#bm-overlay button:focus-visible {
   background-color: #3b9def;
 }
 
-/* All overlay buttons when pressed (plus disabled color) */
 #bm-overlay button:active,
 #bm-overlay button:disabled {
   background-color: #50a9f1;
 }
 
-/* All overlay buttons when disabled */
 #bm-overlay button:disabled {
   text-decoration: line-through;
 }
@@ -343,15 +271,10 @@ div#bm-overlay {
   background-color: #b62525;
 }
 
-/* Minimized state styles - hide specific elements */
+/* Minimized state - hide specific elements */
 #bm-contain-header > .minimized,
 #bm-contain-automation > .minimized:not(:has(#bm-button-color-filter)) {
   display: none !important;
-}
-
-/* Disable transitions during drag */
-#bm-overlay.is-dragging {
-  transition: none !important;
 }
 
 /* When overlay is minimized, adjust overlay dimensions */
@@ -361,23 +284,11 @@ div#bm-overlay {
   max-width: 72px;
   padding: 6px;
   gap: 0;
-  width: 72px;
-  min-width: 72px;
-  max-width: 72px;
-  padding: 6px;
-  gap: 0;
-  overflow: visible !important; /* Allow the color filter button to be seen outside */
-  height: 76px !important; /* Legacy fixed height for better drag area */
+  overflow: visible !important;
+  height: 76px !important;
 }
 
-/* Update header container in minimized mode */
-#bm-contain-header > .minimized {
-  display: none !important;
-}
-
-/* ... existing rules ... */
-
-/* Mobile mode - overlay width stays the same, only internal elements adjust */
+/* Mobile mode */
 #bm-overlay.mobile-mode {
   padding: 8px;
 }
@@ -386,13 +297,11 @@ div#bm-overlay {
   margin-bottom: 0.25em;
 }
 
-/* Mobile mode buttons - larger touch targets for easier tapping */
 #bm-overlay.mobile-mode button {
   min-height: 36px;
   padding: 0.25rem 0.5rem;
 }
 
-/* Mobile mode - compact spacing */
 #bm-overlay.mobile-mode #bm-contain-automation {
   gap: 4px;
 }

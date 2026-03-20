@@ -15,45 +15,12 @@ const clickBtn = () => {
 </script>
 
 <template>
-  <div class="marukyu-overlay">
-    <h3>⑨ Marukyu Marble</h3>
+  <div class="fixed top-2.5 right-2.5 bg-white/95 border-2 border-[#4a90e2] rounded-lg p-4 z-10000 font-[Arial,sans-serif] shadow-md">
+    <h3 class="m-0 mb-3 text-[#2c3e50] text-base">⑨ Marukyu Marble</h3>
     <p>Template overlay tool</p>
-    <button id="marukyu-test-btn" @click="clickBtn">Test Button</button>
+    <button
+      id="marukyu-test-btn"
+      class="bg-[#4a90e2] text-white border-none px-4 py-2 rounded cursor-pointer text-sm hover:bg-[#357abd]"
+      @click="clickBtn">Test Button</button>
   </div>
 </template>
-
-<style scoped>
-/* Marukyu Marble - Basic Styles */
-.marukyu-overlay {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background: rgba(255, 255, 255, 0.95);
-  border: 2px solid #4a90e2;
-  border-radius: 8px;
-  padding: 16px;
-  z-index: 10000;
-  font-family: Arial, sans-serif;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.marukyu-overlay h3 {
-  margin: 0 0 12px 0;
-  color: #2c3e50;
-  font-size: 16px;
-}
-
-.marukyu-overlay button {
-  background: #4a90e2;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.marukyu-overlay button:hover {
-  background: #357abd;
-}
-</style>
