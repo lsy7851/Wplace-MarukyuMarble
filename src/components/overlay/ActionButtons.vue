@@ -9,7 +9,7 @@
  * Modified work Copyright (c) Seris0
  * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
  */
-import { defineProps, computed } from 'vue';
+import { defineProps } from 'vue';
 import { useLocationSearchStore } from '@/stores/locationSearchStore.js';
 import { useCoordinateStore } from '@/stores/coordinateStore.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';
@@ -19,16 +19,19 @@ import { useNavigation } from '@/composables/ui/useNavigation.js';
 import { useImportExport } from '@/composables/features/useImportExport.js';
 import { tileToLatLng } from '@/utils/coordinates.js';
 import { storeToRefs } from 'pinia';
+import { useTemplateStore } from '@/stores/templateStore';
+import { useScreenshot } from '@/composables/features/useScreenshot';
+import { useIndexedDB } from '@/composables/storage/useIndexedDB';
 
 const props = defineProps({
   icons: {
     type: Object,
-    required: true
+    required: true,
   },
   version: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const locationSearchStore = useLocationSearchStore();
@@ -63,7 +66,7 @@ const handleFlyTo = async () => {
       coords.tileX,
       coords.tileY,
       coords.pixelX,
-      coords.pixelY
+      coords.pixelY,
     );
 
     // Navigate to the location using settings-based navigation method
@@ -74,57 +77,54 @@ const handleFlyTo = async () => {
 };
 
 const { takeTemplateScreenshot } = useScreenshot();
-import { useTemplateStore } from '@/stores/templateStore';
-import { useScreenshot } from '@/composables/features/useScreenshot';
-import { useIndexedDB } from '@/composables/storage/useIndexedDB';
 
 const handleScreenshot = async () => {
   const templateStore = useTemplateStore();
-  
+
   try {
     // SMART DETECTION: Get currently displayed template or first enabled template
     let t = null;
-    
+
     // 1. Check actively displayed templates (if we had tracking for "currently displayed" - for now check enabled)
     // Legacy code had `currentlyDisplayedTemplates` set. In new architecture, we might check `templateStore.templates`
     // and see which ones are enabled.
-    
+
     // For now, let's look for the first enabled template
     const enabledTemplates = templateStore.templates.filter(tpl => tpl.enabled);
-    
+
     if (enabledTemplates.length === 1) {
       t = enabledTemplates[0];
     } else if (enabledTemplates.length > 0) {
       // If multiple enabled, pick the first one (or ideally the one under cursor if we could detect)
       t = enabledTemplates[0];
     }
-    
+
     // Fallback: Use first template if none enabled
     if (!t && templateStore.templates.length > 0) {
       t = templateStore.templates[0];
     }
-    
+
     if (!t) {
       statusStore.handleDisplayError('No template loaded.');
       return;
     }
-    
+
     // Check for coordinates
     if (!t.coords || t.coords.length !== 4) {
       statusStore.handleDisplayError('Template coordinates not available.');
       return;
     }
-    
-    const [tx, ty, px, py] = t.coords;
+
+    const [ tx, ty, px, py ] = t.coords;
     const width = t.imageWidth || t.width || 1000; // Fallback width
     const height = t.imageHeight || t.height || 1000; // Fallback height
-    
+
     const blob = await takeTemplateScreenshot(t);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const ts = new Date().toISOString().replace(/[:.]/g,'-');
-    a.download = `wplace_template_area_${String(tx).padStart(4,'0')},${String(ty).padStart(4,'0')}_${ts}.png`;
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    a.download = `wplace_template_area_${String(tx).padStart(4, '0')},${String(ty).padStart(4, '0')}_${ts}.png`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -140,7 +140,7 @@ const handleClearStorage = async () => {
       const db = useIndexedDB();
       const settingsStore = useSettingsStore();
       const colorFilterStore = useColorFilterStore();
-      
+
       // 1. Clear IndexedDB (Tiles)
       await db.clearAllTiles();
 
@@ -150,42 +150,42 @@ const handleClearStorage = async () => {
       // 3. Reset Pinia stores to defaults
       await settingsStore.resetSettings();
       await colorFilterStore.resetSettings();
-      
+
       // 4. Clear localStorage (Legacy keys cleanup) - TARGETED CLEAR ONLY
       // Most settings are now in chrome.storage.sync, but we still clean up legacy keys
       // DO NOT USE localStorage.clear() as it wipes other extensions/wplace data!
       let deletedCount = 0;
       const keysToRemove = [];
-      
-        // Identify keys to remove (Standardized 'mm' prefix)
-        // Legacy 'bm' keys are also removed just in case of stale data from previous versions
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          
-          if (key && (
-              // Standardized mm keys (camelCase)
-              key.startsWith('mm') || 
-              // Legacy keys cleanup (bm prefix)
-              key.startsWith('bm') ||
-              // Safety catch for any old migration stragglers (though specific ones preferred)
-              key.startsWith('compactSort') || // Old key cleanup
-              key.startsWith('tile-cache')     // Old key cleanup
-          )) {
-              keysToRemove.push(key);
-          }
+
+      // Identify keys to remove (Standardized 'mm' prefix)
+      // Legacy 'bm' keys are also removed just in case of stale data from previous versions
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+
+        if (key && (
+          // Standardized mm keys (camelCase)
+          key.startsWith('mm') ||
+          // Legacy keys cleanup (bm prefix)
+          key.startsWith('bm') ||
+          // Safety catch for any old migration stragglers (though specific ones preferred)
+          key.startsWith('compactSort') || // Old key cleanup
+          key.startsWith('tile-cache')     // Old key cleanup
+        )) {
+          keysToRemove.push(key);
         }
-      
+      }
+
       keysToRemove.forEach(key => {
         localStorage.removeItem(key);
         deletedCount++;
       });
-      
+
       // 5. Clear sessionStorage (Session data) - TARGETED CLEAR ONLY
       const sessionKeysToRemove = [];
       for (let i = 0; i < sessionStorage.length; i++) {
         const key = sessionStorage.key(i);
         if (key && (key.startsWith('mm') || key.startsWith('bm') || key.toLowerCase().includes('bluemarble'))) {
-            sessionKeysToRemove.push(key);
+          sessionKeysToRemove.push(key);
         }
       }
       sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
@@ -204,7 +204,7 @@ const handleImport = () => {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json';
-  
+
   input.onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -216,11 +216,11 @@ const handleImport = () => {
       statusStore.handleDisplayError(`Import failed: ${error.message}`);
     }
   };
-  
+
   input.click();
 };
 
-const emit = defineEmits(['open-settings', 'open-wrong-pixels', 'toggle-error-map']);
+const emit = defineEmits([ 'open-settings', 'open-wrong-pixels', 'toggle-error-map' ]);
 
 const handleSettings = () => {
   emit('open-settings');
@@ -244,50 +244,56 @@ const handleErrorMapToggle = async () => {
 </script>
 
 <template>
-  <div id="bm-contain-buttons-action">
+  <div id="bm-contain-buttons-action" class="flex justify-between mt-2">
     <div style="display: flex; gap: 6px; align-items: center;">
       <button
         id="bm-button-convert"
         class="bm-help"
         title="Template Color Converter"
         @click="handleColorConverter"
-      >🎨</button>
+      >🎨
+      </button>
 
       <button
         id="bm-search"
         class="bm-help"
         title="Location Search"
         @click="handleSearch"
-      >🔍</button>
+      >🔍
+      </button>
 
       <button
         id="bm-button-flyto"
         class="bm-help"
         title="Fly to current coordinates"
         @click="handleFlyTo"
-      >🗺️</button>
+      >🗺️
+      </button>
 
       <button
         id="bm-button-screenshot"
         class="bm-help"
         title="Screenshot current template area (auto-detects coordinates)"
         @click="handleScreenshot"
-      >📸</button>
+      >📸
+      </button>
 
       <button
         id="bm-button-wrong-pixels"
         class="bm-help"
         title="View Wrong Pixels Coordinates"
         @click="handleWrongPixels"
-      >❌</button>
+      >❌
+      </button>
 
       <button
         id="bm-button-error-map"
-        class="bm-help"
         :class="{ 'error-map-active': errorMapEnabled }"
+        class="bm-help"
         title="Error Map View (Green=correct, Red=wrong)"
         @click="handleErrorMapToggle"
-      >🗺️</button>
+      >🗺️
+      </button>
 
       <button
         id="bm-button-clear-storage"
@@ -315,7 +321,8 @@ const handleErrorMapToggle = async () => {
     </div>
 
     <!-- Footer -->
-    <div style="position: absolute; left: 0; bottom: 2px; text-align: left; padding: 0; pointer-events: auto; user-select: text; line-height: 12px;">
+    <div
+      style="position: absolute; left: 0; bottom: 2px; text-align: left; padding: 0; pointer-events: auto; user-select: text; line-height: 12px;">
       <small style="color: #94a3b8; font-size: 0.74em; opacity: 0.85;">
         Made by SwingTheVine, Seris0 | Fork lsy7851 | v{{ version }}
       </small>
@@ -324,13 +331,6 @@ const handleErrorMapToggle = async () => {
 </template>
 
 <style scoped>
-/* The action buttons below the status textarea */
-#bm-contain-buttons-action {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0.5em;
-}
-
 /* Base button styles */
 #bm-contain-buttons-action button {
   border: none;
@@ -358,7 +358,7 @@ const handleErrorMapToggle = async () => {
   flex-shrink: 0;
 }
 
-/* FORÇA o botão Clear Storage a não herdar CSS do pause-tiles */
+/* Force button to not inherit CSS from pause-tiles */
 .bm-help {
   grid-row: unset !important;
   grid-column: unset !important;
