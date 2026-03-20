@@ -409,7 +409,4 @@ FodyWeavers.xsd
 .output/
 .wxt/
 
-# pnpm
-pnpm-lock.yaml
-
 .claude/*.local.json
