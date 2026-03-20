@@ -18,36 +18,12 @@ const props = defineProps({
 </script>
 
 <template>
-  <div id="bm-separator">
+  <div id="bm-separator" class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 mt-0.75 select-none">
     <hr />
-    <div id="bm-separator-text">
+    <div id="bm-separator-text" class="flex gap-2 items-center">
       <div v-html="props.icons"></div>
       <p>{{props.headerText}}</p>
     </div>
     <hr />
   </div>
 </template>
-
-<style scoped>
-/* Separators */
-#bm-separator {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: .5rem;
-  margin-top: 3px;
-
-  user-select: none;
-
-  #bm-separator-text {
-    display: flex;
-    gap: .5rem;
-    align-items: center;
-  }
-}
-
-#bm-overlay hr {
-  transition: opacity 0.2s ease, height 0.2s ease;
-}
-
-</style>

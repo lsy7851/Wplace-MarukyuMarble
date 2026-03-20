@@ -14,33 +14,15 @@ defineProps({
 });
 </script>
 <template>
-  <div id="bm-bar-drag" :class="{ 'is-minimized': minimized }"></div>
+  <div
+    id="bm-bar-drag"
+    class="mb-[0.5em] bg-[linear-gradient(90deg,#475569_0%,#64748b_50%,#475569_100%)] rounded-sm cursor-grab w-full h-1.5 relative opacity-80 transition-[opacity,margin-bottom] duration-200 ease-in-out hover:opacity-100"
+    :class="{ 'mb-[0.25em]': minimized }"></div>
 </template>
 
 <style scoped>
-/* The drag bar - always visible for dragging */
-#bm-bar-drag {
-  margin-bottom: 0.5em;
-  background: linear-gradient(90deg, #475569 0%, #64748b 50%, #475569 100%);
-  border-radius: 4px;
-  cursor: grab;
-  width: 100%;
-  height: 6px;
-  position: relative;
-  opacity: 0.8;
-  transition: opacity 0.2s ease, margin-bottom 0.2s ease;
-
-  &:hover {
-    opacity: 1;
-  }
-
-  &.dragging {
-    cursor: grabbing;
-    pointer-events: auto;
-  }
-
-  &.is-minimized {
-    margin-bottom: 0.25em;
-  }
+#bm-bar-drag.dragging {
+  cursor: grabbing;
+  pointer-events: auto;
 }
 </style>

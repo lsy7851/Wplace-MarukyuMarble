@@ -49,9 +49,9 @@ const chargeStatus = computed(() => {
 });
 </script>
 <template>
-  <div id="bm-contain-userinfo">
+  <div id="bm-contain-userinfo" class="flex flex-col gap-1.5 mt-[0.5em] transition-[opacity,height] duration-200 ease-in-out">
     <!-- Username -->
-    <div v-if="showUsername" id="bm-user-name">
+    <div v-if="showUsername" id="bm-user-name" class="flex items-center gap-1.5">
       <div id="bm-user-icon" v-html="icons.userIcon"></div>
       <p id="bm-user-name-content">
         <b>Username:</b> {{ userName ?? 'loading...' }}
@@ -59,7 +59,7 @@ const chargeStatus = computed(() => {
     </div>
 
     <!-- Droplets -->
-    <div v-if="showDroplets" id="bm-user-droplets">
+    <div v-if="showDroplets" id="bm-user-droplets" class="flex items-center gap-1.5">
       <div id="bm-user-droplets-icon" v-html="icons.dropletIcon"></div>
       <p id="bm-user-droplets-content">
         <b>Droplets:</b> {{ dropletsFormatted || 'loading...' }}
@@ -67,7 +67,7 @@ const chargeStatus = computed(() => {
     </div>
 
     <!-- Next Level -->
-    <div v-if="showNextLevel" id="bm-user-nextlevel">
+    <div v-if="showNextLevel" id="bm-user-nextlevel" class="flex items-center gap-1.5">
       <div id="bm-user-nextlevel-icon" v-html="icons.userIcon"></div>
       <p v-if="pixelsToNextLevel" id="bm-user-nextlevel-content">
         Next level in <b>{{ pixelsToNextLevelFormatted }}</b> pixel{{ pixelsToNextLevel === 1 ? '' : 's' }}
@@ -76,57 +76,17 @@ const chargeStatus = computed(() => {
     </div>
 
     <!-- Full Charge Timer -->
-    <div v-if="showFullCharge" id="bm-user-fullcharge">
+    <div v-if="showFullCharge" id="bm-user-fullcharge" class="flex items-center gap-1.5">
       <div id="bm-user-fullcharge-icon" v-html="icons.chargeIcon"></div>
       <p id="bm-user-fullcharge-content">
         Full Charge in
-        <b :class="`charge-${chargeStatus.type}`">{{ chargeStatus.text }}</b>
-        <span v-if="chargeStatus.info" class="charge-info">{{ chargeStatus.info }}</span>
+        <b :class="{
+          'text-mm-success': chargeStatus.type === 'full',
+          'text-mm-warning-accent': chargeStatus.type === 'charging',
+          'text-[#6b7280]': chargeStatus.type === 'na'
+        }">{{ chargeStatus.text }}</b>
+        <span v-if="chargeStatus.info" class="text-[#6b7280] text-[0.9em] ml-[0.25em]">{{ chargeStatus.info }}</span>
       </p>
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Information section */
-#bm-contain-userinfo {
-  display: flex;
-  flex-direction: column;
-  gap: .375rem;
-}
-
-#bm-contain-userinfo > div {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-/* The elements that need spacing from each-other */
-#bm-contain-userinfo {
-  margin-top: 0.5em;
-}
-
-/* Smooth transitions for minimize/maximize functionality */
-#bm-contain-userinfo {
-  transition: opacity 0.2s ease, height 0.2s ease;
-}
-
-/* Full Charge specific styles */
-.charge-full {
-  color: #10b981; /* Green for FULL */
-}
-
-.charge-charging {
-  color: #f59e0b; /* Orange for countdown */
-}
-
-.charge-na {
-  color: #6b7280; /* Gray for N/A */
-}
-
-.charge-info {
-  color: #6b7280;
-  font-size: 0.9em;
-  margin-left: 0.25em;
-}
-</style>

@@ -29,40 +29,14 @@ const toggleMinimized = () => {
 };
 </script>
 <template>
-  <div id="bm-title-container" :class="{ 'is-minimized': minimized }">
-    <p class="icon" @click="toggleMinimized" :title="minimized ? 'Click to maximize' : 'Click to minimize'">⑨</p>
-    <h1 v-show="!minimized">Marukyu Marble</h1>
+  <div
+    id="bm-title-container"
+    class="flex items-center justify-center gap-2"
+    :class="{ 'justify-center': minimized }">
+    <p
+      class="cursor-pointer w-10.5 h-10.5 text-[42px] leading-10.5 transition-transform duration-200 ease-in-out hover:scale-110"
+      @click="toggleMinimized"
+      :title="minimized ? 'Click to maximize' : 'Click to minimize'">⑨</p>
+    <h1 v-show="!minimized" class="font-black text-2xl">Marukyu Marble</h1>
   </div>
 </template>
-
-<style scoped>
-/* The icon and title */
-#bm-title-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-
-  h1 {
-    font-weight: 900;
-    font-size: 1.5rem;
-  }
-
-  .icon {
-    cursor: pointer;
-    width: 42px;
-    height: 42px;
-    font-size: 42px;
-    line-height: 42px;
-    transition: transform 0.2s ease;
-  }
-
-  .icon:hover {
-    transform: scale(1.1);
-  }
-
-  &.is-minimized {
-    justify-content: center;
-  }
-}
-</style>
