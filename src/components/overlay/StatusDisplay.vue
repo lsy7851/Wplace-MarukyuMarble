@@ -36,27 +36,9 @@ const placeholderText = computed(() => {
 <template>
   <textarea
     id="bm-output-status"
+    class="text-[0.85rem] bg-mm-bg-dark border border-mm-bg-muted text-mm-text-muted p-2 h-[3.75em] w-full rounded-lg font-inherit resize-y min-h-[3.75em] max-h-[15em] mt-[0.5em]"
     :value="textareaValue"
     :placeholder="placeholderText"
     readonly
   ></textarea>
 </template>
-
-<style scoped>
-/* Output status area */
-#bm-output-status {
-  font-size: 0.85rem;
-  background: #1e293b;
-  border: 1px solid #475569;
-  color: #cbd5e1;
-  padding: 0.5rem;
-  height: 3.75em;
-  width: 100%;
-  border-radius: 8px;
-  font-family: inherit;
-  resize: vertical;
-  min-height: 3.75em;
-  max-height: 15em;
-  margin-top: 0.5em;
-}
-</style>

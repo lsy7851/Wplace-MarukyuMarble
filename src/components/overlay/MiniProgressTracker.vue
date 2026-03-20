@@ -2,20 +2,20 @@
   <div
     v-if="shouldShow"
     id="bm-mini-tracker"
-    class="mini-tracker">
-    <div class="tracker-title">
+    class="bg-[linear-gradient(135deg,#1e293b,#334155)] border border-mm-bg-muted rounded-xl px-4 py-3 mt-2 text-mm-text-primary font-sans shadow-[0_4px_12px_rgba(0,0,0,0.3)] w-full text-[0.85rem] grid grid-cols-1 grid-rows-[auto_auto_auto_auto] gap-[6px] tracking-[-0.01em] box-border select-none cursor-default transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.4)]">
+    <div class="text-base font-bold w-full text-left text-mm-text-primary tracking-[-0.02em] leading-[1.2] relative z-[1]">
       {{ progressTitle }}
     </div>
-    <div class="tracker-pixels">
+    <div class="text-[0.8rem] text-mm-text-muted w-full text-left font-medium leading-[1.2] relative z-[1]">
       {{ progressPixels }}
     </div>
-    <div class="tracker-progress">
+    <div class="h-2 bg-mm-bg-muted rounded-[6px] overflow-hidden w-full border border-mm-bg-light min-w-0 relative z-[1]">
       <div
-        class="tracker-bar"
+        class="h-full bg-[linear-gradient(90deg,#3b82f6,#10b981)] rounded-[4px] transition-[width] duration-300 ease-in-out min-w-0"
         :style="{ width: `${progressPercentage}%` }">
       </div>
     </div>
-    <div class="tracker-left">
+    <div class="text-[0.8rem] text-mm-warning w-full text-left font-semibold leading-[1.2] relative z-[1]">
       {{ progressLeft }}
     </div>
   </div>
@@ -105,36 +105,8 @@ const progressLeft = computed(() => {
 </script>
 
 <style scoped>
-.mini-tracker {
-  background: linear-gradient(135deg, #1e293b, #334155);
-  border: 1px solid #475569;
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin-top: 8px;
-  color: #f1f5f9;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  width: 100%;
-  font-size: 0.85rem;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto auto auto auto;
-  gap: 6px;
-  letter-spacing: -0.01em;
-  box-sizing: border-box;
-  user-select: none;
-  cursor: default;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.mini-tracker:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-}
-
-.mini-tracker::before {
+/* ::before pseudo-element for hover overlay - can't be expressed as pure utilities */
+#bm-mini-tracker::before {
   content: '';
   position: absolute;
   top: 0;
@@ -147,61 +119,7 @@ const progressLeft = computed(() => {
   pointer-events: none;
 }
 
-.mini-tracker:hover::before {
+#bm-mini-tracker:hover::before {
   opacity: 1;
-}
-
-.tracker-title {
-  font-size: 1rem;
-  font-weight: 700;
-  width: 100%;
-  text-align: left;
-  color: #f1f5f9;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  position: relative;
-  z-index: 1;
-}
-
-.tracker-pixels {
-  font-size: 0.8rem;
-  color: #cbd5e1;
-  width: 100%;
-  text-align: left;
-  font-weight: 500;
-  line-height: 1.2;
-  position: relative;
-  z-index: 1;
-}
-
-.tracker-progress {
-  height: 8px;
-  background: #475569;
-  border-radius: 6px;
-  overflow: hidden;
-  width: 100%;
-  border: 1px solid #64748b;
-  min-width: 0;
-  position: relative;
-  z-index: 1;
-}
-
-.tracker-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #10b981);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-  min-width: 0;
-}
-
-.tracker-left {
-  font-size: 0.8rem;
-  color: #fbbf24;
-  width: 100%;
-  text-align: left;
-  font-weight: 600;
-  line-height: 1.2;
-  position: relative;
-  z-index: 1;
 }
 </style>

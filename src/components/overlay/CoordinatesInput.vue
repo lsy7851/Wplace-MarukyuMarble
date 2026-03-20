@@ -24,23 +24,25 @@ const handleDetect = () => {
 </script>
 
 <template>
-  <div id="bm-contain-coords">
-    <div id="bm-coords-title">
-      <div v-html="icons.pinIcon"></div>
+  <div id="bm-contain-coords" class="flex flex-col gap-2 mt-[0.5em]">
+    <div id="bm-coords-title" class="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+      <div class="coords-pin-icon" v-html="icons.pinIcon"></div>
       <p>Coordinates:</p>
       <button
         id="bm-button-coords"
+        class="inline-flex justify-center items-center gap-1 py-[0.125rem] px-2 bg-mm-blue-btn border-none rounded-[0.25rem] text-inherit cursor-pointer font-inherit text-[inherit] transition-colors duration-[250ms] align-middle hover:bg-mm-blue-btn-hover focus-visible:bg-mm-blue-btn-hover active:bg-[#50a9f1]"
         title="Set the location to the pixel you've selected"
         @click="handleDetect">
-        <span v-html="icons.pointerIcon"></span>
+        <span class="inline-flex items-center leading-none" v-html="icons.pointerIcon"></span>
         Detect
       </button>
     </div>
 
-    <div id="bm-contain-inputs">
-      <p>Tile: </p>
+    <div id="bm-contain-inputs" class="grid grid-cols-4 items-center gap-2">
+      <p class="hidden">Tile: </p>
       <input
         id="bm-input-tx"
+        class="coord-input"
         v-model="coordinateStore.inputTileX"
         max="2047"
         min="0"
@@ -50,6 +52,7 @@ const handleDetect = () => {
         type="number" />
       <input
         id="bm-input-ty"
+        class="coord-input"
         v-model="coordinateStore.inputTileY"
         max="2047"
         min="0"
@@ -59,6 +62,7 @@ const handleDetect = () => {
         type="number" />
       <input
         id="bm-input-px"
+        class="coord-input"
         v-model="coordinateStore.inputPixelX"
         max="999"
         min="0"
@@ -68,6 +72,7 @@ const handleDetect = () => {
         type="number" />
       <input
         id="bm-input-py"
+        class="coord-input"
         v-model="coordinateStore.inputPixelY"
         max="999"
         min="0"
@@ -80,60 +85,8 @@ const handleDetect = () => {
 </template>
 
 <style scoped>
-/* Coordinates container */
-#bm-contain-coords {
-  display: flex;
-  flex-direction: column;
-  gap: .5rem;
-  margin-top: 0.5em;
-}
-
-#bm-coords-title {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: .5rem;
-}
-
-/* Base button styles */
-#bm-contain-coords button {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  gap: .25rem;
-  padding: .125rem .5rem;
-  background-color: #2190ED;
-  border: none;
-  border-radius: .25rem;
-  color: inherit;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
-  transition: background-color 0.25s;
-}
-
-#bm-contain-coords button:hover,
-#bm-contain-coords button:focus-visible {
-  background-color: #3b9def;
-}
-
-#bm-contain-coords button:active {
-  background-color: #50a9f1;
-}
-
-#bm-contain-coords #bm-contain-inputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  align-items: center;
-  gap: .5rem;
-}
-
-#bm-contain-coords #bm-contain-inputs p {
-  display: none; /* Hide the "Tile:" and "Pixel:" labels */
-}
-
-/* Tile (x, y) & Pixel (x, y) input fields */
-#bm-contain-coords #bm-contain-inputs input {
+/* Input field styling */
+.coord-input {
   width: 100%;
   height: 2.2rem;
   background: #1e293b;
@@ -144,38 +97,29 @@ const handleDetect = () => {
   border-radius: 8px;
   transition: all 0.2s ease;
   font-family: inherit;
+  appearance: auto;
+  -moz-appearance: textfield;
 }
 
-#bm-contain-coords #bm-contain-inputs input:focus {
+.coord-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
   outline: none;
 }
 
-#bm-contain-coords #bm-contain-inputs input::placeholder {
+.coord-input::placeholder {
   color: #94a3b8;
   font-weight: 500;
 }
 
-/* Tile (x, y) & Pixel (x, y) input fields */
-#bm-contain-coords input[type="number"] {
-  appearance: auto;
-  -moz-appearance: textfield;
-  width: 3.2ch;
-  margin-left: 0.3ch;
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 0 0.2ch;
-  font-size: small;
-}
-
-/* Removes scroll bar on tile & pixel input fields */
-#bm-contain-coords input[type="number"]::-webkit-outer-spin-button,
-#bm-contain-coords input[type="number"]::-webkit-inner-spin-button {
+/* Remove spinner buttons */
+.coord-input::-webkit-outer-spin-button,
+.coord-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* CRITICAL: Remove red borders from HTML5 validation on coordinate inputs */
+/* Remove red borders from HTML5 validation */
 #bm-input-tx:invalid,
 #bm-input-ty:invalid,
 #bm-input-px:invalid,
@@ -185,27 +129,15 @@ const handleDetect = () => {
   outline: none !important;
 }
 
-/* Pin button */
-#bm-button-coords {
-  vertical-align: middle;
-}
-
-/* SVG icon styling */
-#bm-contain-coords button span {
-  display: inline-flex;
-  align-items: center;
-  line-height: 0;
-}
-
-#bm-contain-coords button span :deep(svg) {
+/* SVG icon styling via :deep */
+#bm-button-coords span :deep(svg) {
   display: block;
   width: 16px;
   height: 16px;
   stroke: currentColor;
 }
 
-/* Pin icon in title */
-#bm-coords-title > div :deep(svg) {
+.coords-pin-icon :deep(svg) {
   width: 16px;
   height: 16px;
   stroke: currentColor;
