@@ -54,7 +54,9 @@ function handleClose() {
       @close="handleClose">
       <!-- Header Actions -->
       <template #actions>
-        <button class="btn-location" @click="openAddLocationModal">
+        <button
+          class="cursor-pointer rounded-lg border border-mm-bg-muted bg-mm-bg-border px-3 py-2 font-mono text-[13px] text-mm-text-primary transition-all duration-180 ease-in-out hover:-translate-y-px hover:bg-mm-bg-muted active:translate-y-0 active:bg-mm-bg-border"
+          @click="openAddLocationModal">
           Location
         </button>
       </template>
@@ -75,26 +77,3 @@ function handleClose() {
       @close="closeAddLocationModal" />
   </div>
 </template>
-
-<style scoped>
-.btn-location {
-  border: 1px solid #475569;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: #334155;
-  color: #f1f5f9;
-  font: 13px monospace;
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-
-.btn-location:hover {
-  background: #475569;
-  transform: translateY(-1px);
-}
-
-.btn-location:active {
-  background: #334155;
-  transform: translateY(0px);
-}
-</style>

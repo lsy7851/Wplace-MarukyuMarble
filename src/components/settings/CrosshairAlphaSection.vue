@@ -1,8 +1,8 @@
 <template>
-  <div class="settings-section">
-    <h3 class="section-title">Crosshair Transparency</h3>
+  <div class="rounded-xl border border-mm-bg-border bg-linear-to-br from-mm-bg-dark to-mm-bg-darkest p-4.5">
+    <h3 class="m-0 mb-4 text-base font-semibold tracking-tight text-mm-text-muted">Crosshair Transparency</h3>
 
-    <div class="slider-container">
+    <div class="flex flex-col gap-3">
       <input
         :value="alpha"
         type="range"
@@ -11,7 +11,7 @@
         class="alpha-slider"
         @input="updateAlpha" />
 
-      <div class="alpha-value">{{ percentage }}%</div>
+      <div class="mt-1 text-center text-lg font-bold tracking-tight text-mm-text-primary">{{ percentage }}%</div>
     </div>
   </div>
 </template>
@@ -56,27 +56,6 @@ function updateAlpha(event) {
 </script>
 
 <style scoped>
-.settings-section {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border: 1px solid #334155;
-  border-radius: 12px;
-  padding: 18px;
-}
-
-.section-title {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #cbd5e1;
-  letter-spacing: -0.01em;
-}
-
-.slider-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .alpha-slider {
   width: 100%;
   height: 6px;
@@ -122,14 +101,5 @@ function updateAlpha(event) {
 .alpha-slider::-moz-range-thumb:hover {
   background: linear-gradient(135deg, #f1f5f9, #cbd5e1);
   transform: scale(1.1);
-}
-
-.alpha-value {
-  text-align: center;
-  font-weight: 700;
-  font-size: 18px;
-  color: #f1f5f9;
-  letter-spacing: -0.025em;
-  margin-top: 4px;
 }
 </style>

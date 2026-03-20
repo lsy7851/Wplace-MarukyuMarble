@@ -58,12 +58,12 @@ defineExpose({
 </script>
 
 <template>
-  <div class="search-input-container">
+  <div class="relative mb-3">
     <input
       ref="inputRef"
       v-model="localQuery"
       type="text"
-      class="search-input"
+      class="search-input w-full rounded-[10px] border border-mm-bg-muted bg-[#0b1222] py-3 pl-3.5 pr-9 font-mono text-sm text-mm-text-primary transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.2)] focus:outline-none"
       placeholder="Search for a place..."
       @input="handleInput"
       @keydown="handleKeydown"
@@ -71,7 +71,7 @@ defineExpose({
       @keypress="handleKeypress" />
     <button
       v-if="localQuery"
-      class="clear-btn"
+      class="absolute right-2 top-1/2 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-none bg-mm-bg-light/30 text-base leading-none text-mm-text-muted transition-all duration-200 ease-in-out hover:bg-mm-error/30 hover:text-red-300"
       title="Clear search"
       @click="handleClear">
       ✕
@@ -80,55 +80,7 @@ defineExpose({
 </template>
 
 <style scoped>
-.search-input-container {
-  position: relative;
-  margin-bottom: 12px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 12px 14px;
-  padding-right: 36px;
-  border-radius: 10px;
-  border: 1px solid #475569;
-  background: #0b1222;
-  color: #f1f5f9;
-  font: 14px monospace;
-  transition: all 0.2s ease;
-}
-
-.search-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  outline: none;
-}
-
 .search-input::placeholder {
   color: #64748b;
-}
-
-.clear-btn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: rgba(100, 116, 139, 0.3);
-  color: #cbd5e1;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.clear-btn:hover {
-  background: rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
 }
 </style>

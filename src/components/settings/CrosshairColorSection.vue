@@ -1,25 +1,25 @@
 <template>
-    <div class="color-grid">
+    <div class="mb-4 grid grid-cols-3 gap-3 max-[500px]:gap-2">
       <!-- Predefined color buttons -->
       <button
         v-for="color in predefinedColors"
         :key="color.name"
-        class="color-button"
-        :class="{ selected: isColorSelected(color) }"
+        class="color-button relative flex h-22.5 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-white/30 p-2.5 font-[inherit] shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all duration-200 ease-in-out hover:scale-105 hover:border-white/70 max-[500px]:h-18.75 max-[500px]:p-2"
+        :class="{ 'border-mm-text-primary shadow-[0_0_0_2px_#3b82f6]': isColorSelected(color) }"
         :style="{ background: getColorBackground(color) }"
         @click="selectColor(color)">
-        <div class="color-name">{{ color.name }}</div>
-        <div class="color-rgb">RGB({{ color.rgb.join(', ') }})</div>
-        <div v-if="isColorSelected(color)" class="checkmark">✓</div>
+        <div class="text-center text-[13px] font-bold text-white [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)] max-[500px]:text-xs">{{ color.name }}</div>
+        <div class="text-[11px] text-white/80 [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)] max-[500px]:text-[10px]">RGB({{ color.rgb.join(', ') }})</div>
+        <div v-if="isColorSelected(color)" class="absolute right-1.25 top-1.25 text-lg font-bold text-white [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)]">✓</div>
       </button>
 
       <!-- Custom color button with RGB inputs -->
       <div
-        class="color-button custom-color"
-        :class="{ selected: isCustomSelected }"
+        class="custom-color relative flex h-22.5 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-white/30 p-2.5 shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all duration-200 ease-in-out hover:scale-105 hover:border-white/70 max-[500px]:h-18.75 max-[500px]:p-2"
+        :class="{ 'selected border-mm-text-primary shadow-[0_0_0_2px_#3b82f6]': isCustomSelected }"
         :style="{ background: customBackground }">
-        <div class="color-name">Custom</div>
-        <div class="rgb-inputs">
+        <div class="text-center text-[13px] font-bold text-white [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)] max-[500px]:text-xs">Custom</div>
+        <div class="flex w-[70%] flex-col gap-0.5">
           <input
             v-model.number="customRgb.r"
             type="number"
@@ -48,7 +48,7 @@
             @click.stop
             @input="updateCustomColor" />
         </div>
-        <div v-if="isCustomSelected" class="checkmark">✓</div>
+        <div v-if="isCustomSelected" class="absolute right-1.25 top-1.25 text-lg font-bold text-white [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)]">✓</div>
       </div>
     </div>
 </template>
@@ -167,67 +167,6 @@ watch(
 </script>
 
 <style scoped>
-
-/* Color Grid */
-.color-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-/* Color Button */
-.color-button {
-  position: relative;
-  height: 90px;
-  border-radius: 12px;
-  padding: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  font-family: inherit;
-}
-
-.color-button:hover {
-  border-color: rgba(255, 255, 255, 0.7);
-  transform: scale(1.05);
-}
-
-.color-button.selected {
-  border-color: #f1f5f9;
-  box-shadow: 0 0 0 2px #3b82f6;
-}
-
-.color-name {
-  font-size: 13px;
-  font-weight: bold;
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-  text-align: center;
-}
-
-.color-rgb {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.8);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.checkmark {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  color: white;
-  font-weight: bold;
-  font-size: 18px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
 /* Custom Color */
 .custom-color {
   background-size: 200% 200%;
@@ -251,13 +190,6 @@ watch(
 }
 
 /* RGB Inputs */
-.rgb-inputs {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: 70%;
-}
-
 .rgb-input {
   width: 100%;
   padding: 2px 4px;
@@ -285,25 +217,5 @@ watch(
 .rgb-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
-
-/* Mobile responsiveness */
-@media (max-width: 500px) {
-  .color-grid {
-    gap: 8px;
-  }
-
-  .color-button {
-    height: 75px;
-    padding: 8px;
-  }
-
-  .color-name {
-    font-size: 12px;
-  }
-
-  .color-rgb {
-    font-size: 10px;
-  }
 }
 </style>
