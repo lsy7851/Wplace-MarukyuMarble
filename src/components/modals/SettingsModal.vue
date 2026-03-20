@@ -7,16 +7,16 @@
     :mobile-mode="mobileMode"
     @close="handleCancel">
     <!-- Scrollable Content -->
-    <div class="settings-content">
+    <div class="settings-content max-h-[60vh] overflow-y-auto pr-1">
       <!-- Instructions -->
-      <p class="instructions">
+      <p class="m-0 mb-5 text-sm text-mm-text-secondary text-center font-medium leading-[1.4]">
         Select the crosshair color that appears on highlighted template pixels:
       </p>
 
       <!-- Current Color Preview -->
-      <div class="current-color-preview">
-        <div class="preview-label">Current Color:</div>
-        <div class="preview-color-box">
+      <div class="bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-xl p-4 mb-5 text-center">
+        <div class="text-sm mb-3 text-mm-text-muted font-semibold">Current Color:</div>
+        <div class="flex justify-center">
           <CrosshairPreview
             :color="tempSettings.crosshairColor"
             :border="tempSettings.crosshairBorder"
@@ -31,127 +31,137 @@
       <CrosshairAlphaSection v-model="tempSettings.crosshairColor" />
 
       <!-- Border Options -->
-      <div class="settings-section">
-        <div class="section-label">Corner Borders:</div>
-        <div class="section-description">
+      <div class="bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-xl p-4 mb-4">
+        <div class="text-sm font-semibold text-mm-text-muted mb-2">Corner Borders:</div>
+        <div class="text-xs text-mm-text-secondary mb-3 leading-[1.4]">
           Add subtle borders around corner pixels of the crosshair
         </div>
-        <label class="toggle-container">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
           <input
             v-model="tempSettings.crosshairBorder"
-            type="checkbox" />
-          <span class="toggle-text">{{ tempSettings.crosshairBorder ? 'Enabled' : 'Disabled' }}</span>
+            type="checkbox"
+            class="w-4 h-4 cursor-pointer accent-mm-blue" />
+          <span class="text-mm-text-muted font-semibold text-[13px]">{{ tempSettings.crosshairBorder ? 'Enabled' : 'Disabled' }}</span>
         </label>
       </div>
 
       <!-- Overlay Elements Visibility -->
-      <div class="settings-section">
-        <div class="section-label">Overlay Elements Visibility:</div>
-        <div class="visibility-grid">
+      <div class="bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-xl p-4 mb-4">
+        <div class="text-sm font-semibold text-mm-text-muted mb-2">Overlay Elements Visibility:</div>
+        <div class="grid grid-cols-2 gap-2">
           <label
             v-for="item in visibilityItems"
             :key="item.key"
-            class="visibility-checkbox">
+            class="flex items-center gap-2 cursor-pointer select-none">
             <input
               v-model="item.visible"
               type="checkbox"
+              class="w-4 h-4 cursor-pointer accent-mm-blue"
               @change="updateVisibility(item.key, item.visible)" />
-            <span>{{ item.label }}</span>
+            <span class="text-mm-text-secondary text-[10px]">{{ item.label }}</span>
           </label>
         </div>
       </div>
 
       <!-- Crosshair Size -->
-      <div class="settings-section">
-        <div class="section-label">Crosshair Size:</div>
-        <div class="section-description">
+      <div class="bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-xl p-4 mb-4">
+        <div class="text-sm font-semibold text-mm-text-muted mb-2">Crosshair Size:</div>
+        <div class="text-xs text-mm-text-secondary mb-3 leading-[1.4]">
           Make crosshair 5x larger, extending beyond pixel boundaries
         </div>
-        <label class="toggle-container">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
           <input
             v-model="tempSettings.crosshairEnhancedSize"
-            type="checkbox" />
-          <span class="toggle-text">{{ tempSettings.crosshairEnhancedSize ? 'Enabled' : 'Disabled' }}</span>
+            type="checkbox"
+            class="w-4 h-4 cursor-pointer accent-mm-blue" />
+          <span class="text-mm-text-muted font-semibold text-[13px]">{{ tempSettings.crosshairEnhancedSize ? 'Enabled' : 'Disabled' }}</span>
         </label>
       </div>
 
       <!-- Crosshair Radius (conditional) -->
       <Transition name="slide-fade">
-        <div v-if="tempSettings.crosshairEnhancedSize" class="settings-section radius-section">
-          <div class="section-label">Crosshair Radius:</div>
-          <div class="section-description">
+        <div v-if="tempSettings.crosshairEnhancedSize" class="bg-mm-blue/5 border border-mm-blue/20 rounded-xl p-4 mb-4">
+          <div class="text-sm font-semibold text-mm-text-muted mb-2">Crosshair Radius:</div>
+          <div class="text-xs text-mm-text-secondary mb-3 leading-[1.4]">
             Control how far the crosshair extends from the center pixel
           </div>
-          <div class="slider-container">
+          <div class="flex items-center gap-3">
             <input
               v-model.number="tempSettings.crosshairRadius"
               type="range"
               min="12"
               max="512"
-              class="slider" />
-            <div class="slider-value">{{ tempSettings.crosshairRadius }}px</div>
+              class="slider flex-1 h-1.5 rounded-sm outline-none appearance-none bg-gradient-to-r from-mm-bg-muted to-mm-bg-light cursor-pointer" />
+            <div class="text-sm font-semibold text-mm-text-primary min-w-[50px] text-center bg-mm-bg-border px-3 py-1.5 rounded-md border border-mm-bg-muted">{{ tempSettings.crosshairRadius }}px</div>
           </div>
         </div>
       </Transition>
 
       <!-- Mini Progress Tracker -->
-      <div class="settings-section">
-        <div class="section-label">Mini Progress Tracker:</div>
-        <div class="section-description">
+      <div class="bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-xl p-4 mb-4">
+        <div class="text-sm font-semibold text-mm-text-muted mb-2">Mini Progress Tracker:</div>
+        <div class="text-xs text-mm-text-secondary mb-3 leading-[1.4]">
           Show a compact progress tracker below the Color Filter button.
         </div>
-        <label class="toggle-container">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
           <input
             v-model="tempSettings.miniTrackerEnabled"
-            type="checkbox" />
-          <span class="toggle-text">{{ tempSettings.miniTrackerEnabled ? 'Enabled' : 'Disabled' }}</span>
+            type="checkbox"
+            class="w-4 h-4 cursor-pointer accent-mm-blue" />
+          <span class="text-mm-text-muted font-semibold text-[13px]">{{ tempSettings.miniTrackerEnabled ? 'Enabled' : 'Disabled' }}</span>
         </label>
       </div>
 
       <!-- Mobile Mode -->
-      <div class="settings-section">
-        <div class="section-label">📱 Mobile Mode:</div>
-        <div class="section-description">
+      <div class="bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-xl p-4 mb-4">
+        <div class="text-sm font-semibold text-mm-text-muted mb-2">📱 Mobile Mode:</div>
+        <div class="text-xs text-mm-text-secondary mb-3 leading-[1.4]">
           Enable ultra-compact UI for mobile devices. Makes Color Filter extremely compact for better mobile experience.
         </div>
-        <label class="toggle-container">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
           <input
             v-model="tempSettings.mobileMode"
-            type="checkbox" />
-          <span class="toggle-text">{{ tempSettings.mobileMode ? 'Enabled' : 'Disabled' }}</span>
+            type="checkbox"
+            class="w-4 h-4 cursor-pointer accent-mm-blue" />
+          <span class="text-mm-text-muted font-semibold text-[13px]">{{ tempSettings.mobileMode ? 'Enabled' : 'Disabled' }}</span>
         </label>
       </div>
 
       <!-- Collapse Mini Template -->
-      <div class="settings-section">
-        <div class="section-label">Collapse Mini Template:</div>
-        <div class="section-description">
+      <div class="bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-xl p-4 mb-4">
+        <div class="text-sm font-semibold text-mm-text-muted mb-2">Collapse Mini Template:</div>
+        <div class="text-xs text-mm-text-secondary mb-3 leading-[1.4]">
           Hide mini tracker when template section is collapsed.
         </div>
-        <label class="toggle-container">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
           <input
             v-model="tempSettings.collapseMinEnabled"
-            type="checkbox" />
-          <span class="toggle-text">{{ tempSettings.collapseMinEnabled ? 'Enabled' : 'Disabled' }}</span>
+            type="checkbox"
+            class="w-4 h-4 cursor-pointer accent-mm-blue" />
+          <span class="text-mm-text-muted font-semibold text-[13px]">{{ tempSettings.collapseMinEnabled ? 'Enabled' : 'Disabled' }}</span>
         </label>
       </div>
 
       <!-- Navigation Method -->
-      <div class="settings-section">
-        <h3 class="section-label">Navigation Method</h3>
-        <p class="section-description">
+      <div class="bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-xl p-4 mb-4">
+        <h3 class="text-sm font-semibold text-mm-text-muted mb-2 m-0">Navigation Method</h3>
+        <p class="text-xs text-mm-text-secondary mb-3 leading-[1.4] m-0">
           Choose how to navigate when clicking search results and favorites
         </p>
-        <div class="button-group">
+        <div class="flex gap-2 p-1 bg-mm-bg-darkest rounded-lg border border-mm-bg-muted">
           <button
-            class="mode-button"
-            :class="{ active: tempSettings.navigationMethod === 'flyto' }"
+            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
+            :class="tempSettings.navigationMethod === 'flyto'
+              ? 'bg-gradient-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
+              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
             @click="tempSettings.navigationMethod = 'flyto'">
             FlyTo
           </button>
           <button
-            class="mode-button"
-            :class="{ active: tempSettings.navigationMethod === 'openurl' }"
+            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
+            :class="tempSettings.navigationMethod === 'openurl'
+              ? 'bg-gradient-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
+              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
             @click="tempSettings.navigationMethod = 'openurl'">
             OpenURL
           </button>
@@ -159,21 +169,25 @@
       </div>
 
       <!-- Drag Mode -->
-      <div class="settings-section">
-        <div class="section-label">Drag Mode:</div>
-        <p class="section-description">
+      <div class="bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-xl p-4 mb-4">
+        <div class="text-sm font-semibold text-mm-text-muted mb-2">Drag Mode:</div>
+        <p class="text-xs text-mm-text-secondary mb-3 leading-[1.4] m-0">
           Choose how to drag the overlay: full overlay (easier on mobile) or drag bar only (classic mode).
         </p>
-        <div class="button-group">
+        <div class="flex gap-2 p-1 bg-mm-bg-darkest rounded-lg border border-mm-bg-muted">
           <button
-            class="mode-button"
-            :class="{ active: tempSettings.dragMode }"
+            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
+            :class="tempSettings.dragMode
+              ? 'bg-gradient-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
+              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
             @click="tempSettings.dragMode = true">
             Full Overlay
           </button>
           <button
-            class="mode-button"
-            :class="{ active: !tempSettings.dragMode }"
+            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
+            :class="!tempSettings.dragMode
+              ? 'bg-gradient-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
+              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
             @click="tempSettings.dragMode = false">
             Drag Bar Only
           </button>
@@ -181,21 +195,25 @@
       </div>
 
       <!-- Smart Tile Cache -->
-      <div class="settings-section">
-        <h3 class="section-label">Tile Cache</h3>
-        <p class="section-description">
+      <div class="bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-xl p-4 mb-4">
+        <h3 class="text-sm font-semibold text-mm-text-muted mb-2 m-0">Tile Cache</h3>
+        <p class="text-xs text-mm-text-secondary mb-3 leading-[1.4] m-0">
           Cache processed tiles to reduce lag when revisiting areas. Automatically detects canvas changes.
         </p>
-        <div class="button-group">
+        <div class="flex gap-2 p-1 bg-mm-bg-darkest rounded-lg border border-mm-bg-muted">
           <button
-            class="mode-button"
-            :class="{ active: !tempSettings.smartCacheEnabled }"
+            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
+            :class="!tempSettings.smartCacheEnabled
+              ? 'bg-gradient-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
+              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
             @click="tempSettings.smartCacheEnabled = false">
             OFF
           </button>
           <button
-            class="mode-button"
-            :class="{ active: tempSettings.smartCacheEnabled }"
+            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
+            :class="tempSettings.smartCacheEnabled
+              ? 'bg-gradient-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
+              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
             @click="tempSettings.smartCacheEnabled = true">
             ON
           </button>
@@ -205,14 +223,14 @@
 
     <!-- Footer with action buttons -->
     <template #footer>
-      <div class="settings-footer">
+      <div class="flex justify-end gap-3 w-full">
         <button
-          class="btn btn-secondary"
+          class="px-5 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 ease-in-out border-none font-inherit bg-gradient-to-br from-mm-bg-muted to-mm-bg-border text-mm-text-primary border border-mm-bg-light hover:not-disabled:bg-gradient-to-br hover:not-disabled:from-mm-bg-light hover:not-disabled:to-mm-bg-muted hover:not-disabled:-translate-y-px hover:not-disabled:shadow-[0_4px_12px_rgba(71,85,105,0.3)] active:not-disabled:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
           @click="handleCancel">
           Cancel
         </button>
         <button
-          class="btn btn-primary"
+          class="px-5 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 ease-in-out border-none font-inherit bg-gradient-to-br from-mm-blue to-mm-blue-dark text-white border border-mm-blue-dark hover:not-disabled:bg-gradient-to-br hover:not-disabled:from-mm-blue-dark hover:not-disabled:to-mm-blue-darker hover:not-disabled:-translate-y-px hover:not-disabled:shadow-[0_4px_12px_rgba(59,130,246,0.4)] active:not-disabled:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="!hasChanges"
           @click="handleApply">
           Apply Settings
@@ -381,45 +399,6 @@ async function handleApply() {
 </script>
 
 <style scoped>
-/* Instructions */
-.instructions {
-  margin: 0 0 20px 0;
-  font-size: 14px;
-  color: #94a3b8;
-  text-align: center;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-/* Current Color Preview */
-.current-color-preview {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border: 1px solid #334155;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.preview-label {
-  font-size: 14px;
-  margin-bottom: 12px;
-  color: #cbd5e1;
-  font-weight: 600;
-}
-
-.preview-color-box {
-  display: flex;
-  justify-content: center;
-}
-
-/* Settings Content */
-.settings-content {
-  max-height: 60vh;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
 /* Custom scrollbar */
 .settings-content::-webkit-scrollbar {
   width: 6px;
@@ -439,78 +418,7 @@ async function handleApply() {
   background: #64748b;
 }
 
-/* Settings Section */
-.settings-section {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border: 1px solid #334155;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.settings-section.radius-section {
-  background: rgba(59, 130, 246, 0.05);
-  border-color: rgba(59, 130, 246, 0.2);
-}
-
-.section-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #cbd5e1;
-  margin-bottom: 8px;
-}
-
-.section-label h3 {
-  margin: 0;
-  font-size: 14px;
-}
-
-.section-description {
-  font-size: 12px;
-  color: #94a3b8;
-  margin-bottom: 12px;
-  line-height: 1.4;
-}
-
-/* Toggle Container */
-.toggle-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.toggle-container input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #3b82f6;
-}
-
-.toggle-text {
-  color: #cbd5e1;
-  font-weight: 600;
-  font-size: 13px;
-}
-
-/* Slider */
-.slider-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.slider {
-  flex: 1;
-  height: 6px;
-  border-radius: 3px;
-  outline: none;
-  -webkit-appearance: none;
-  background: linear-gradient(90deg, #475569, #64748b);
-  cursor: pointer;
-}
-
+/* Slider thumb */
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 18px;
@@ -530,137 +438,6 @@ async function handleApply() {
   cursor: pointer;
   border: 2px solid #f1f5f9;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-.slider-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #f1f5f9;
-  min-width: 50px;
-  text-align: center;
-  background: #334155;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #475569;
-}
-
-/* Button Group */
-.button-group {
-  display: flex;
-  gap: 8px;
-  padding: 4px;
-  background: #0f172a;
-  border-radius: 8px;
-  border: 1px solid #475569;
-}
-
-.mode-button {
-  flex: 1;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  background: transparent;
-  color: #94a3b8;
-  font-family: inherit;
-}
-
-.mode-button.active {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-.mode-button:hover:not(.active) {
-  background: #1e293b;
-  color: #cbd5e1;
-}
-
-/* Visibility Grid */
-.visibility-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.visibility-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.visibility-checkbox input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #3b82f6;
-}
-
-.visibility-checkbox span {
-  color: #94a3b8;
-  font-size: 10px;
-}
-
-/* Settings Footer */
-.settings-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  width: 100%;
-}
-
-/* Buttons */
-.btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  font-family: inherit;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background: linear-gradient(135deg, #475569, #334155);
-  color: #f1f5f9;
-  border: 1px solid #64748b;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #64748b, #475569);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(71, 85, 105, 0.3);
-}
-
-.btn-secondary:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-  border: 1px solid #2563eb;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
 }
 
 /* Transition */

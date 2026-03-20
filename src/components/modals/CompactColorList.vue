@@ -5,58 +5,58 @@
       id="bmcf-compact-list"
       ref="compactRef"
       :style="draggableStyle"
-      class="bmcf-compact-list">
+      class="fixed w-60 bg-mm-bg-darkest border border-mm-bg-border rounded-xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.5)] z-[9002] font-[Inter,-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,sans-serif] flex flex-col max-h-[600px]">
         <!-- Header -->
-        <div class="compact-header" ref="dragHandleRef">
+        <div class="flex items-center justify-between px-3 py-2.5 bg-gradient-to-br from-mm-bg-dark to-mm-bg-medium border-b border-mm-bg-border rounded-t-xl cursor-move select-none" ref="dragHandleRef">
           <!-- Left Section -->
-          <div class="compact-left-section">
+          <div class="flex items-center gap-2 flex-1">
             <!-- Collapse Arrow -->
             <button
-              class="compact-collapse-arrow"
+              class="bg-transparent border-none text-mm-text-muted text-xs cursor-pointer p-1 flex items-center justify-center transition-transform duration-200 ease-in-out hover:text-mm-text-primary"
               :class="{ collapsed: isCollapsed }"
               @click.stop="toggleCollapse">
               {{ isCollapsed ? '►' : '▼' }}
             </button>
             <!-- Title -->
-            <h3 class="compact-title">Color Toggle</h3>
+            <h3 class="m-0 text-[0.95em] font-semibold text-mm-text-primary">Color Toggle</h3>
           </div>
 
           <!-- Close Button -->
-          <button class="compact-close-btn" @click.stop="handleClose">✕</button>
+          <button class="bg-gradient-to-br from-mm-error to-mm-error-dark border border-mm-error/30 text-white w-6 h-6 rounded-md cursor-pointer text-sm flex items-center justify-center transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-[0_4px_12px_rgba(239,68,68,0.4)]" @click.stop="handleClose">✕</button>
         </div>
 
         <!-- Collapsible Content -->
         <Transition name="collapse">
-          <div v-if="!isCollapsed" class="compact-collapsible-content">
+          <div v-if="!isCollapsed" class="flex flex-col overflow-hidden">
             <!-- Search -->
-            <div class="compact-search-container">
+            <div class="compact-search-container relative px-3 py-2.5 border-b border-mm-bg-border">
               <input
                 v-model="compactSearch"
                 type="text"
-                class="compact-search-input"
+                class="w-full h-8 py-1.5 pl-2.5 pr-7 rounded-lg border border-mm-bg-muted bg-mm-bg-dark text-mm-text-primary text-[0.85em] outline-none transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_2px_rgba(59,130,246,0.2)]"
                 placeholder="Search colors..." />
               <button
                 v-if="compactSearch"
-                class="compact-clear-search"
+                class="absolute right-[18px] top-1/2 -translate-y-1/2 bg-transparent border-none text-mm-text-secondary cursor-pointer text-sm p-1 flex items-center justify-center hover:text-mm-text-dim"
                 @click="compactSearch = ''">
                 ✕
               </button>
             </div>
 
             <!-- Bulk Actions -->
-            <div class="compact-bulk-container">
-              <button class="compact-disable-all" @click="handleDisableAll">
+            <div class="flex gap-1.5 px-3 py-2 border-b border-mm-bg-border">
+              <button class="flex-1 h-7 rounded-md border-none text-[0.8em] font-semibold cursor-pointer transition-all duration-200 ease-in-out bg-mm-red text-white hover:bg-[#da190b] hover:-translate-y-px" @click="handleDisableAll">
                 Disable All
               </button>
-              <button class="compact-enable-all" @click="handleEnableAll">
+              <button class="flex-1 h-7 rounded-md border-none text-[0.8em] font-semibold cursor-pointer transition-all duration-200 ease-in-out bg-mm-success-light text-white hover:bg-[#45a049] hover:-translate-y-px" @click="handleEnableAll">
                 Enable All
               </button>
             </div>
 
             <!-- Sort -->
-            <div class="compact-sort-container">
-              <label class="compact-sort-label">Sort:</label>
-              <select v-model="compactSort" class="compact-sort-select">
+            <div class="flex items-center gap-2 px-3 py-2 border-b border-mm-bg-border">
+              <label class="text-[0.8em] text-mm-text-muted font-semibold">Sort:</label>
+              <select v-model="compactSort" class="flex-1 h-7 px-2 py-1 rounded-md border border-mm-bg-muted bg-mm-bg-dark text-mm-text-primary text-[0.8em] cursor-pointer outline-none focus:border-mm-blue">
                 <option value="default">Default</option>
                 <option value="name">Name</option>
                 <option value="premium">Premium</option>
@@ -71,11 +71,11 @@
             </div>
 
             <!-- Color List -->
-            <div class="compact-content">
+            <div class="compact-content max-h-[300px] overflow-y-auto p-2">
               <div
                 v-for="color in sortedCompactColors"
                 :key="color.colorKey"
-                class="compact-item"
+                class="flex items-center gap-2 px-2 py-1.5 mb-1 bg-white/5 rounded-md transition-colors duration-200 ease-in-out hover:bg-white/[0.08]"
                 :data-color-rgb="color.colorKey"
                 :data-original-index="color.originalIndex"
                 :data-remaining="color.stats.needsCrosshair"
@@ -84,25 +84,25 @@
                 :data-progress="color.stats.percentage">
                 <!-- Color Swatch -->
                 <div
-                  class="compact-swatch"
+                  class="w-3.5 h-3.5 rounded-[3px] shrink-0 border border-white/20"
                   :style="{
                     background: `rgb(${color.colorInfo.rgb[0]}, ${color.colorInfo.rgb[1]}, ${color.colorInfo.rgb[2]})`
                   }"></div>
 
                 <!-- Name & Stats -->
-                <div class="compact-name">
-                  <div class="compact-name-text">{{ color.colorInfo.name }}</div>
-                  <div v-if="color.stats.totalRequired > 0" class="compact-stats">
+                <div class="flex-1 min-w-0">
+                  <div class="text-[0.75em] font-semibold text-mm-text-primary whitespace-nowrap overflow-hidden text-ellipsis">{{ color.colorInfo.name }}</div>
+                  <div v-if="color.stats.totalRequired > 0" class="text-[0.65em] text-mm-text-secondary mt-0.5">
                     {{ color.stats.painted }}/{{ color.stats.totalRequired }}
-                    <span class="compact-progress">({{ color.stats.percentage }}%)</span>
+                    <span class="text-emerald-400 font-semibold">({{ color.stats.percentage }}%)</span>
                   </div>
-                  <div v-else class="compact-stats-unused">Not Used</div>
+                  <div v-else class="text-[0.65em] text-mm-bg-light mt-0.5">Not Used</div>
                 </div>
 
                 <!-- Controls -->
-                <div class="compact-controls-container">
+                <div class="flex items-center gap-1.5">
                   <!-- Premium Icon -->
-                  <div v-if="!color.colorInfo.free" class="compact-premium-icon">💧</div>
+                  <div v-if="!color.colorInfo.free" class="text-[10px] opacity-80">💧</div>
 
                   <!-- Enhanced Checkbox -->
                   <input
@@ -110,7 +110,7 @@
                     type="checkbox"
                     :checked="color.isEnhanced"
                     :disabled="color.isDisabled"
-                    class="compact-enhanced-checkbox"
+                    class="w-3.5 h-3.5 cursor-pointer accent-mm-blue disabled:opacity-50 disabled:cursor-not-allowed"
                     @change="handleToggleEnhanced(color.colorKey)" />
                 </div>
               </div>
@@ -289,309 +289,23 @@ watch(compactSort, (newValue) => {
 </script>
 
 <style scoped>
-.bmcf-compact-list {
-  position: fixed;
-  width: 240px;
-  background: var(--slate-900, #0f172a);
-  border: 1px solid var(--slate-700, #334155);
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-  z-index: 9002;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  display: flex;
-  flex-direction: column;
-  max-height: 600px;
-}
-
-/* Header */
-.compact-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background: linear-gradient(135deg, #1e293b, #293548);
-  border-bottom: 1px solid var(--slate-700, #334155);
-  border-radius: 12px 12px 0 0;
-  cursor: move;
-  user-select: none;
-}
-
-.compact-left-section {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-
-.compact-collapse-arrow {
-  background: none;
-  border: none;
-  color: var(--slate-300, #cbd5e1);
-  font-size: 12px;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
-}
-
-.compact-collapse-arrow:hover {
-  color: var(--slate-100, #f1f5f9);
-}
-
-.compact-title {
-  margin: 0;
-  font-size: 0.95em;
-  font-weight: 600;
-  color: var(--slate-100, #f1f5f9);
-}
-
-.compact-close-btn {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.compact-close-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-}
-
-/* Collapsible Content */
-.compact-collapsible-content {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Search */
-.compact-search-container {
-  position: relative;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--slate-700, #334155);
-}
-
-.compact-search-input {
-  width: 100%;
-  height: 32px;
-  padding: 6px 28px 6px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--slate-600, #475569);
-  background: var(--slate-800, #1e293b);
-  color: var(--slate-100, #f1f5f9);
-  font-size: 0.85em;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.compact-search-input:focus {
-  border-color: var(--blue-500, #3b82f6);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
-
-.compact-clear-search {
-  position: absolute;
-  right: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--slate-400, #94a3b8);
-  cursor: pointer;
-  font-size: 14px;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.compact-clear-search:hover {
-  color: var(--slate-200, #e2e8f0);
-}
-
-/* Bulk Actions */
-.compact-bulk-container {
-  display: flex;
-  gap: 6px;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--slate-700, #334155);
-}
-
-.compact-disable-all,
-.compact-enable-all {
-  flex: 1;
-  height: 28px;
-  border-radius: 6px;
-  border: none;
-  font-size: 0.8em;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.compact-disable-all {
-  background: #f44336;
-  color: white;
-}
-
-.compact-disable-all:hover {
-  background: #da190b;
-  transform: translateY(-1px);
-}
-
-.compact-enable-all {
-  background: #4CAF50;
-  color: white;
-}
-
-.compact-enable-all:hover {
-  background: #45a049;
-  transform: translateY(-1px);
-}
-
-/* Sort */
-.compact-sort-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--slate-700, #334155);
-}
-
-.compact-sort-label {
-  font-size: 0.8em;
-  color: var(--slate-300, #cbd5e1);
-  font-weight: 600;
-}
-
-.compact-sort-select {
-  flex: 1;
-  height: 28px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--slate-600, #475569);
-  background: var(--slate-800, #1e293b);
-  color: var(--slate-100, #f1f5f9);
-  font-size: 0.8em;
-  cursor: pointer;
-  outline: none;
-}
-
-.compact-sort-select:focus {
-  border-color: var(--blue-500, #3b82f6);
-}
-
-/* Content */
-.compact-content {
-  max-height: 300px;
-  overflow-y: auto;
-  padding: 8px;
-}
-
+/* Scrollbar */
 .compact-content::-webkit-scrollbar {
   width: 6px;
 }
 
 .compact-content::-webkit-scrollbar-track {
-  background: var(--slate-800, #1e293b);
+  background: #1e293b;
   border-radius: 3px;
 }
 
 .compact-content::-webkit-scrollbar-thumb {
-  background: var(--slate-600, #475569);
+  background: #475569;
   border-radius: 3px;
 }
 
 .compact-content::-webkit-scrollbar-thumb:hover {
-  background: var(--slate-500, #64748b);
-}
-
-/* Compact Item */
-.compact-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  margin-bottom: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  transition: background 0.2s ease;
-}
-
-.compact-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.compact-swatch {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.compact-name {
-  flex: 1;
-  min-width: 0;
-}
-
-.compact-name-text {
-  font-size: 0.75em;
-  font-weight: 600;
-  color: var(--slate-100, #f1f5f9);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.compact-stats {
-  font-size: 0.65em;
-  color: var(--slate-400, #94a3b8);
-  margin-top: 2px;
-}
-
-.compact-progress {
-  color: var(--emerald-400, #34d399);
-  font-weight: 600;
-}
-
-.compact-stats-unused {
-  font-size: 0.65em;
-  color: var(--slate-500, #64748b);
-  margin-top: 2px;
-}
-
-.compact-controls-container {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.compact-premium-icon {
-  font-size: 10px;
-  opacity: 0.8;
-}
-
-.compact-enhanced-checkbox {
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
-  accent-color: var(--blue-500, #3b82f6);
-}
-
-.compact-enhanced-checkbox:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  background: #64748b;
 }
 
 /* Transitions */

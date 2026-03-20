@@ -8,64 +8,64 @@
     @close="handleClose">
     <!-- Title with count -->
     <template #title>
-      <span class="wrong-pixels-title">
+      <span class="flex items-center gap-2">
         Wrong Pixels
-        <span v-if="wrongPixelsList.length > 0" class="wrong-count">
+        <span v-if="wrongPixelsList.length > 0" class="text-sm font-medium text-red-400 bg-gradient-to-br from-mm-error/20 to-mm-error-dark/15 px-2 py-0.5 rounded">
           ({{ wrongPixelsList.length }} locations)
         </span>
       </span>
     </template>
 
     <!-- Loading state -->
-    <div v-if="isLoading" class="loading-state">
-      <div class="loading-spinner"></div>
+    <div v-if="isLoading" class="flex flex-col items-center justify-center p-10 text-mm-text-secondary">
+      <div class="loading-spinner w-8 h-8 border-3 border-white/10 border-t-mm-blue rounded-full mb-4"></div>
       <p>Loading wrong pixels...</p>
     </div>
 
     <!-- No data state -->
-    <div v-else-if="!hasTemplateData" class="empty-state">
-      <p class="empty-icon">📋</p>
-      <p class="empty-text">No tile data available.</p>
-      <p class="empty-hint">Please load a template first!</p>
+    <div v-else-if="!hasTemplateData" class="flex flex-col items-center justify-center p-10 text-center">
+      <p class="text-[48px] mb-4">📋</p>
+      <p class="text-base font-semibold text-mm-text-primary m-0 mb-2">No tile data available.</p>
+      <p class="text-sm text-mm-text-secondary m-0">Please load a template first!</p>
     </div>
 
     <!-- No wrong pixels found -->
-    <div v-else-if="wrongPixelsList.length === 0" class="success-state">
-      <p class="success-icon">🎉</p>
-      <p class="success-text">No wrong pixels found!</p>
-      <p class="success-hint">All pixels match the template.</p>
+    <div v-else-if="wrongPixelsList.length === 0" class="flex flex-col items-center justify-center p-10 text-center">
+      <p class="text-[48px] mb-4">🎉</p>
+      <p class="text-base font-semibold text-mm-text-primary m-0 mb-2">No wrong pixels found!</p>
+      <p class="text-sm text-mm-text-secondary m-0">All pixels match the template.</p>
     </div>
 
     <!-- Wrong pixels list -->
-    <div v-else class="wrong-pixels-content">
-      <div class="wrong-pixels-list">
+    <div v-else class="wrong-pixels-content max-h-[400px] overflow-y-auto">
+      <div class="flex flex-col gap-2">
         <div
           v-for="(pixel, index) in wrongPixelsList"
           :key="`${pixel.tileX}-${pixel.tileY}-${pixel.colorKey}-${index}`"
-          class="wrong-pixel-item"
+          class="flex items-center gap-3 p-3 bg-gradient-to-br from-mm-bg-muted/30 to-mm-bg-border/20 border border-mm-bg-muted rounded-lg cursor-pointer transition-all duration-200 ease-in-out hover:from-mm-bg-muted/50 hover:to-mm-bg-border/40 hover:border-mm-bg-light hover:-translate-y-px"
           @click="flyToPixel(pixel)">
           <!-- Color swatch -->
           <div
-            class="color-swatch"
+            class="w-6 h-6 rounded border-2 border-white/20 shrink-0"
             :style="{ background: `rgb(${pixel.colorKey})` }">
           </div>
 
           <!-- Info section -->
-          <div class="pixel-info">
-            <div class="tile-coords">
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-mm-text-primary text-sm mb-0.5">
               Tile {{ pixel.tileX }}, {{ pixel.tileY }}
-              <span v-if="pixel.pixelX === 0 && pixel.pixelY === 0" class="approx-badge">(approx)</span>
+              <span v-if="pixel.pixelX === 0 && pixel.pixelY === 0" class="text-[10px] font-normal text-mm-warning ml-1">(approx)</span>
             </div>
-            <div class="pixel-details">
+            <div class="text-xs text-mm-text-secondary">
               {{ pixel.wrongCount }} wrong pixel{{ pixel.wrongCount > 1 ? 's' : '' }}
               • RGB({{ pixel.colorKey }})
-              <span v-if="pixel.colorName" class="color-name">• {{ pixel.colorName }}</span>
+              <span v-if="pixel.colorName" class="text-mm-text-muted">• {{ pixel.colorName }}</span>
             </div>
           </div>
 
           <!-- Fly button -->
           <button
-            class="fly-btn"
+            class="px-3 py-2 bg-gradient-to-br from-mm-blue to-mm-blue-dark border-none rounded-md text-white text-sm cursor-pointer transition-all duration-200 ease-in-out shrink-0 hover:from-mm-blue-dark hover:to-mm-blue-darker hover:scale-105"
             title="Fly to this location"
             @click.stop="flyToPixel(pixel)">
             ✈️
@@ -76,11 +76,13 @@
 
     <!-- Footer -->
     <template #footer>
-      <div class="modal-footer">
-        <span v-if="wrongPixelsList.length > 0" class="footer-hint">
+      <div class="flex justify-between items-center w-full">
+        <span v-if="wrongPixelsList.length > 0" class="text-xs text-mm-text-secondary">
           Click any item to fly to that location
         </span>
-        <button class="btn btn-secondary" @click="handleClose">
+        <button
+          class="px-5 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 ease-in-out border-none font-inherit bg-gradient-to-br from-mm-bg-muted to-mm-bg-border text-mm-text-primary border border-mm-bg-light hover:from-mm-bg-light hover:to-mm-bg-muted hover:-translate-y-px"
+          @click="handleClose">
           Close
         </button>
       </div>
@@ -232,198 +234,15 @@ watch(isOpen, (newVal) => {
 </script>
 
 <style scoped>
-/* Title */
-.wrong-pixels-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.wrong-count {
-  font-size: 14px;
-  font-weight: 500;
-  color: #f87171;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.15));
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-/* Loading state */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  color: #94a3b8;
-}
-
+/* Loading spinner */
 .loading-spinner {
-  width: 32px;
-  height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.1);
   border-top-color: #3b82f6;
-  border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 16px;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-/* Empty state */
-.empty-state,
-.success-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  text-align: center;
-}
-
-.empty-icon,
-.success-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-.empty-text,
-.success-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: #f1f5f9;
-  margin: 0 0 8px 0;
-}
-
-.empty-hint,
-.success-hint {
-  font-size: 14px;
-  color: #94a3b8;
-  margin: 0;
-}
-
-/* Wrong pixels list */
-.wrong-pixels-content {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.wrong-pixels-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.wrong-pixel-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: linear-gradient(135deg, rgba(71, 85, 105, 0.3), rgba(51, 65, 85, 0.2));
-  border: 1px solid #475569;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.wrong-pixel-item:hover {
-  background: linear-gradient(135deg, rgba(71, 85, 105, 0.5), rgba(51, 65, 85, 0.4));
-  border-color: #64748b;
-  transform: translateY(-1px);
-}
-
-/* Color swatch */
-.color-swatch {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  flex-shrink: 0;
-}
-
-/* Pixel info */
-.pixel-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.tile-coords {
-  font-weight: 600;
-  color: #f1f5f9;
-  font-size: 14px;
-  margin-bottom: 2px;
-}
-
-.approx-badge {
-  font-size: 10px;
-  font-weight: 400;
-  color: #fbbf24;
-  margin-left: 4px;
-}
-
-.pixel-details {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.color-name {
-  color: #cbd5e1;
-}
-
-/* Fly button */
-.fly-btn {
-  padding: 8px 12px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  border: none;
-  border-radius: 6px;
-  color: white;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.fly-btn:hover {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  transform: scale(1.05);
-}
-
-/* Footer */
-.modal-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.footer-hint {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-/* Buttons */
-.btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  font-family: inherit;
-}
-
-.btn-secondary {
-  background: linear-gradient(135deg, #475569, #334155);
-  color: #f1f5f9;
-  border: 1px solid #64748b;
-}
-
-.btn-secondary:hover {
-  background: linear-gradient(135deg, #64748b, #475569);
-  transform: translateY(-1px);
 }
 
 /* Scrollbar */

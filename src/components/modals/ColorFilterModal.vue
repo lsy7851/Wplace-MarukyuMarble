@@ -2,42 +2,42 @@
   <Transition name="modal-fade">
     <div
       v-if="modelValue"
-      class="modal-backdrop"
+      class="fixed top-0 left-0 w-full h-full z-[9001] flex items-center justify-center"
       style="pointer-events: none;">
       <div
         id="bm-color-filter-overlay"
         ref="modalRef"
-        class="bmcf-overlay"
+        class="bmcf-overlay fixed w-[min(94vw,670px)] max-h-[88vh] bg-mm-bg-darkest text-mm-text-primary rounded-[20px] border border-mm-bg-border shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.05)] flex flex-col overflow-hidden font-[Inter,-apple-system,BlinkMacSystemFont,'Segoe_UI',Roboto,sans-serif] backdrop-blur-[16px]"
         :class="{ 'mobile-mode': mobileMode }"
         :style="draggableStyle"
         style="pointer-events: auto;">
           <!-- Header -->
-          <div class="bmcf-header" ref="dragHandleRef">
+          <div class="flex flex-col px-5 pt-4 pb-3 border-b border-mm-bg-border bg-gradient-to-br from-mm-bg-dark to-mm-bg-medium relative z-[1] cursor-move select-none shrink-0" ref="dragHandleRef">
             <!-- Drag Bar -->
-            <div class="bmcf-drag-bar"></div>
+            <div class="bg-gradient-to-r from-mm-bg-muted via-mm-bg-light to-mm-bg-muted rounded h-1.5 cursor-grab w-full mb-2 opacity-80 transition-opacity duration-200 ease-in-out hover:opacity-100"></div>
 
             <!-- Title Container -->
-            <div class="title-container">
-              <h2 class="modal-title">Template Color Filter</h2>
+            <div class="flex items-center justify-between w-full">
+              <h2 class="modal-title m-0 text-[1.5em] font-bold font-[Inter,-apple-system,BlinkMacSystemFont,sans-serif] text-center flex-1 pointer-events-none tracking-tight bg-gradient-to-br from-mm-text-primary to-mm-text-muted bg-clip-text [-webkit-background-clip:text] [-webkit-text-fill-color:transparent]">Template Color Filter</h2>
               <button
-                class="view-toggle-btn"
+                class="header-btn bg-gradient-to-br from-mm-bg-muted to-mm-bg-border border border-mm-bg-light text-mm-text-muted w-9 h-9 rounded-xl cursor-pointer text-base flex items-center justify-center ml-3 transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden hover:-translate-y-px hover:scale-105 hover:from-mm-bg-light hover:to-mm-bg-muted hover:shadow-[0_6px_20px_rgba(71,85,105,0.3)]"
                 :title="`Switch to ${viewMode === 'list' ? 'Grid' : 'List'} view`"
                 @click="toggleView">
                 {{ viewMode === 'grid' ? '📋' : '⊞' }}
               </button>
               <button
-                class="compact-list-btn"
+                class="header-btn bg-gradient-to-br from-mm-bg-muted to-mm-bg-border border border-mm-bg-light text-mm-text-muted w-9 h-9 rounded-xl cursor-pointer text-base flex items-center justify-center ml-3 transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden hover:-translate-y-px hover:scale-105 hover:from-mm-bg-light hover:to-mm-bg-muted hover:shadow-[0_6px_20px_rgba(71,85,105,0.3)]"
                 title="Toggle Compact Color List"
                 @click="handleCompactList">
                 📌
               </button>
               <button
-                class="settings-btn"
+                class="header-btn bg-gradient-to-br from-mm-bg-muted to-mm-bg-border border border-mm-bg-light text-mm-text-muted w-9 h-9 rounded-xl cursor-pointer text-base flex items-center justify-center ml-3 transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden hover:-translate-y-px hover:scale-105 hover:from-mm-bg-light hover:to-mm-bg-muted hover:shadow-[0_6px_20px_rgba(71,85,105,0.3)]"
                 @click="handleSettings">
                 <span v-html="settingsIcon"></span>
               </button>
               <button
-                class="close-btn"
+                class="bg-gradient-to-br from-mm-error to-mm-error-dark border border-mm-error/30 text-white font-semibold w-9 h-9 rounded-xl cursor-pointer text-base flex items-center justify-center ml-3 transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden hover:-translate-y-px hover:scale-105 hover:shadow-[0_6px_20px_rgba(239,68,68,0.4)]"
                 @click="handleClose">
                 ✕
               </button>
@@ -45,101 +45,101 @@
           </div>
 
           <!-- Content -->
-          <div class="bmcf-content">
+          <div class="p-5 overflow-auto relative z-[1] flex-1 min-h-0">
             <!-- Progress Summary -->
-            <div class="progress-summary">
+            <div class="bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-2xl p-5 mb-6 text-mm-text-primary text-center relative overflow-hidden">
               <!-- Background Pattern -->
-              <div class="progress-bg-pattern"></div>
+              <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.1),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(16,185,129,0.08),transparent_50%)] pointer-events-none"></div>
 
               <!-- Content -->
-              <div class="progress-content">
+              <div class="relative z-[1]">
                 <!-- Title with percentage -->
-                <div class="progress-title">
-                  <span class="progress-icon">📊</span>
-                  <span class="progress-title-gradient">
+                <div class="text-[1.2em] font-bold mb-3 text-mm-text-primary">
+                  <span class="mr-2">📊</span>
+                  <span class="bg-gradient-to-br from-mm-blue-light to-emerald-400 bg-clip-text [-webkit-background-clip:text] [-webkit-text-fill-color:transparent]">
                     Template Progress: {{ overallProgress.percentage }}%
                   </span>
                 </div>
 
                 <!-- Pixels painted info -->
-                <div class="progress-pixels">
+                <div class="text-[0.95em] text-mm-text-muted mb-4 leading-relaxed">
                   {{ overallProgress.totalPainted.toLocaleString() }} / {{ overallProgress.totalRequired.toLocaleString() }} pixels painted
-                  <span v-if="includeWrongPixels && overallProgress.totalWrong > 0" class="progress-wrong-info">
+                  <span v-if="includeWrongPixels && overallProgress.totalWrong > 0" class="text-mm-text-secondary">
                     (includes {{ overallProgress.totalWrong.toLocaleString() }} wrong)
                   </span>
                 </div>
 
                 <!-- Progress Bar -->
-                <div class="progress-track">
+                <div class="w-full h-3 bg-mm-bg-border rounded-lg overflow-hidden relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]">
                   <div
-                    class="progress-fill"
+                    class="h-full bg-gradient-to-r from-mm-blue to-mm-success transition-[width] duration-400 ease-[cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden"
                     :style="{ width: overallProgress.percentage + '%' }">
-                    <div class="progress-shimmer"></div>
+                    <div class="progress-shimmer absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
                   </div>
                 </div>
 
                 <!-- Pixels Remaining -->
-                <div class="progress-remaining">
+                <div class="text-[0.85em] text-mm-warning mt-3 font-semibold [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
                   {{ overallProgress.totalRemaining.toLocaleString() }} Pixels Remaining
                 </div>
               </div>
             </div>
 
             <!-- Include Wrong Color Pixels -->
-            <div class="include-wrong-container">
+            <div class="flex items-center gap-3 px-4 py-3 bg-gradient-to-br from-mm-bg-dark to-mm-bg-darkest rounded-xl border border-mm-bg-border mb-6">
               <input
                 id="bm-include-wrong-progress"
                 v-model="includeWrongPixels"
                 type="checkbox"
-                class="wrong-checkbox" />
-              <label for="bm-include-wrong-progress" class="wrong-label">
+                class="w-[18px] h-[18px] cursor-pointer accent-mm-blue rounded" />
+              <label for="bm-include-wrong-progress" class="text-mm-text-primary text-[0.95em] font-medium cursor-pointer select-none flex-1 tracking-tight">
                 Include Wrong Color Pixels in Progress
               </label>
             </div>
 
             <!-- Instructions -->
-            <p class="instructions-text">
+            <p class="m-0 mb-5 px-4 py-3 bg-gradient-to-br from-mm-blue/10 to-mm-success/5 border border-mm-blue/20 rounded-xl text-[0.9em] text-mm-text-muted text-center font-medium leading-relaxed">
               Click color name to toggle visibility. Use checkboxes for enhanced mode or progress exclusion.
             </p>
 
             <!-- Enhanced Mode Section -->
-            <div class="enhanced-section">
-              <div class="enhanced-info">
+            <div class="bg-white/5 border border-white/10 rounded-lg p-3 mb-4">
+              <div class="text-[0.95em] font-semibold text-mm-text-muted mb-2.5 text-center">
                 🎯 Enhanced Mode Settings
                 <span style="font-size: 0.8em; color: rgba(255,255,255,0.6); display: block; margin-top: 2px;">Larger crosshair for selected colors</span>
               </div>
-              <div class="main-buttons-container">
-                <button class="enable-all-btn" @click="handleEnableAll">Enable All</button>
-                <button class="disable-all-btn" @click="handleDisableAll">Disable All</button>
+              <div class="flex gap-2 mb-2">
+                <button class="flex-1 bg-mm-success-light border-none text-white px-4 py-2 rounded-md cursor-pointer text-[0.9em] whitespace-nowrap font-semibold transition-all duration-200 ease-in-out hover:bg-[#45a049] hover:-translate-y-px" @click="handleEnableAll">Enable All</button>
+                <button class="flex-1 bg-mm-red border-none text-white px-4 py-2 rounded-md cursor-pointer text-[0.9em] whitespace-nowrap font-semibold transition-all duration-200 ease-in-out hover:bg-[#da190b] hover:-translate-y-px" @click="handleDisableAll">Disable All</button>
               </div>
-              <button class="disable-all-enhanced-btn" @click="handleDisableAllEnhanced">
+              <button class="bg-[#6c757d] text-white border-none px-3.5 py-1.5 rounded-md cursor-pointer w-full text-[0.9em] font-semibold transition-all duration-200 ease-in-out hover:bg-[#5a6268] hover:-translate-y-px" @click="handleDisableAllEnhanced">
                 Disable all Enhanced
               </button>
-              <div class="enhance-wrong-container">
+              <div class="flex items-center gap-2 mt-2 p-2 bg-white/5 rounded-md">
                 <input
                   id="bm-enhance-wrong"
                   v-model="enhanceWrongColors"
                   type="checkbox"
-                  class="enhance-checkbox" />
-                <label for="bm-enhance-wrong" class="enhance-label">
+                  class="w-4 h-4 cursor-pointer accent-mm-warning-accent" />
+                <label for="bm-enhance-wrong" class="text-mm-text-primary text-[0.85em] font-medium cursor-pointer select-none flex-1">
                   Enhance Wrong Colors (Crosshair)
                 </label>
               </div>
             </div>
 
             <!-- Search -->
-            <div class="search-wrapper">
+            <div class="mb-4">
               <input
                 v-model="searchQuery"
                 type="text"
-                class="bmcf-input"
+                class="w-full h-11 px-4 py-3 rounded-xl border border-mm-bg-border bg-mm-bg-dark text-mm-text-primary outline-none text-[0.95em] transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.2),0_4px_12px_rgba(59,130,246,0.15)]"
                 placeholder="Search colors..." />
             </div>
 
             <!-- Filter/Sort -->
-            <div class="filter-wrapper">
-              <label class="filter-label">Sort by:</label>
-              <select v-model="sortMode" class="filter-select">
+            <div class="flex items-center gap-3 mb-5">
+              <label class="text-[0.95em] font-semibold text-mm-text-muted whitespace-nowrap">Sort by:</label>
+              <select v-model="sortMode" class="flex-1 h-10 px-3 py-2 rounded-[10px] border border-mm-bg-border bg-mm-bg-dark text-mm-text-primary text-[0.9em] cursor-pointer outline-none transition-all duration-200 ease-in-out hover:border-mm-bg-muted focus:border-mm-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.2)]">
                 <option value="default">Default</option>
                 <option value="name-asc">Name (A-Z)</option>
                 <option value="name-desc">Name (Z-A)</option>
@@ -158,10 +158,10 @@
 
             <!-- Colors Display -->
             <div
-              class="bmcf-view-container"
               :class="{ 'list-mode': viewMode === 'list' }">
               <!-- Grid View -->
-              <div class="bmcf-grid">
+              <div class="bmcf-grid grid grid-cols-4 gap-2 mb-5 justify-center"
+                :class="{ '!hidden': viewMode === 'list' }">
                 <ColorFilterItem
                   v-for="color in filteredColors"
                   :key="color.colorKey"
@@ -172,7 +172,8 @@
               </div>
 
               <!-- List View -->
-              <div class="bmcf-list">
+              <div class="bmcf-list flex flex-col gap-2.5"
+                :class="{ '!hidden': viewMode !== 'list' }">
                 <ColorFilterItem
                   v-for="color in filteredColors"
                   :key="color.colorKey"
@@ -186,11 +187,11 @@
           </div>
 
           <!-- Footer -->
-          <div class="bmcf-footer">
-            <button class="bmcf-btn success" @click="handleUpdateStats">
+          <div class="flex gap-3 justify-center items-center px-5 py-4 border-t border-mm-bg-border bg-gradient-to-br from-mm-bg-dark to-mm-bg-medium relative z-[1]">
+            <button class="bmcf-btn inline-flex items-center justify-center h-10 px-[18px] min-w-[120px] rounded-xl border border-mm-success-dark text-[0.9em] font-semibold whitespace-nowrap cursor-pointer transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden bg-gradient-to-br from-mm-success to-mm-success-dark text-white hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(16,185,129,0.4)] hover:from-mm-success-dark hover:to-mm-success-darker" @click="handleUpdateStats">
               🔄 Update Stats
             </button>
-            <button class="bmcf-btn primary" @click="handleApply">
+            <button class="bmcf-btn inline-flex items-center justify-center h-10 px-[18px] min-w-[120px] rounded-xl border border-mm-blue-dark text-[0.9em] font-semibold whitespace-nowrap cursor-pointer transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden bg-gradient-to-br from-mm-blue to-mm-blue-dark text-white hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(59,130,246,0.4)] hover:from-mm-blue-dark hover:to-mm-blue-darker" @click="handleApply">
               🎯 Apply Colors
             </button>
           </div>
@@ -361,36 +362,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Backdrop */
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 9001;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Overlay - matching old-src exactly */
-.bmcf-overlay {
-  width: min(94vw, 670px);
-  max-height: 88vh;
-  background: var(--slate-900, #0f172a);
-  color: var(--slate-100, #f1f5f9);
-  border-radius: 20px;
-  border: 1px solid var(--slate-700, #334155);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  backdrop-filter: blur(16px);
-  position: fixed;
-}
-
+/* Overlay ::before gradient */
 .bmcf-overlay::before {
   content: '';
   position: absolute;
@@ -400,486 +372,7 @@ onMounted(() => {
   pointer-events: none;
 }
 
-/* Header */
-.bmcf-header {
-  display: flex;
-  flex-direction: column;
-  padding: 16px 20px 12px 20px;
-  border-bottom: 1px solid var(--slate-700, #334155);
-  background: linear-gradient(135deg, #1e293b, #293548);
-  position: relative;
-  z-index: 1;
-  cursor: move;
-  user-select: none;
-  flex-shrink: 0;
-}
-
-/* Drag Bar */
-.bmcf-drag-bar {
-  background: linear-gradient(90deg, #475569 0%, #64748b 50%, #475569 100%);
-  border-radius: 4px;
-  cursor: grab;
-  width: 100%;
-  height: 6px;
-  margin-bottom: 8px;
-  opacity: 0.8;
-  transition: opacity 0.2s ease;
-}
-
-.bmcf-drag-bar:hover {
-  opacity: 1;
-}
-
-/* Title Container */
-.title-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.modal-title {
-  margin: 0;
-  font-size: 1.5em;
-  font-weight: 700;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  text-align: center;
-  flex: 1;
-  pointer-events: none;
-  letter-spacing: -0.025em;
-  background: linear-gradient(135deg, #f1f5f9, #cbd5e1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Header Buttons */
-.view-toggle-btn,
-.compact-list-btn,
-.settings-btn,
-.close-btn {
-  background: linear-gradient(135deg, #475569, #334155);
-  border: 1px solid #64748b;
-  color: #cbd5e1;
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 12px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.close-btn {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: white;
-  font-weight: 600;
-}
-
-.view-toggle-btn:hover,
-.compact-list-btn:hover,
-.settings-btn:hover {
-  transform: translateY(-1px) scale(1.05);
-  background: linear-gradient(135deg, #64748b, #475569);
-  box-shadow: 0 6px 20px rgba(71, 85, 105, 0.3);
-}
-
-.close-btn:hover {
-  transform: translateY(-1px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
-}
-
-/* Content */
-.bmcf-content {
-  padding: 20px;
-  overflow: auto;
-  position: relative;
-  z-index: 1;
-  flex: 1;
-  min-height: 0;
-}
-
-/* Progress Summary */
-.progress-summary {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border: 1px solid #334155;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 24px;
-  color: #f1f5f9;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.progress-bg-pattern {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1), transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.08), transparent 50%);
-  pointer-events: none;
-}
-
-.progress-content {
-  position: relative;
-  z-index: 1;
-}
-
-.progress-title {
-  font-size: 1.2em;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: #f1f5f9;
-}
-
-.progress-icon {
-  margin-right: 8px;
-}
-
-.progress-title-gradient {
-  background: linear-gradient(135deg, #60a5fa, #34d399);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.progress-pixels {
-  font-size: 0.95em;
-  color: #cbd5e1;
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
-
-.progress-wrong-info {
-  color: #94a3b8;
-}
-
-.progress-track {
-  width: 100%;
-  height: 12px;
-  background: #334155;
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.progress-fill {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #10b981);
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.progress-shimmer {
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.progress-remaining {
-  font-size: 0.85em;
-  color: #fbbf24;
-  margin-top: 12px;
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-/* Include Wrong Container */
-.include-wrong-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border-radius: 12px;
-  border: 1px solid #334155;
-  margin-bottom: 24px;
-}
-
-.wrong-checkbox {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: #3b82f6;
-  border-radius: 4px;
-}
-
-.wrong-label {
-  color: #f1f5f9;
-  font-size: 0.95em;
-  font-weight: 500;
-  cursor: pointer;
-  user-select: none;
-  flex: 1;
-  letter-spacing: -0.01em;
-}
-
-/* Instructions */
-.instructions-text {
-  margin: 0 0 20px 0;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.05));
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 12px;
-  font-size: 0.9em;
-  color: #cbd5e1;
-  text-align: center;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-/* Enhanced Section */
-.enhanced-section {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 16px;
-}
-
-.enhanced-info {
-  font-size: 0.95em;
-  font-weight: 600;
-  color: #cbd5e1;
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-.main-buttons-container {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.enable-all-btn {
-  background: #4CAF50;
-  border: none;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9em;
-  white-space: nowrap;
-  flex: 1;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.enable-all-btn:hover {
-  background: #45a049;
-  transform: translateY(-1px);
-}
-
-.disable-all-btn {
-  background: #f44336;
-  border: none;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9em;
-  white-space: nowrap;
-  flex: 1;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.disable-all-btn:hover {
-  background: #da190b;
-  transform: translateY(-1px);
-}
-
-.disable-all-enhanced-btn {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  width: 100%;
-  font-size: 0.9em;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.disable-all-enhanced-btn:hover {
-  background: #5a6268;
-  transform: translateY(-1px);
-}
-
-/* Enhance Wrong Container */
-.enhance-wrong-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-}
-
-.enhance-checkbox {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #f59e0b;
-}
-
-.enhance-label {
-  color: #f1f5f9;
-  font-size: 0.85em;
-  font-weight: 500;
-  cursor: pointer;
-  user-select: none;
-  flex: 1;
-}
-
-/* Search */
-.search-wrapper {
-  margin-bottom: 16px;
-}
-
-.bmcf-input {
-  width: 100%;
-  height: 44px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 1px solid #334155;
-  background: #1e293b;
-  color: #f1f5f9;
-  outline: none;
-  font-size: 0.95em;
-  transition: all 0.2s ease;
-}
-
-.bmcf-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 4px 12px rgba(59, 130, 246, 0.15);
-}
-
-/* Filter */
-.filter-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.filter-label {
-  font-size: 0.95em;
-  font-weight: 600;
-  color: #cbd5e1;
-  white-space: nowrap;
-}
-
-.filter-select {
-  flex: 1;
-  height: 40px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid #334155;
-  background: #1e293b;
-  color: #f1f5f9;
-  font-size: 0.9em;
-  cursor: pointer;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.filter-select:hover {
-  border-color: #475569;
-}
-
-.filter-select:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-
-/* View Container */
-.bmcf-view-container .bmcf-grid {
-  display: grid;
-}
-
-.bmcf-view-container .bmcf-list {
-  display: none;
-}
-
-.bmcf-view-container.list-mode .bmcf-grid {
-  display: none !important;
-}
-
-.bmcf-view-container.list-mode .bmcf-list {
-  display: flex !important;
-}
-
-/* Grid */
-.bmcf-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 20px;
-  justify-content: center;
-}
-
-/* List */
-.bmcf-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* Footer */
-.bmcf-footer {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  align-items: center;
-  padding: 16px 20px;
-  border-top: 1px solid #334155;
-  background: linear-gradient(135deg, #1e293b, #293548);
-  position: relative;
-  z-index: 1;
-}
-
-.bmcf-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  padding: 0 18px;
-  min-width: 120px;
-  border-radius: 12px;
-  border: 1px solid #334155;
-  font-size: 0.9em;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  background: #334155;
-  color: #f1f5f9;
-}
-
+/* Button ::before hover effect */
 .bmcf-btn::before {
   content: '';
   position: absolute;
@@ -894,92 +387,14 @@ onMounted(() => {
   opacity: 1;
 }
 
-/* ========================================
-   Mobile Mode Styles
-   ======================================== */
-
-.bmcf-overlay.mobile-mode {
-  width: min(350px, 96vw);
-  max-height: 70vh;
-  font-size: 12px;
+/* Progress shimmer animation */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-.bmcf-overlay.mobile-mode .bmcf-header {
-  padding: 8px 12px 0 12px;
-}
-
-.bmcf-overlay.mobile-mode .modal-title {
-  font-size: 1.2em;
-}
-
-.bmcf-overlay.mobile-mode .bmcf-content {
-  padding: 12px;
-}
-
-.bmcf-overlay.mobile-mode .bmcf-footer {
-  padding: 8px 12px;
-}
-
-.bmcf-overlay.mobile-mode .view-toggle-btn,
-.bmcf-overlay.mobile-mode .compact-list-btn,
-.bmcf-overlay.mobile-mode .settings-btn,
-.bmcf-overlay.mobile-mode .close-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  font-size: 14px;
-  margin-left: 8px;
-}
-
-.bmcf-overlay.mobile-mode .bmcf-grid {
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-
-.bmcf-overlay.mobile-mode .bmcf-input {
-  height: 36px;
-  padding: 6px 10px;
-  font-size: 13px;
-}
-
-.bmcf-overlay.mobile-mode .filter-select {
-  height: 36px;
-  padding: 6px 10px;
-  font-size: 13px;
-}
-
-.bmcf-overlay.mobile-mode .bmcf-btn {
-  height: 36px;
-  padding: 0 12px;
-  font-size: 0.85em;
-  min-width: 100px;
-}
-
-.bmcf-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-
-.bmcf-btn.success {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-  border-color: #059669;
-}
-
-.bmcf-btn.success:hover {
-  background: linear-gradient(135deg, #059669, #047857);
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-}
-
-.bmcf-btn.primary {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-  border-color: #2563eb;
-}
-
-.bmcf-btn.primary:hover {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+.progress-shimmer {
+  animation: shimmer 2s infinite;
 }
 
 /* Transition */
@@ -993,25 +408,27 @@ onMounted(() => {
   opacity: 0;
 }
 
-/* Mobile */
+/* ========================================
+   Mobile Mode Styles
+   ======================================== */
+
+.mobile-mode {
+  width: min(350px, 96vw);
+  max-height: 70vh;
+  font-size: 12px;
+}
+
+.mobile-mode .bmcf-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+/* Mobile responsive */
 @media (max-width: 520px) {
   .bmcf-btn {
     min-width: 100px;
     height: 36px;
     font-size: 0.85em;
-  }
-
-  .modal-title {
-    font-size: 1.2em;
-  }
-
-  .view-toggle-btn,
-  .compact-list-btn,
-  .settings-btn,
-  .close-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
   }
 }
 </style>

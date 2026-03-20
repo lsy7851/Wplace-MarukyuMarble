@@ -111,168 +111,68 @@ watch(() => props.modelValue, (isOpen) => {
     :model-value="modelValue"
     title="Add Custom Location"
     @update:model-value="emit('update:modelValue', $event)">
-    <div class="add-location-form">
+    <div class="flex flex-col gap-4">
       <!-- Name Input -->
-      <div class="form-group">
-        <label for="location-name">Name:</label>
+      <div class="flex flex-col gap-1.5">
+        <label for="location-name" class="text-[13px] font-semibold text-mm-text-muted">Name:</label>
         <input
           id="location-name"
           v-model="locationName"
           type="text"
+          class="px-3 py-2.5 rounded-lg border border-mm-bg-muted bg-mm-bg-darkest/50 text-mm-text-primary font-mono text-sm transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.2)] focus:outline-none placeholder:text-mm-bg-light"
           placeholder="e.g., My House, My Art, Work" />
       </div>
 
       <!-- Link Input -->
-      <div class="form-group">
-        <label for="location-link">Paste wplace.live link:</label>
+      <div class="flex flex-col gap-1.5">
+        <label for="location-link" class="text-[13px] font-semibold text-mm-text-muted">Paste wplace.live link:</label>
         <input
           id="location-link"
           v-model="locationLink"
           type="text"
+          class="px-3 py-2.5 rounded-lg border border-mm-bg-muted bg-mm-bg-darkest/50 text-mm-text-primary font-mono text-sm transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.2)] focus:outline-none placeholder:text-mm-bg-light"
           placeholder="https://wplace.live/?lat=-19.037&lng=-42.420&zoom=16" />
       </div>
 
       <!-- Coordinates (read-only) -->
-      <div class="form-group coords-group">
-        <div class="coord-input">
-          <label for="location-lat">Latitude:</label>
+      <div class="flex flex-row gap-3">
+        <div class="flex-1 flex flex-col gap-1.5">
+          <label for="location-lat" class="text-[13px] font-semibold text-mm-text-muted">Latitude:</label>
           <input
             id="location-lat"
             v-model="locationLat"
             type="text"
-            :class="{ valid: linkStatus === 'valid', invalid: linkStatus === 'invalid' }"
+            class="px-3 py-2.5 rounded-lg border border-mm-bg-muted bg-mm-bg-darkest/30 text-mm-text-primary font-mono text-sm transition-all duration-200 ease-in-out cursor-not-allowed placeholder:text-mm-bg-light"
+            :class="{ '!border-green-500 !text-green-400': linkStatus === 'valid', '!border-mm-error !text-red-400': linkStatus === 'invalid' }"
             placeholder="e.g., -23.5506507"
             readonly />
         </div>
-        <div class="coord-input">
-          <label for="location-lon">Longitude:</label>
+        <div class="flex-1 flex flex-col gap-1.5">
+          <label for="location-lon" class="text-[13px] font-semibold text-mm-text-muted">Longitude:</label>
           <input
             id="location-lon"
             v-model="locationLon"
             type="text"
-            :class="{ valid: linkStatus === 'valid', invalid: linkStatus === 'invalid' }"
+            class="px-3 py-2.5 rounded-lg border border-mm-bg-muted bg-mm-bg-darkest/30 text-mm-text-primary font-mono text-sm transition-all duration-200 ease-in-out cursor-not-allowed placeholder:text-mm-bg-light"
+            :class="{ '!border-green-500 !text-green-400': linkStatus === 'valid', '!border-mm-error !text-red-400': linkStatus === 'invalid' }"
             placeholder="e.g., -46.6333824"
             readonly />
         </div>
       </div>
 
       <!-- Buttons -->
-      <div class="button-group">
-        <button class="btn-secondary" @click="handleCancel">
+      <div class="flex gap-3 justify-end mt-2">
+        <button
+          class="px-5 py-2.5 rounded-lg border-none font-mono text-sm cursor-pointer transition-all duration-200 ease-in-out font-semibold bg-mm-bg-border text-mm-text-primary border border-mm-bg-muted hover:bg-mm-bg-muted"
+          @click="handleCancel">
           Cancel
         </button>
-        <button class="btn-primary" @click="handleSave">
+        <button
+          class="px-5 py-2.5 rounded-lg border-none font-mono text-sm cursor-pointer transition-all duration-200 ease-in-out font-semibold bg-mm-blue text-white hover:bg-mm-blue-dark active:bg-mm-blue-darker"
+          @click="handleSave">
           Save to Favorites
         </button>
       </div>
     </div>
   </BaseModal>
 </template>
-
-<style scoped>
-.add-location-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-group label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #cbd5e1;
-}
-
-.form-group input {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #475569;
-  background: rgba(15, 23, 42, 0.5);
-  color: #f1f5f9;
-  font: 14px monospace;
-  transition: all 0.2s ease;
-}
-
-.form-group input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  outline: none;
-}
-
-.form-group input::placeholder {
-  color: #64748b;
-}
-
-.form-group input[readonly] {
-  background: rgba(15, 23, 42, 0.3);
-  cursor: not-allowed;
-}
-
-.form-group input.valid {
-  border-color: #22c55e;
-  color: #4ade80;
-}
-
-.form-group input.invalid {
-  border-color: #ef4444;
-  color: #f87171;
-}
-
-.coords-group {
-  flex-direction: row;
-  gap: 12px;
-}
-
-.coord-input {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.button-group {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 8px;
-}
-
-.btn-secondary,
-.btn-primary {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  font: 14px monospace;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 600;
-}
-
-.btn-secondary {
-  background: #334155;
-  color: #f1f5f9;
-  border: 1px solid #475569;
-}
-
-.btn-secondary:hover {
-  background: #475569;
-}
-
-.btn-primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.btn-primary:hover {
-  background: #2563eb;
-}
-
-.btn-primary:active {
-  background: #1d4ed8;
-}
-</style>
