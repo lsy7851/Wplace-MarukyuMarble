@@ -136,10 +136,15 @@ const handleColorFilter = () => {
 </script>
 
 <template>
-  <div id="bm-contain-buttons-template" :class="{ 'is-minimized': minimized }">
+  <div id="bm-contain-buttons-template"
+    class="grid grid-cols-3 grid-rows-[auto_auto_auto_auto] items-stretch gap-1 mt-2"
+    :class="{ 'is-minimized': minimized }">
     <!-- Upload Template Button (Row 1 - spans all 3 columns) -->
-    <div>
-      <button @click="handleUploadClick" v-if="!minimized">
+    <div class="col-span-3 row-start-1">
+      <button
+        class="btn-base w-full h-full whitespace-nowrap overflow-hidden text-ellipsis box-border"
+        @click="handleUploadClick"
+        v-if="!minimized">
         <span v-html="icons.uploadIcon"></span>
         <template v-if="uploadFileName">
           {{ uploadFileName }}
@@ -153,21 +158,27 @@ const handleColorFilter = () => {
         id="bm-input-file-template"
         type="file"
         accept="image/png, image/jpeg, image/webp, image/bmp, image/gif"
+        class="!hidden !invisible !absolute !-left-[9999px] !-top-[9999px] !w-0 !h-0 !opacity-0 !-z-[9999] !pointer-events-none"
         @change="handleFileChange"
       />
     </div>
 
     <!-- Row 2: Create, Manage, Pause Tiles buttons -->
-    <button id="bm-button-create" @click="handleCreate" v-if="!minimized">
+    <button id="bm-button-create"
+      class="btn-base row-start-2 col-start-1"
+      @click="handleCreate" v-if="!minimized">
       <span v-html="icons.createIcon"></span>
       Create
     </button>
-    <button id="bm-button-manage" @click="handleManage" v-if="!minimized">
+    <button id="bm-button-manage"
+      class="btn-base row-start-2 col-start-2"
+      @click="handleManage" v-if="!minimized">
       <span v-html="icons.manageIcon"></span>
       Manage
     </button>
     <button
       id="bm-button-pause-tiles"
+      class="btn-pause row-start-2 col-start-3"
       @click="handlePause"
       :class="{paused: isPaused}"
       v-if="!minimized">
@@ -176,9 +187,10 @@ const handleColorFilter = () => {
     </button>
 
     <!-- Row 3: Color Filter button (spans all 3 columns) -->
-    <!-- Row 3: Color Filter button (spans all 3 columns) -->
     <button
       id="bm-button-color-filter"
+      class="btn-base col-span-3 font-bold relative overflow-hidden w-full animate-[colorShift_3s_ease-in-out_infinite] bg-[length:300%_300%]"
+      :style="{ backgroundImage: 'linear-gradient(45deg, #475569, #6366f1, #8b5cf6, #3b82f6, #64748b, #475569)' }"
       @click="handleColorFilter"
       :class="{ 'minimized': minimized }"
       :title="minimized ? 'Color Filter' : ''">
@@ -197,18 +209,8 @@ const handleColorFilter = () => {
 </template>
 
 <style scoped>
-/* Template buttons container - 3x4 grid layout */
-#bm-contain-buttons-template {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: auto auto auto auto;
-  align-items: stretch;
-  gap: .25rem;
-  margin-top: 0.5em;
-}
-
-/* Base button styles (inherited from Overlay.vue but need to be defined in scoped) */
-#bm-contain-buttons-template button {
+/* Base button styles */
+.btn-base {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -228,47 +230,32 @@ const handleColorFilter = () => {
   min-width: 0;
 }
 
-#bm-contain-buttons-template button:hover,
-#bm-contain-buttons-template button:focus-visible {
+.btn-base:hover,
+.btn-base:focus-visible {
   background-color: #3b9def;
 }
 
-#bm-contain-buttons-template button:active {
+.btn-base:active {
   background-color: #50a9f1;
 }
 
 /* SVG icon styling */
-#bm-contain-buttons-template button span {
+.btn-base span,
+.btn-pause span {
   display: inline-flex;
   align-items: center;
   line-height: 0;
 }
 
-#bm-contain-buttons-template button span :deep(svg) {
+.btn-base span :deep(svg),
+.btn-pause span :deep(svg) {
   display: block;
   width: 16px;
   height: 16px;
   stroke: currentColor;
 }
 
-/* Row 1: Upload Template (spans all 3 columns - full width) */
-div:has(> #bm-input-file-template) {
-  grid-column: 1 / span 3;
-  grid-row: 1;
-}
-
-/* Row 3: Color Filter (spans all 3 columns - full width) */
-#bm-button-color-filter {
-  grid-column: 1 / span 3;
-  background: linear-gradient(45deg, #475569, #6366f1, #8b5cf6, #3b82f6, #64748b, #475569);
-  background-size: 300% 300%;
-  animation: colorShift 3s ease-in-out infinite;
-  font-weight: bold;
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-}
-
+/* Color Filter hover */
 #bm-button-color-filter:hover,
 #bm-button-color-filter:focus-visible {
   animation-duration: 1s;
@@ -287,82 +274,56 @@ div:has(> #bm-input-file-template) {
   }
 }
 
-div:has(> #bm-input-file-template) > button {
-  width: 100%;
-  height: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  box-sizing: border-box;
-}
-
-/* Force complete invisibility of file input to prevent native browser text */
-#bm-input-file-template,
-input[type="file"][id*="template"] {
-  display: none !important;
-  visibility: hidden !important;
-  position: absolute !important;
-  left: -9999px !important;
-  top: -9999px !important;
-  width: 0 !important;
-  height: 0 !important;
-  opacity: 0 !important;
-  z-index: -9999 !important;
-  pointer-events: none !important;
-}
-
-/* Row 2: Create, Manage, Pause Tiles buttons */
-#bm-button-create {
-  grid-row: 2;
-  grid-column: 1;
-}
-
-#bm-button-manage {
-  grid-row: 2;
-  grid-column: 2;
-}
-
-#bm-button-pause-tiles {
-  grid-row: 2;
-  grid-column: 3;
+/* Pause button */
+.btn-pause {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .25rem;
+  border-radius: .25rem;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 0;
   background-color: #50a9f1 !important;
   transition: all 0.3s ease !important;
   font-size: 0.85rem;
   padding: .125rem .25rem;
 }
 
-#bm-button-pause-tiles:hover {
+.btn-pause:hover {
   background-color: #f57c00 !important;
   transform: translateY(-1px);
 }
 
-#bm-button-pause-tiles:active,
-#bm-button-pause-tiles:focus-visible {
+.btn-pause:active,
+.btn-pause:focus-visible {
   background-color: #ef6c00 !important;
 }
 
 /* Pause button when paused (green state) */
-#bm-button-pause-tiles.paused {
+.btn-pause.paused {
   background-color: #4CAF50 !important;
 }
 
-#bm-button-pause-tiles.paused:hover {
+.btn-pause.paused:hover {
   background-color: #45a049 !important;
 }
 
-#bm-button-pause-tiles.paused:active,
-#bm-button-pause-tiles.paused:focus-visible {
+.btn-pause.paused:active,
+.btn-pause.paused:focus-visible {
   background-color: #3d8b40 !important;
 }
 
-/* Minimized State: Split Layout implementation */
+/* Minimized State */
 #bm-contain-buttons-template.is-minimized {
   position: absolute;
-  top: 100%; /* Position below the main overlay */
+  top: 100%;
   left: 50%;
   transform: translateX(-50%);
   width: auto;
-  margin-top: 12px; /* Gap between square and button */
+  margin-top: 12px;
   display: block;
   z-index: 9002;
 }
@@ -372,16 +333,11 @@ input[type="file"][id*="template"] {
   height: 38px !important;
   padding: 0 !important;
   margin: 0 !important;
-  
-  /* Legacy Blue-Purple Gradient (Violet-500 to Blue-500 match) */
   background: linear-gradient(135deg, #8b5cf6, #3b82f6) !important;
   animation: none !important;
-  
-  /* Center icon */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  
   border-radius: 6px !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
 }
