@@ -13,6 +13,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useLocationFavoritesStore } from '@/stores/locationFavoritesStore.js';
 import { useLocationSearchStore } from '@/stores/locationSearchStore.js';
 import { useNavigation } from '@/composables/ui/useNavigation.js';
+import BaseInput from '@/components/common/BaseInput.vue';
 import LocationFavoriteItem from '@/components/location-search/LocationFavoriteItem.vue';
 
 const favoritesStore = useLocationFavoritesStore();
@@ -82,11 +83,10 @@ async function handleRemove(location) {
     </div>
 
     <!-- Filter Input -->
-    <input
+    <BaseInput
       v-if="!isCollapsed"
       v-model="filterQuery"
-      type="text"
-      class="favorites-filter mb-3 w-full rounded-lg border border-mm-bg-muted bg-mm-bg-darkest/50 px-3 py-2 font-mono text-[13px] text-mm-text-primary transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_2px_rgba(59,130,246,0.2)] focus:outline-none"
+      class="mb-3"
       placeholder="Filter favorites..." />
 
     <!-- Favorites List -->
@@ -107,10 +107,6 @@ async function handleRemove(location) {
 </template>
 
 <style scoped>
-.favorites-filter::placeholder {
-  color: #64748b;
-}
-
 .favorites-list::-webkit-scrollbar {
   width: 6px;
 }

@@ -10,6 +10,7 @@
  * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
  */
 import { useCoordinateStore } from '@/stores/coordinateStore.js';
+import BaseInput from '@/components/common/BaseInput.vue';
 import * as icons from '@@/old-src/icons.js';
 
 // Use coordinates store - directly use store refs for two-way binding
@@ -40,95 +41,55 @@ const handleDetect = () => {
 
     <div id="bm-contain-inputs" class="grid grid-cols-4 items-center gap-2">
       <p class="hidden">Tile: </p>
-      <input
+      <BaseInput
         id="bm-input-tx"
-        class="coord-input"
         v-model="coordinateStore.inputTileX"
-        max="2047"
-        min="0"
-        placeholder="T1 X"
+        type="number"
+        variant="coordinate"
+        :max="2047"
+        :min="0"
+        :step="1"
         required
-        step="1"
-        type="number" />
-      <input
+        no-validation-style
+        placeholder="T1 X" />
+      <BaseInput
         id="bm-input-ty"
-        class="coord-input"
         v-model="coordinateStore.inputTileY"
-        max="2047"
-        min="0"
-        placeholder="T1 Y"
+        type="number"
+        variant="coordinate"
+        :max="2047"
+        :min="0"
+        :step="1"
         required
-        step="1"
-        type="number" />
-      <input
+        no-validation-style
+        placeholder="T1 Y" />
+      <BaseInput
         id="bm-input-px"
-        class="coord-input"
         v-model="coordinateStore.inputPixelX"
-        max="999"
-        min="0"
-        placeholder="Px X"
+        type="number"
+        variant="coordinate"
+        :max="999"
+        :min="0"
+        :step="1"
         required
-        step="1"
-        type="number" />
-      <input
+        no-validation-style
+        placeholder="Px X" />
+      <BaseInput
         id="bm-input-py"
-        class="coord-input"
         v-model="coordinateStore.inputPixelY"
-        max="999"
-        min="0"
-        placeholder="Px Y"
+        type="number"
+        variant="coordinate"
+        :max="999"
+        :min="0"
+        :step="1"
         required
-        step="1"
-        type="number" />
+        no-validation-style
+        placeholder="Px Y" />
     </div>
   </div>
 </template>
 
 <style scoped>
-/* Input field styling */
-.coord-input {
-  width: 100%;
-  height: 2.2rem;
-  background: #1e293b;
-  border: 1px solid #475569;
-  color: #f1f5f9;
-  padding: 0 0.5rem;
-  font-size: 0.9rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  font-family: inherit;
-  appearance: auto;
-  -moz-appearance: textfield;
-}
-
-.coord-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  outline: none;
-}
-
-.coord-input::placeholder {
-  color: #94a3b8;
-  font-weight: 500;
-}
-
-/* Remove spinner buttons */
-.coord-input::-webkit-outer-spin-button,
-.coord-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* Remove red borders from HTML5 validation */
-#bm-input-tx:invalid,
-#bm-input-ty:invalid,
-#bm-input-px:invalid,
-#bm-input-py:invalid {
-  border: none !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-
 /* SVG icon styling via :deep */
 #bm-button-coords span :deep(svg) {
   display: block;

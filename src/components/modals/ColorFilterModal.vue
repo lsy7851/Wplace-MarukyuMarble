@@ -142,11 +142,9 @@
 
           <!-- Search -->
           <div class="mb-4">
-            <input
+            <BaseInput
               v-model="searchQuery"
-              class="w-full h-11 px-4 py-3 rounded-xl border border-mm-bg-border bg-mm-bg-dark text-mm-text-primary outline-none text-[0.95em] transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.2),0_4px_12px_rgba(59,130,246,0.15)]"
-              placeholder="Search colors..."
-              type="text" />
+              placeholder="Search colors..." />
           </div>
 
           <!-- Filter/Sort -->
@@ -238,6 +236,7 @@ import { useDraggable } from '@vueuse/core';
 import ColorFilterItem from '@/components/color-filter/ColorFilterItem.vue';
 import Checkbox from '@/components/common/Checkbox.vue';
 import ProgressBar from '@/components/common/ProgressBar.vue';
+import BaseInput from '@/components/common/BaseInput.vue';
 import { useColorFilter } from '@/composables/features/useColorFilter.js';
 import { useTemplateStore } from '@/stores/templateStore.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';

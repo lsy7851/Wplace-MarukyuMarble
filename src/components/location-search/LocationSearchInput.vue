@@ -10,6 +10,7 @@
  * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
  */
 import { ref, watch } from 'vue';
+import BaseInput from '@/components/common/BaseInput.vue';
 import { useLocationSearchStore } from '@/stores/locationSearchStore.js';
 
 const locationSearchStore = useLocationSearchStore();
@@ -53,34 +54,29 @@ function handleKeypress(event) {
 }
 
 defineExpose({
-  focus: () => inputRef.value?.focus(),
+  focus: () => inputRef.value?.focus?.(),
 });
 </script>
 
 <template>
-  <div class="relative mb-3">
-    <input
+  <div class="mb-3">
+    <BaseInput
       ref="inputRef"
       v-model="localQuery"
-      type="text"
-      class="search-input w-full rounded-[10px] border border-mm-bg-muted bg-[#0b1222] py-3 pl-3.5 pr-9 font-mono text-sm text-mm-text-primary transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.2)] focus:outline-none"
       placeholder="Search for a place..."
       @input="handleInput"
       @keydown="handleKeydown"
       @keyup="handleKeyup"
-      @keypress="handleKeypress" />
-    <button
-      v-if="localQuery"
-      class="absolute right-2 top-1/2 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-none bg-mm-bg-light/30 text-base leading-none text-mm-text-muted transition-all duration-200 ease-in-out hover:bg-mm-error/30 hover:text-red-300"
-      title="Clear search"
-      @click="handleClear">
-      ✕
-    </button>
+      @keypress="handleKeypress">
+      <template #suffix>
+        <button
+          v-if="localQuery"
+          class="absolute right-2 top-1/2 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-none bg-mm-bg-light/30 text-base leading-none text-mm-text-muted transition-all duration-200 ease-in-out hover:bg-mm-error/30 hover:text-red-300"
+          title="Clear search"
+          @click="handleClear">
+          ✕
+        </button>
+      </template>
+    </BaseInput>
   </div>
 </template>
-
-<style scoped>
-.search-input::placeholder {
-  color: #64748b;
-}
-</style>

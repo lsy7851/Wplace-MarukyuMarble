@@ -13,6 +13,7 @@ import { ref, watch } from 'vue';
 import { useLocationFavoritesStore } from '@/stores/locationFavoritesStore.js';
 import { parseWplaceUrl } from '@/utils/coordinates.js';
 import BaseModal from './BaseModal.vue';
+import BaseInput from '@/components/common/BaseInput.vue';
 
 const props = defineProps({
   modelValue: {
@@ -115,48 +116,40 @@ watch(() => props.modelValue, (isOpen) => {
       <!-- Name Input -->
       <div class="flex flex-col gap-1.5">
         <label class="text-[13px] font-semibold text-mm-text-muted" for="location-name">Name:</label>
-        <input
+        <BaseInput
           id="location-name"
           v-model="locationName"
-          class="px-3 py-2.5 rounded-lg border border-mm-bg-muted bg-mm-bg-darkest/50 text-mm-text-primary font-mono text-sm transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.2)] focus:outline-none placeholder:text-mm-bg-light"
-          placeholder="e.g., My House, My Art, Work"
-          type="text" />
+          placeholder="e.g., My House, My Art, Work" />
       </div>
 
       <!-- Link Input -->
       <div class="flex flex-col gap-1.5">
         <label class="text-[13px] font-semibold text-mm-text-muted" for="location-link">Paste wplace.live link:</label>
-        <input
+        <BaseInput
           id="location-link"
           v-model="locationLink"
-          class="px-3 py-2.5 rounded-lg border border-mm-bg-muted bg-mm-bg-darkest/50 text-mm-text-primary font-mono text-sm transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_3px_rgba(59,130,246,0.2)] focus:outline-none placeholder:text-mm-bg-light"
-          placeholder="https://wplace.live/?lat=-19.037&lng=-42.420&zoom=16"
-          type="text" />
+          placeholder="https://wplace.live/?lat=-19.037&lng=-42.420&zoom=16" />
       </div>
 
       <!-- Coordinates (read-only) -->
       <div class="flex flex-row gap-3">
         <div class="flex-1 flex flex-col gap-1.5">
           <label class="text-[13px] font-semibold text-mm-text-muted" for="location-lat">Latitude:</label>
-          <input
+          <BaseInput
             id="location-lat"
             v-model="locationLat"
             :class="{ 'border-green-500! text-green-400!': linkStatus === 'valid', 'border-mm-error! text-red-400!': linkStatus === 'invalid' }"
-            class="px-3 py-2.5 rounded-lg border border-mm-bg-muted bg-mm-bg-darkest/30 text-mm-text-primary font-mono text-sm transition-all duration-200 ease-in-out cursor-not-allowed placeholder:text-mm-bg-light"
             placeholder="e.g., -23.5506507"
-            readonly
-            type="text" />
+            readonly />
         </div>
         <div class="flex-1 flex flex-col gap-1.5">
           <label class="text-[13px] font-semibold text-mm-text-muted" for="location-lon">Longitude:</label>
-          <input
+          <BaseInput
             id="location-lon"
             v-model="locationLon"
             :class="{ 'border-green-500! text-green-400!': linkStatus === 'valid', 'border-mm-error! text-red-400!': linkStatus === 'invalid' }"
-            class="px-3 py-2.5 rounded-lg border border-mm-bg-muted bg-mm-bg-darkest/30 text-mm-text-primary font-mono text-sm transition-all duration-200 ease-in-out cursor-not-allowed placeholder:text-mm-bg-light"
             placeholder="e.g., -46.6333824"
-            readonly
-            type="text" />
+            readonly />
         </div>
       </div>
 

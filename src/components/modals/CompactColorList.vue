@@ -29,18 +29,20 @@
         <Transition name="collapse">
           <div v-if="!isCollapsed" class="flex flex-col overflow-hidden">
             <!-- Search -->
-            <div class="compact-search-container relative px-3 py-2.5 border-b border-mm-bg-border">
-              <input
+            <div class="px-3 py-2.5 border-b border-mm-bg-border">
+              <BaseInput
                 v-model="compactSearch"
-                type="text"
-                class="w-full h-8 py-1.5 pl-2.5 pr-7 rounded-lg border border-mm-bg-muted bg-mm-bg-dark text-mm-text-primary text-[0.85em] outline-none transition-all duration-200 ease-in-out focus:border-mm-blue focus:shadow-[0_0_0_2px_rgba(59,130,246,0.2)]"
-                placeholder="Search colors..." />
-              <button
-                v-if="compactSearch"
-                class="absolute right-4.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-mm-text-secondary cursor-pointer text-sm p-1 flex items-center justify-center hover:text-mm-text-dim"
-                @click="compactSearch = ''">
-                ✕
-              </button>
+                variant="compact"
+                placeholder="Search colors...">
+                <template #suffix>
+                  <button
+                    v-if="compactSearch"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent border-none text-mm-text-secondary cursor-pointer text-sm p-1 flex items-center justify-center hover:text-mm-text-dim"
+                    @click="compactSearch = ''">
+                    ✕
+                  </button>
+                </template>
+              </BaseInput>
             </div>
 
             <!-- Bulk Actions -->
@@ -131,6 +133,7 @@ import { ref, computed, watch } from 'vue';
 import { useDraggable } from '@vueuse/core';
 import Checkbox from '@/components/common/Checkbox.vue';
 import ColorSwatch from '@/components/common/ColorSwatch.vue';
+import BaseInput from '@/components/common/BaseInput.vue';
 import { useColorFilter } from '@/composables/features/useColorFilter.js';
 import { useColorFilterStore } from '@/stores/colorFilterStore.js';
 
