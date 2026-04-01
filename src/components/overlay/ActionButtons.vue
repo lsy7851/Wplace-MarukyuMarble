@@ -22,6 +22,7 @@ import { storeToRefs } from 'pinia';
 import { useTemplateStore } from '@/stores/templateStore';
 import { useScreenshot } from '@/composables/features/useScreenshot';
 import { useIndexedDB } from '@/composables/storage/useIndexedDB';
+import IconButton from '@/components/common/IconButton.vue';
 
 const props = defineProps({
   icons: {
@@ -245,153 +246,73 @@ const handleErrorMapToggle = async () => {
 
 <template>
   <div id="bm-contain-buttons-action" class="flex justify-between mt-2">
-    <div style="display: flex; gap: 6px; align-items: center;">
-      <button
+    <div class="flex gap-1.5 items-center">
+      <IconButton
         id="bm-button-convert"
-        class="bm-help"
         title="Template Color Converter"
         @click="handleColorConverter"
-      >🎨
-      </button>
+      >🎨</IconButton>
 
-      <button
+      <IconButton
         id="bm-search"
-        class="bm-help"
         title="Location Search"
         @click="handleSearch"
-      >🔍
-      </button>
+      >🔍</IconButton>
 
-      <button
+      <IconButton
         id="bm-button-flyto"
-        class="bm-help"
         title="Fly to current coordinates"
         @click="handleFlyTo"
-      >🗺️
-      </button>
+      >🗺️</IconButton>
 
-      <button
+      <IconButton
         id="bm-button-screenshot"
-        class="bm-help"
         title="Screenshot current template area (auto-detects coordinates)"
         @click="handleScreenshot"
-      >📸
-      </button>
+      >📸</IconButton>
 
-      <button
+      <IconButton
         id="bm-button-wrong-pixels"
-        class="bm-help"
         title="View Wrong Pixels Coordinates"
         @click="handleWrongPixels"
-      >❌
-      </button>
+      >❌</IconButton>
 
-      <button
+      <IconButton
         id="bm-button-error-map"
-        :class="{ 'error-map-active': errorMapEnabled }"
-        class="bm-help"
         title="Error Map View (Green=correct, Red=wrong)"
+        :active="errorMapEnabled"
+        active-class="bg-linear-to-br from-mm-success to-mm-success-dark! border-mm-success-dark! text-white! hover:from-mm-success-dark hover:to-mm-success-darker"
         @click="handleErrorMapToggle"
-      >🗺️
-      </button>
+      >🗺️</IconButton>
 
-      <button
+      <IconButton
         id="bm-button-clear-storage"
-        class="bm-help"
         title="Clear All Storage"
         @click="handleClearStorage"
         v-html="icons.clearStorageIcon"
-      ></button>
+      />
 
-      <button
+      <IconButton
         id="bm-button-import"
-        class="bm-help"
         title="Import Templates"
         @click="handleImport"
         v-html="icons.uploadIcon"
-      ></button>
+      />
 
-      <button
+      <IconButton
         id="bm-button-settings-direct"
-        class="bm-help"
         title="Settings (Quick Access)"
         @click="handleSettings"
         v-html="icons.settingsIcon"
-      ></button>
+      />
     </div>
 
     <!-- Footer -->
     <div
-      style="position: absolute; left: 0; bottom: 2px; text-align: left; padding: 0; pointer-events: auto; user-select: text; line-height: 12px;">
-      <small style="color: #94a3b8; font-size: 0.74em; opacity: 0.85;">
+      class="absolute left-0 bottom-0.5 text-left p-0 pointer-events-auto select-text leading-3">
+      <small class="text-mm-text-secondary text-[0.74em] opacity-85">
         Made by SwingTheVine, Seris0 | Fork lsy7851 | v{{ version }}
       </small>
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Base button styles */
-#bm-contain-buttons-action button {
-  border: none;
-  border-radius: .25rem;
-  cursor: pointer;
-  font-family: inherit;
-  color: inherit;
-  background-color: #2190ED;
-  transition: background-color 0.25s;
-}
-
-/* Question Mark button */
-.bm-help {
-  border: white 1px solid !important;
-  height: 1.5em;
-  width: 1.5em;
-  margin-top: 2px;
-  text-align: center;
-  line-height: 1em;
-  padding: 0 !important;
-  background-color: #2190ED !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* Force button to not inherit CSS from pause-tiles */
-.bm-help {
-  grid-row: unset !important;
-  grid-column: unset !important;
-  transform: none !important;
-  transition: background-color 0.25s !important;
-}
-
-.bm-help:hover {
-  background-color: #3b9def !important;
-  transform: none !important;
-}
-
-.bm-help:active {
-  background-color: #50a9f1 !important;
-  transform: none !important;
-}
-
-/* SVG icon styling in buttons */
-#bm-contain-buttons-action button :deep(svg) {
-  display: block;
-  width: 16px;
-  height: 16px;
-  stroke: currentColor;
-}
-
-/* Error Map active state */
-#bm-button-error-map.error-map-active {
-  background: linear-gradient(135deg, #10b981, #059669) !important;
-  color: white !important;
-  border-color: #059669 !important;
-}
-
-#bm-button-error-map.error-map-active:hover {
-  background: linear-gradient(135deg, #059669, #047857) !important;
-}
-</style>
