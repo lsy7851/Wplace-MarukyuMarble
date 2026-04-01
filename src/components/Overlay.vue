@@ -213,64 +213,6 @@ function handleErrorMapToggle() {
   transition: opacity 0.2s ease;
 }
 
-/* All overlay buttons - cascading base styles */
-#bm-overlay button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: .25rem;
-  padding: .125rem .5rem;
-  background-color: #2190ED;
-  border-radius: .25rem;
-  transition: background-color 0.25s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-
-#bm-overlay button:hover,
-#bm-overlay button:focus-visible {
-  background-color: #3b9def;
-}
-
-#bm-overlay button:active,
-#bm-overlay button:disabled {
-  background-color: #50a9f1;
-}
-
-#bm-overlay button:disabled {
-  text-decoration: line-through;
-}
-
-/* Enable button */
-#bm-overlay button#bm-button-enable {
-  background-color: #21c060;
-}
-
-#bm-overlay button#bm-button-enable:hover {
-  background-color: #1daa55;
-}
-
-#bm-overlay button#bm-button-enable:active,
-#bm-overlay button#bm-button-enable:focus-visible {
-  background-color: #19944a;
-}
-
-/* Disable button */
-#bm-overlay button#bm-button-disable {
-  background-color: #d63838;
-}
-
-#bm-overlay button#bm-button-disable:hover {
-  background-color: #cb2a2a;
-}
-
-#bm-overlay button#bm-button-disable:active,
-#bm-overlay button#bm-button-disable:focus-visible {
-  background-color: #b62525;
-}
-
 /* Minimized state - hide specific elements */
 #bm-contain-header > .minimized,
 #bm-contain-automation > .minimized:not(:has(#bm-button-color-filter)) {
@@ -295,11 +237,6 @@ function handleErrorMapToggle() {
 
 #bm-overlay.mobile-mode #bm-contain-header {
   margin-bottom: 0.25em;
-}
-
-#bm-overlay.mobile-mode button {
-  min-height: 36px;
-  padding: 0.25rem 0.5rem;
 }
 
 #bm-overlay.mobile-mode #bm-contain-automation {

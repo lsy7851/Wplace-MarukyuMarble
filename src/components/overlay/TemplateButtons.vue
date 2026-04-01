@@ -264,34 +264,34 @@ const handleColorFilter = () => {
   cursor: pointer;
   font-family: inherit;
   min-width: 0;
-  background-color: #50a9f1 !important;
-  transition: all 0.3s ease !important;
+  background-color: #50a9f1;
+  transition: all 0.3s ease;
   font-size: 0.85rem;
   padding: .125rem .25rem;
 }
 
 .btn-pause:hover {
-  background-color: #f57c00 !important;
+  background-color: #f57c00;
   transform: translateY(-1px);
 }
 
 .btn-pause:active,
 .btn-pause:focus-visible {
-  background-color: #ef6c00 !important;
+  background-color: #ef6c00;
 }
 
 /* Pause button when paused (green state) */
 .btn-pause.paused {
-  background-color: #4CAF50 !important;
+  background-color: #4CAF50;
 }
 
 .btn-pause.paused:hover {
-  background-color: #45a049 !important;
+  background-color: #45a049;
 }
 
 .btn-pause.paused:active,
 .btn-pause.paused:focus-visible {
-  background-color: #3d8b40 !important;
+  background-color: #3d8b40;
 }
 
 /* Minimized State */
