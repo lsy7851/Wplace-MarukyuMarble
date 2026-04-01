@@ -105,12 +105,11 @@
                   <div v-if="!color.colorInfo.free" class="text-[10px] opacity-80">💧</div>
 
                   <!-- Enhanced Checkbox -->
-                  <input
+                  <Checkbox
                     :id="`compact-enhanced-${color.colorKey}`"
-                    type="checkbox"
                     :checked="color.isEnhanced"
                     :disabled="color.isDisabled"
-                    class="w-3.5 h-3.5 cursor-pointer accent-mm-blue disabled:opacity-50 disabled:cursor-not-allowed"
+                    size="sm"
                     @change="handleToggleEnhanced(color.colorKey)" />
                 </div>
               </div>
@@ -134,6 +133,7 @@
  */
 import { ref, computed, watch } from 'vue';
 import { useDraggable } from '@vueuse/core';
+import Checkbox from '@/components/common/Checkbox.vue';
 import { useColorFilter } from '@/composables/features/useColorFilter.js';
 import { useColorFilterStore } from '@/stores/colorFilterStore.js';
 

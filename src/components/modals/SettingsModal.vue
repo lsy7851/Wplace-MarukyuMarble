@@ -36,32 +36,24 @@
         <div class="text-xs text-mm-text-secondary mb-3 leading-[1.4]">
           Add subtle borders around corner pixels of the crosshair
         </div>
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-          <input
-            v-model="tempSettings.crosshairBorder"
-            class="w-4 h-4 cursor-pointer accent-mm-blue"
-            type="checkbox" />
+        <Checkbox v-model="tempSettings.crosshairBorder">
           <span class="text-mm-text-muted font-semibold text-[13px]">{{
               tempSettings.crosshairBorder ? 'Enabled' : 'Disabled'
             }}</span>
-        </label>
+        </Checkbox>
       </div>
 
       <!-- Overlay Elements Visibility -->
       <div class="bg-linear-to-br from-mm-bg-dark to-mm-bg-darkest border border-mm-bg-border rounded-xl p-4 mb-4">
         <div class="text-sm font-semibold text-mm-text-muted mb-2">Overlay Elements Visibility:</div>
         <div class="grid grid-cols-2 gap-2">
-          <label
+          <Checkbox
             v-for="item in visibilityItems"
             :key="item.key"
-            class="flex items-center gap-2 cursor-pointer select-none">
-            <input
-              v-model="item.visible"
-              class="w-4 h-4 cursor-pointer accent-mm-blue"
-              type="checkbox"
-              @change="updateVisibility(item.key, item.visible)" />
+            v-model="item.visible"
+            @change="updateVisibility(item.key, item.visible)">
             <span class="text-mm-text-secondary text-[10px]">{{ item.label }}</span>
-          </label>
+          </Checkbox>
         </div>
       </div>
 
@@ -71,16 +63,11 @@
         <div class="text-xs text-mm-text-secondary mb-3 leading-[1.4]">
           Make crosshair 5x larger, extending beyond pixel boundaries
         </div>
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-          <input
-            v-model="tempSettings.crosshairEnhancedSize"
-            class="w-4 h-4 cursor-pointer accent-mm-blue"
-            type="checkbox" />
-          <span
-            class="text-mm-text-muted font-semibold text-[13px]">{{
+        <Checkbox v-model="tempSettings.crosshairEnhancedSize">
+          <span class="text-mm-text-muted font-semibold text-[13px]">{{
               tempSettings.crosshairEnhancedSize ? 'Enabled' : 'Disabled'
             }}</span>
-        </label>
+        </Checkbox>
       </div>
 
       <!-- Crosshair Radius (conditional) -->
@@ -111,15 +98,11 @@
         <div class="text-xs text-mm-text-secondary mb-3 leading-[1.4]">
           Show a compact progress tracker below the Color Filter button.
         </div>
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-          <input
-            v-model="tempSettings.miniTrackerEnabled"
-            class="w-4 h-4 cursor-pointer accent-mm-blue"
-            type="checkbox" />
+        <Checkbox v-model="tempSettings.miniTrackerEnabled">
           <span class="text-mm-text-muted font-semibold text-[13px]">{{
               tempSettings.miniTrackerEnabled ? 'Enabled' : 'Disabled'
             }}</span>
-        </label>
+        </Checkbox>
       </div>
 
       <!-- Mobile Mode -->
@@ -128,13 +111,9 @@
         <div class="text-xs text-mm-text-secondary mb-3 leading-[1.4]">
           Enable ultra-compact UI for mobile devices. Makes Color Filter extremely compact for better mobile experience.
         </div>
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-          <input
-            v-model="tempSettings.mobileMode"
-            class="w-4 h-4 cursor-pointer accent-mm-blue"
-            type="checkbox" />
+        <Checkbox v-model="tempSettings.mobileMode">
           <span class="text-mm-text-muted font-semibold text-[13px]">{{ tempSettings.mobileMode ? 'Enabled' : 'Disabled' }}</span>
-        </label>
+        </Checkbox>
       </div>
 
       <!-- Collapse Mini Template -->
@@ -143,15 +122,11 @@
         <div class="text-xs text-mm-text-secondary mb-3 leading-[1.4]">
           Hide mini tracker when template section is collapsed.
         </div>
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-          <input
-            v-model="tempSettings.collapseMinEnabled"
-            class="w-4 h-4 cursor-pointer accent-mm-blue"
-            type="checkbox" />
+        <Checkbox v-model="tempSettings.collapseMinEnabled">
           <span class="text-mm-text-muted font-semibold text-[13px]">{{
               tempSettings.collapseMinEnabled ? 'Enabled' : 'Disabled'
             }}</span>
-        </label>
+        </Checkbox>
       </div>
 
       <!-- Navigation Method -->
@@ -268,6 +243,7 @@ import BaseModal from './BaseModal.vue';
 import CrosshairPreview from '@/components/settings/CrosshairPreview.vue';
 import CrosshairColorSection from '@/components/settings/CrosshairColorSection.vue';
 import CrosshairAlphaSection from '@/components/settings/CrosshairAlphaSection.vue';
+import Checkbox from '@/components/common/Checkbox.vue';
 import { useSettingsStore } from '@/stores/settingsStore.js';
 
 // Props

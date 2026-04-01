@@ -17,19 +17,14 @@
 
       <!-- Enhanced Checkbox -->
       <div class="flex items-center justify-center gap-1 text-[0.65em] text-white [text-shadow:1px_1px_2px_rgba(0,0,0,0.8)]">
-        <input
+        <Checkbox
           :id="`enhanced-${color.colorKey}`"
-          type="checkbox"
           :checked="color.isEnhanced"
           :disabled="color.isDisabled"
-          class="size-3 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-          @change="emit('toggle-enhanced')" />
-        <label
-          :for="`enhanced-${color.colorKey}`"
-          class="cursor-pointer select-none"
-          @click.prevent="handleLabelClick">
-          Enhanced
-        </label>
+          size="xs"
+          @change="emit('toggle-enhanced')">
+          <span class="cursor-pointer select-none" @click.prevent="handleLabelClick">Enhanced</span>
+        </Checkbox>
       </div>
     </div>
 
@@ -123,19 +118,13 @@
       </div>
 
       <!-- Enhanced Checkbox -->
-      <input
+      <Checkbox
         :id="`list-enhanced-${color.colorKey}`"
-        type="checkbox"
         :checked="color.isEnhanced"
         :disabled="color.isDisabled"
-        class="size-4 cursor-pointer accent-mm-blue disabled:cursor-not-allowed disabled:opacity-50"
-        @change="emit('toggle-enhanced')" />
-      <label
-        :for="`list-enhanced-${color.colorKey}`"
-        class="cursor-pointer select-none whitespace-nowrap text-[0.75em] text-mm-text-dim"
-        @click.prevent="handleLabelClick">
-        Enhanced
-      </label>
+        @change="emit('toggle-enhanced')">
+        <span class="whitespace-nowrap text-[0.75em] text-mm-text-dim" @click.prevent="handleLabelClick">Enhanced</span>
+      </Checkbox>
     </div>
 
     <!-- Click Area for Enable/Disable (Overlay) -->
@@ -156,6 +145,8 @@
  * Modified work Copyright (c) Seris0
  * Modified work Copyright (c) 2025 lsy7851 and Marukyu Marble Contributors
  */
+
+import Checkbox from '@/components/common/Checkbox.vue';
 
 // Props
 const props = defineProps({

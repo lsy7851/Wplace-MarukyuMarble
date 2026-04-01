@@ -99,16 +99,14 @@
           <!-- Include Wrong Color Pixels -->
           <div
             class="flex items-center gap-3 px-4 py-3 bg-linear-to-br from-mm-bg-dark to-mm-bg-darkest rounded-xl border border-mm-bg-border mb-6">
-            <input
+            <Checkbox
               id="bm-include-wrong-progress"
               v-model="includeWrongPixels"
-              class="w-4.5 h-4.5 cursor-pointer accent-mm-blue rounded"
-              type="checkbox" />
-            <label
-              class="text-mm-text-primary text-[0.95em] font-medium cursor-pointer select-none flex-1 tracking-tight"
-              for="bm-include-wrong-progress">
-              Include Wrong Color Pixels in Progress
-            </label>
+              size="lg">
+              <span class="text-mm-text-primary text-[0.95em] font-medium flex-1 tracking-tight">
+                Include Wrong Color Pixels in Progress
+              </span>
+            </Checkbox>
           </div>
 
           <!-- Instructions -->
@@ -139,15 +137,14 @@
               Disable all Enhanced
             </button>
             <div class="flex items-center gap-2 mt-2 p-2 bg-white/5 rounded-md">
-              <input
+              <Checkbox
                 id="bm-enhance-wrong"
                 v-model="enhanceWrongColors"
-                class="w-4 h-4 cursor-pointer accent-mm-warning-accent"
-                type="checkbox" />
-              <label
-                class="text-mm-text-primary text-[0.85em] font-medium cursor-pointer select-none flex-1" for="bm-enhance-wrong">
-                Enhance Wrong Colors (Crosshair)
-              </label>
+                accent-color="accent-mm-warning-accent">
+                <span class="text-mm-text-primary text-[0.85em] font-medium flex-1">
+                  Enhance Wrong Colors (Crosshair)
+                </span>
+              </Checkbox>
             </div>
           </div>
 
@@ -247,6 +244,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useDraggable } from '@vueuse/core';
 import ColorFilterItem from '@/components/color-filter/ColorFilterItem.vue';
+import Checkbox from '@/components/common/Checkbox.vue';
 import { useColorFilter } from '@/composables/features/useColorFilter.js';
 import { useTemplateStore } from '@/stores/templateStore.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';
