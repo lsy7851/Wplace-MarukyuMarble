@@ -47,11 +47,11 @@
     </div>
 
     <!-- Progress Bar -->
-    <div v-if="color.stats.totalRequired > 0" class="pointer-events-none absolute inset-x-5 bottom-1.5 z-1 h-1 overflow-hidden rounded-sm bg-white/25">
-      <div
-        class="h-full bg-linear-to-r from-mm-success-light via-[#8BC34A] to-[#CDDC39] transition-[width] duration-300 ease-in-out"
-        :style="{ width: Math.min(color.stats.percentage, 100) + '%' }"></div>
-    </div>
+    <ProgressBar
+      v-if="color.stats.totalRequired > 0"
+      :percentage="color.stats.percentage"
+      variant="inline"
+      class="pointer-events-none absolute inset-x-5 bottom-1.5 z-1" />
 
     <!-- Premium Droplet Icon -->
     <div v-if="!color.colorInfo.free" class="pointer-events-none absolute right-1.5 top-1.5 z-2 text-xs opacity-80 [text-shadow:1px_1px_2px_rgba(0,0,0,0.5)]">💧</div>
@@ -144,6 +144,7 @@
 
 import Checkbox from '@/components/common/Checkbox.vue';
 import ColorSwatch from '@/components/common/ColorSwatch.vue';
+import ProgressBar from '@/components/common/ProgressBar.vue';
 
 // Props
 const props = defineProps({

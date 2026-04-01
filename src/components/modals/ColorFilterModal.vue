@@ -79,15 +79,7 @@
               </div>
 
               <!-- Progress Bar -->
-              <div
-                class="w-full h-3 bg-mm-bg-border rounded-lg overflow-hidden relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]">
-                <div
-                  :style="{ width: overallProgress.percentage + '%' }"
-                  class="h-full bg-linear-to-r from-mm-blue to-mm-success transition-[width] duration-400 ease-in-out relative overflow-hidden">
-                  <div
-                    class="progress-shimmer absolute top-0 -left-full w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent"></div>
-                </div>
-              </div>
+              <ProgressBar :percentage="overallProgress.percentage" />
 
               <!-- Pixels Remaining -->
               <div class="text-[0.85em] text-mm-warning mt-3 font-semibold [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
@@ -245,6 +237,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useDraggable } from '@vueuse/core';
 import ColorFilterItem from '@/components/color-filter/ColorFilterItem.vue';
 import Checkbox from '@/components/common/Checkbox.vue';
+import ProgressBar from '@/components/common/ProgressBar.vue';
 import { useColorFilter } from '@/composables/features/useColorFilter.js';
 import { useTemplateStore } from '@/stores/templateStore.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';
@@ -415,20 +408,6 @@ onMounted(() => {
 
 .bmcf-btn:hover::before {
   opacity: 1;
-}
-
-/* Progress shimmer animation */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.progress-shimmer {
-  animation: shimmer 2s infinite;
 }
 
 /* Transition */

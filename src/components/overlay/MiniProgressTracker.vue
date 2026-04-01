@@ -9,12 +9,7 @@
     <div class="text-[0.8rem] text-mm-text-muted w-full text-left font-medium leading-[1.2] relative z-1">
       {{ progressPixels }}
     </div>
-    <div class="h-2 bg-mm-bg-muted rounded-md overflow-hidden w-full border border-mm-bg-light min-w-0 relative z-[1]">
-      <div
-        class="h-full bg-[linear-gradient(90deg,#3b82f6,#10b981)] rounded-sm transition-[width] duration-300 ease-in-out min-w-0"
-        :style="{ width: `${progressPercentage}%` }">
-      </div>
-    </div>
+    <ProgressBar :percentage="progressPercentage" variant="mini" class="w-full" />
     <div class="text-[0.8rem] text-mm-warning w-full text-left font-semibold leading-[1.2] relative z-1">
       {{ progressLeft }}
     </div>
@@ -34,6 +29,7 @@
  */
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import ProgressBar from '@/components/common/ProgressBar.vue';
 import { useSettingsStore } from '@/stores/settingsStore.js';
 import { useTemplateStore } from '@/stores/templateStore.js';
 import { useProgressTracking } from '@/composables/features/useProgressTracking.js';
