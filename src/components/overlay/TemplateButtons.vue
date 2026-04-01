@@ -20,6 +20,7 @@ import { Template } from '@/models/Template';
 import { numberToEncoded } from '@/utils/encoding';
 import ManageTemplatesModal from '@/components/modals/ManageTemplatesModal.vue';
 import ColorFilterModal from '@/components/modals/ColorFilterModal.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 
 const showColorFilterModal = ref(false);
 
@@ -142,9 +143,10 @@ const handleColorFilter = () => {
     class="grid grid-cols-3 grid-rows-[auto_auto_auto_auto] items-stretch gap-1 mt-2">
     <!-- Upload Template Button (Row 1 - spans all 3 columns) -->
     <div class="col-span-3 row-start-1">
-      <button
+      <BaseButton
         v-if="!minimized"
-        class="btn-base w-full h-full whitespace-nowrap overflow-hidden text-ellipsis box-border"
+        variant="primary"
+        class="w-full h-full box-border"
         @click="handleUploadClick">
         <span v-html="icons.uploadIcon"></span>
         <template v-if="uploadFileName">
@@ -153,7 +155,7 @@ const handleColorFilter = () => {
         <template v-else>
           Upload Template
         </template>
-      </button>
+      </BaseButton>
       <input
         id="bm-input-file-template"
         ref="fileInputRef"
@@ -165,20 +167,24 @@ const handleColorFilter = () => {
     </div>
 
     <!-- Row 2: Create, Manage, Pause Tiles buttons -->
-    <button
+    <BaseButton
       v-if="!minimized"
       id="bm-button-create"
-      class="btn-base row-start-2 col-start-1" @click="handleCreate">
+      variant="primary"
+      class="row-start-2 col-start-1"
+      @click="handleCreate">
       <span v-html="icons.createIcon"></span>
       Create
-    </button>
-    <button
+    </BaseButton>
+    <BaseButton
       v-if="!minimized"
       id="bm-button-manage"
-      class="btn-base row-start-2 col-start-2" @click="handleManage">
+      variant="primary"
+      class="row-start-2 col-start-2"
+      @click="handleManage">
       <span v-html="icons.manageIcon"></span>
       Manage
-    </button>
+    </BaseButton>
     <button
       v-if="!minimized"
       id="bm-button-pause-tiles"
@@ -190,16 +196,17 @@ const handleColorFilter = () => {
     </button>
 
     <!-- Row 3: Color Filter button (spans all 3 columns) -->
-    <button
+    <BaseButton
       id="bm-button-color-filter"
+      variant="primary"
       :class="{ 'minimized': minimized }"
       :style="{ backgroundImage: 'linear-gradient(45deg, #475569, #6366f1, #8b5cf6, #3b82f6, #64748b, #475569)' }"
       :title="minimized ? 'Color Filter' : ''"
-      class="btn-base col-span-3 font-bold relative overflow-hidden w-full animate-[colorShift_3s_ease-in-out_infinite] bg-size-[300%_300%]"
+      class="col-span-3 font-bold relative overflow-hidden w-full animate-[colorShift_3s_ease-in-out_infinite] bg-size-[300%_300%]"
       @click="handleColorFilter">
       <span v-html="icons.colorFilterIcon"></span>
       <span v-if="!minimized">Color Filter</span>
-    </button>
+    </BaseButton>
 
     <!-- Color Filter Modal -->
     <ColorFilterModal
@@ -212,45 +219,13 @@ const handleColorFilter = () => {
 </template>
 
 <style scoped>
-/* Base button styles */
-.btn-base {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: .25rem;
-  padding: .125rem .5rem;
-  background-color: #2190ED;
-  border-radius: .25rem;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
-  transition: background-color 0.25s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-
-.btn-base:hover,
-.btn-base:focus-visible {
-  background-color: #3b9def;
-}
-
-.btn-base:active {
-  background-color: #50a9f1;
-}
-
-/* SVG icon styling */
-.btn-base span,
+/* SVG icon styling for pause button */
 .btn-pause span {
   display: inline-flex;
   align-items: center;
   line-height: 0;
 }
 
-.btn-base span :deep(svg),
 .btn-pause span :deep(svg) {
   display: block;
   width: 16px;

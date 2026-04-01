@@ -11,6 +11,7 @@
  */
 import { useCoordinateStore } from '@/stores/coordinateStore.js';
 import BaseInput from '@/components/common/BaseInput.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import * as icons from '@@/old-src/icons.js';
 
 // Use coordinates store - directly use store refs for two-way binding
@@ -29,14 +30,14 @@ const handleDetect = () => {
     <div id="bm-coords-title" class="grid grid-cols-[auto_1fr_auto] items-center gap-2">
       <div class="coords-pin-icon" v-html="icons.pinIcon"></div>
       <p>Coordinates:</p>
-      <button
+      <BaseButton
         id="bm-button-coords"
-        class="inline-flex justify-center items-center gap-1 py-0.5 px-2 bg-mm-blue-btn border-none rounded-sm cursor-pointer font-inherit text-inherit transition-colors duration-250 align-middle hover:bg-mm-blue-btn-hover focus-visible:bg-mm-blue-btn-hover active:bg-[#50a9f1]"
+        variant="primary"
         title="Set the location to the pixel you've selected"
         @click="handleDetect">
-        <span class="inline-flex items-center leading-none" v-html="icons.pointerIcon"></span>
+        <span v-html="icons.pointerIcon"></span>
         Detect
-      </button>
+      </BaseButton>
     </div>
 
     <div id="bm-contain-inputs" class="grid grid-cols-4 items-center gap-2">
@@ -91,13 +92,6 @@ const handleDetect = () => {
 
 <style scoped>
 /* SVG icon styling via :deep */
-#bm-button-coords span :deep(svg) {
-  display: block;
-  width: 16px;
-  height: 16px;
-  stroke: currentColor;
-}
-
 .coords-pin-icon :deep(svg) {
   width: 16px;
   height: 16px;

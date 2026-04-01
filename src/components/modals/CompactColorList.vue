@@ -47,12 +47,12 @@
 
             <!-- Bulk Actions -->
             <div class="flex gap-1.5 px-3 py-2 border-b border-mm-bg-border">
-              <button class="flex-1 h-7 rounded-md border-none text-[0.8em] font-semibold cursor-pointer transition-all duration-200 ease-in-out bg-mm-red text-white hover:bg-[#da190b] hover:-translate-y-px" @click="handleDisableAll">
+              <BaseButton variant="bulk-danger" class="flex-1 h-7 text-[0.8em]" @click="handleDisableAll">
                 Disable All
-              </button>
-              <button class="flex-1 h-7 rounded-md border-none text-[0.8em] font-semibold cursor-pointer transition-all duration-200 ease-in-out bg-mm-success-light text-white hover:bg-[#45a049] hover:-translate-y-px" @click="handleEnableAll">
+              </BaseButton>
+              <BaseButton variant="bulk-enable" class="flex-1 h-7 text-[0.8em]" @click="handleEnableAll">
                 Enable All
-              </button>
+              </BaseButton>
             </div>
 
             <!-- Sort -->
@@ -134,6 +134,7 @@ import { useDraggable } from '@vueuse/core';
 import Checkbox from '@/components/common/Checkbox.vue';
 import ColorSwatch from '@/components/common/ColorSwatch.vue';
 import BaseInput from '@/components/common/BaseInput.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useColorFilter } from '@/composables/features/useColorFilter.js';
 import { useColorFilterStore } from '@/stores/colorFilterStore.js';
 

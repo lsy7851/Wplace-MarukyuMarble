@@ -61,12 +61,13 @@
           </div>
 
           <!-- Fly button -->
-          <button
-            class="px-3 py-2 bg-linear-to-br from-mm-blue to-mm-blue-dark border-none rounded-md text-white text-sm cursor-pointer transition-all duration-200 ease-in-out shrink-0 hover:from-mm-blue-dark hover:to-mm-blue-darker hover:scale-105"
+          <BaseButton
+            variant="action-blue"
             title="Fly to this location"
+            class="shrink-0"
             @click.stop="flyToPixel(pixel)">
             ✈️
-          </button>
+          </BaseButton>
         </div>
       </div>
     </div>
@@ -77,11 +78,7 @@
         <span v-if="wrongPixelsList.length > 0" class="text-xs text-mm-text-secondary">
           Click any item to fly to that location
         </span>
-        <button
-          class="px-5 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 ease-in-out border-none font-inherit bg-linear-to-br from-mm-bg-muted to-mm-bg-border text-mm-text-primary border border-mm-bg-light hover:from-mm-bg-light hover:to-mm-bg-muted hover:-translate-y-px"
-          @click="handleClose">
-          Close
-        </button>
+        <BaseButton variant="secondary" @click="handleClose">Close</BaseButton>
       </div>
     </template>
   </BaseModal>
@@ -101,6 +98,7 @@
 import { ref, computed, watch } from 'vue';
 import BaseModal from './BaseModal.vue';
 import ColorSwatch from '@/components/common/ColorSwatch.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useTemplateStore } from '@/stores/templateStore.js';
 import { useNavigation } from '@/composables/ui/useNavigation.js';
 import { findColorByKey } from '@/utils/colorPalette.js';

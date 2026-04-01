@@ -15,6 +15,7 @@ import { useNavigation } from '@/composables/ui/useNavigation';
 import { useCoordinateStore } from '@/stores/coordinateStore';
 import { useImportExport } from '@/composables/features/useImportExport';
 import BaseModal from './BaseModal.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import * as icons from '@@/old-src/icons.js';
 
 const props = defineProps({
@@ -242,56 +243,45 @@ function formatPixelCount(template) {
         <!-- Template Actions -->
         <div class="flex gap-2 items-center shrink-0">
           <!-- Export Button -->
-          <button
-            class="btn-action p-2 border-none rounded-lg cursor-pointer min-w-9 h-9 flex items-center justify-center text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 bg-linear-to-br from-[#22c55e] to-[#16a34a]"
-            title="Export this template as JSON"
-            @click="handleExportTemplate(template)">
+          <BaseButton variant="action-success" title="Export this template as JSON" @click="handleExportTemplate(template)">
             <span v-html="icons.exportIcon"></span>
-          </button>
+          </BaseButton>
 
           <!-- Fly To Button -->
-          <button
-            class="btn-action p-2 border-none rounded-lg cursor-pointer min-w-9 h-9 flex items-center justify-center text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 bg-linear-to-br from-mm-blue to-mm-blue-dark"
-            title="Fly to template coordinates"
-            @click="flyToTemplate(template)">
+          <BaseButton variant="action-blue" title="Fly to template coordinates" @click="flyToTemplate(template)">
             <span v-html="icons.pinIcon"></span>
-          </button>
+          </BaseButton>
 
           <!-- Delete Button -->
-          <button
-            class="btn-action p-2 border-none rounded-lg cursor-pointer min-w-9 h-9 flex items-center justify-center text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 bg-linear-to-br from-mm-error to-mm-error-dark"
-            title="Delete this template"
-            @click="deleteTemplate(template)">
+          <BaseButton variant="action-danger" title="Delete this template" @click="deleteTemplate(template)">
             <span v-html="icons.deleteIcon"></span>
-          </button>
+          </BaseButton>
 
           <!-- Toggle Button -->
-          <button
-            :class="template.enabled
-              ? 'bg-linear-to-br from-mm-success to-mm-success-dark text-white'
-              : 'bg-linear-to-br from-mm-bg-light to-mm-bg-muted text-mm-text-dim'"
-            class="px-4 py-2 border-none rounded-lg cursor-pointer text-[0.85em] font-semibold min-w-20 transition-all duration-200 hover:brightness-110"
+          <BaseButton
+            :variant="template.enabled ? 'bulk-enable' : 'bulk-disable'"
+            class="min-w-20 text-[0.85em]"
             @click="toggleTemplate(template)">
             {{ template.enabled ? 'Enabled' : 'Disabled' }}
-          </button>
+          </BaseButton>
         </div>
       </div>
     </div>
 
     <!-- Footer Actions -->
     <template #footer>
-      <button
+      <BaseButton
+        variant="bulk-enable"
         :disabled="templateStore.templates.length === 0"
-        class="px-4 py-2.5 border-none rounded-lg cursor-pointer font-semibold text-[0.9em] transition-all duration-200 bg-linear-to-br from-mm-success to-mm-success-dark text-white hover:not-disabled:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
         @click="enableAllTemplates">
         Enable All
-      </button>
-      <button
+      </BaseButton>
+      <BaseButton
+        variant="bulk-disable"
         :disabled="templateStore.templates.length === 0"
-        class="px-4 py-2.5 border-none rounded-lg cursor-pointer font-semibold text-[0.9em] transition-all duration-200 bg-linear-to-br from-mm-bg-light to-mm-bg-muted text-mm-text-dim hover:not-disabled:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
         @click="disableAllTemplates">
         Disable All
-      </button>
+      </BaseButton>
     </template>
   </BaseModal>
 </template>

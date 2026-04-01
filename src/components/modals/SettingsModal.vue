@@ -136,22 +136,8 @@
           Choose how to navigate when clicking search results and favorites
         </p>
         <div class="flex gap-2 p-1 bg-mm-bg-darkest rounded-lg border border-mm-bg-muted">
-          <button
-            :class="tempSettings.navigationMethod === 'flyto'
-              ? 'bg-linear-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
-              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
-            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
-            @click="tempSettings.navigationMethod = 'flyto'">
-            FlyTo
-          </button>
-          <button
-            :class="tempSettings.navigationMethod === 'openurl'
-              ? 'bg-linear-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
-              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
-            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
-            @click="tempSettings.navigationMethod = 'openurl'">
-            OpenURL
-          </button>
+          <BaseButton variant="toggle" :active="tempSettings.navigationMethod === 'flyto'" @click="tempSettings.navigationMethod = 'flyto'">FlyTo</BaseButton>
+          <BaseButton variant="toggle" :active="tempSettings.navigationMethod === 'openurl'" @click="tempSettings.navigationMethod = 'openurl'">OpenURL</BaseButton>
         </div>
       </div>
 
@@ -162,22 +148,8 @@
           Choose how to drag the overlay: full overlay (easier on mobile) or drag bar only (classic mode).
         </p>
         <div class="flex gap-2 p-1 bg-mm-bg-darkest rounded-lg border border-mm-bg-muted">
-          <button
-            :class="tempSettings.dragMode
-              ? 'bg-linear-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
-              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
-            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
-            @click="tempSettings.dragMode = true">
-            Full Overlay
-          </button>
-          <button
-            :class="!tempSettings.dragMode
-              ? 'bg-linear-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
-              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
-            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
-            @click="tempSettings.dragMode = false">
-            Drag Bar Only
-          </button>
+          <BaseButton variant="toggle" :active="tempSettings.dragMode" @click="tempSettings.dragMode = true">Full Overlay</BaseButton>
+          <BaseButton variant="toggle" :active="!tempSettings.dragMode" @click="tempSettings.dragMode = false">Drag Bar Only</BaseButton>
         </div>
       </div>
 
@@ -188,22 +160,8 @@
           Cache processed tiles to reduce lag when revisiting areas. Automatically detects canvas changes.
         </p>
         <div class="flex gap-2 p-1 bg-mm-bg-darkest rounded-lg border border-mm-bg-muted">
-          <button
-            :class="!tempSettings.smartCacheEnabled
-              ? 'bg-linear-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
-              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
-            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
-            @click="tempSettings.smartCacheEnabled = false">
-            OFF
-          </button>
-          <button
-            :class="tempSettings.smartCacheEnabled
-              ? 'bg-linear-to-br from-mm-blue to-mm-blue-dark text-white shadow-[0_2px_8px_rgba(59,130,246,0.3)]'
-              : 'bg-transparent text-mm-text-secondary hover:bg-mm-bg-dark hover:text-mm-text-muted'"
-            class="flex-1 px-3 py-2 border-none rounded-md cursor-pointer text-[13px] font-semibold transition-all duration-200 ease-in-out font-inherit"
-            @click="tempSettings.smartCacheEnabled = true">
-            ON
-          </button>
+          <BaseButton variant="toggle" :active="!tempSettings.smartCacheEnabled" @click="tempSettings.smartCacheEnabled = false">OFF</BaseButton>
+          <BaseButton variant="toggle" :active="tempSettings.smartCacheEnabled" @click="tempSettings.smartCacheEnabled = true">ON</BaseButton>
         </div>
       </div>
     </div>
@@ -211,17 +169,8 @@
     <!-- Footer with action buttons -->
     <template #footer>
       <div class="flex justify-end gap-3 w-full">
-        <button
-          class="px-5 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 ease-in-out border-none font-inherit bg-linear-to-br from-mm-bg-muted to-mm-bg-border text-mm-text-primary border border-mm-bg-light hover:not-disabled:bg-linear-to-br hover:not-disabled:from-mm-bg-light hover:not-disabled:to-mm-bg-muted hover:not-disabled:-translate-y-px hover:not-disabled:shadow-[0_4px_12px_rgba(71,85,105,0.3)] active:not-disabled:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
-          @click="handleCancel">
-          Cancel
-        </button>
-        <button
-          :disabled="!hasChanges"
-          class="px-5 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 ease-in-out border-none font-inherit bg-linear-to-br from-mm-blue to-mm-blue-dark text-white border border-mm-blue-dark hover:not-disabled:bg-linear-to-br hover:not-disabled:from-mm-blue-dark hover:not-disabled:to-mm-blue-darker hover:not-disabled:-translate-y-px hover:not-disabled:shadow-[0_4px_12px_rgba(59,130,246,0.4)] active:not-disabled:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
-          @click="handleApply">
-          Apply Settings
-        </button>
+        <BaseButton variant="secondary" @click="handleCancel">Cancel</BaseButton>
+        <BaseButton variant="success" :disabled="!hasChanges" @click="handleApply">Apply Settings</BaseButton>
       </div>
     </template>
   </BaseModal>
@@ -244,6 +193,7 @@ import CrosshairPreview from '@/components/settings/CrosshairPreview.vue';
 import CrosshairColorSection from '@/components/settings/CrosshairColorSection.vue';
 import CrosshairAlphaSection from '@/components/settings/CrosshairAlphaSection.vue';
 import Checkbox from '@/components/common/Checkbox.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useSettingsStore } from '@/stores/settingsStore.js';
 
 // Props

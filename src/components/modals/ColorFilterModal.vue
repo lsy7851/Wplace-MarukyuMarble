@@ -114,20 +114,25 @@
               <span style="font-size: 0.8em; color: rgba(255,255,255,0.6); display: block; margin-top: 2px;">Larger crosshair for selected colors</span>
             </div>
             <div class="flex gap-2 mb-2">
-              <button
-                class="flex-1 bg-mm-success-light border-none text-white px-4 py-2 rounded-md cursor-pointer text-[0.9em] whitespace-nowrap font-semibold transition-all duration-200 ease-in-out hover:bg-[#45a049] hover:-translate-y-px"
-                @click="handleEnableAll">Enable All
-              </button>
-              <button
-                class="flex-1 bg-mm-red border-none text-white px-4 py-2 rounded-md cursor-pointer text-[0.9em] whitespace-nowrap font-semibold transition-all duration-200 ease-in-out hover:bg-[#da190b] hover:-translate-y-px"
-                @click="handleDisableAll">Disable All
-              </button>
+              <BaseButton
+                variant="bulk-enable"
+                class="flex-1"
+                @click="handleEnableAll">
+                Enable All
+              </BaseButton>
+              <BaseButton
+                variant="bulk-danger"
+                class="flex-1"
+                @click="handleDisableAll">
+                Disable All
+              </BaseButton>
             </div>
-            <button
-              class="bg-[#6c757d] text-white border-none px-3.5 py-1.5 rounded-md cursor-pointer w-full text-[0.9em] font-semibold transition-all duration-200 ease-in-out hover:bg-[#5a6268] hover:-translate-y-px"
+            <BaseButton
+              variant="bulk-disable"
+              class="w-full"
               @click="handleDisableAllEnhanced">
               Disable all Enhanced
-            </button>
+            </BaseButton>
             <div class="flex items-center gap-2 mt-2 p-2 bg-white/5 rounded-md">
               <Checkbox
                 id="bm-enhance-wrong"
@@ -237,6 +242,7 @@ import ColorFilterItem from '@/components/color-filter/ColorFilterItem.vue';
 import Checkbox from '@/components/common/Checkbox.vue';
 import ProgressBar from '@/components/common/ProgressBar.vue';
 import BaseInput from '@/components/common/BaseInput.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { useColorFilter } from '@/composables/features/useColorFilter.js';
 import { useTemplateStore } from '@/stores/templateStore.js';
 import { useSettingsStore } from '@/stores/settingsStore.js';

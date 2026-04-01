@@ -14,6 +14,7 @@ import { useLocationFavoritesStore } from '@/stores/locationFavoritesStore.js';
 import { parseWplaceUrl } from '@/utils/coordinates.js';
 import BaseModal from './BaseModal.vue';
 import BaseInput from '@/components/common/BaseInput.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 
 const props = defineProps({
   modelValue: {
@@ -155,16 +156,8 @@ watch(() => props.modelValue, (isOpen) => {
 
       <!-- Buttons -->
       <div class="flex gap-3 justify-end mt-2">
-        <button
-          class="px-5 py-2.5 rounded-lg border-none font-mono text-sm cursor-pointer transition-all duration-200 ease-in-out font-semibold bg-mm-bg-border text-mm-text-primary border border-mm-bg-muted hover:bg-mm-bg-muted"
-          @click="handleCancel">
-          Cancel
-        </button>
-        <button
-          class="px-5 py-2.5 rounded-lg border-none font-mono text-sm cursor-pointer transition-all duration-200 ease-in-out font-semibold bg-mm-blue text-white hover:bg-mm-blue-dark active:bg-mm-blue-darker"
-          @click="handleSave">
-          Save to Favorites
-        </button>
+        <BaseButton variant="secondary" @click="handleCancel">Cancel</BaseButton>
+        <BaseButton variant="success" @click="handleSave">Save to Favorites</BaseButton>
       </div>
     </div>
   </BaseModal>
