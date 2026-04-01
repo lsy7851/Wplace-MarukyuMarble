@@ -45,10 +45,7 @@
           class="flex items-center gap-3 p-3 bg-linear-to-br from-mm-bg-muted/30 to-mm-bg-border/20 border border-mm-bg-muted rounded-lg cursor-pointer transition-all duration-200 ease-in-out hover:from-mm-bg-muted/50 hover:to-mm-bg-border/40 hover:border-mm-bg-light hover:-translate-y-px"
           @click="flyToPixel(pixel)">
           <!-- Color swatch -->
-          <div
-            class="w-6 h-6 rounded border-2 border-white/20 shrink-0"
-            :style="{ background: `rgb(${pixel.colorKey})` }">
-          </div>
+          <ColorSwatch :rgb="pixel.colorKey.split(',').map(Number)" />
 
           <!-- Info section -->
           <div class="flex-1 min-w-0">
@@ -103,6 +100,7 @@
  */
 import { ref, computed, watch } from 'vue';
 import BaseModal from './BaseModal.vue';
+import ColorSwatch from '@/components/common/ColorSwatch.vue';
 import { useTemplateStore } from '@/stores/templateStore.js';
 import { useNavigation } from '@/composables/ui/useNavigation.js';
 import { findColorByKey } from '@/utils/colorPalette.js';

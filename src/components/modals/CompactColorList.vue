@@ -83,11 +83,7 @@
                 :data-total="color.stats.totalRequired"
                 :data-progress="color.stats.percentage">
                 <!-- Color Swatch -->
-                <div
-                  class="w-3.5 h-3.5 rounded-[3px] shrink-0 border border-white/20"
-                  :style="{
-                    background: `rgb(${color.colorInfo.rgb[0]}, ${color.colorInfo.rgb[1]}, ${color.colorInfo.rgb[2]})`
-                  }"></div>
+                <ColorSwatch :rgb="color.colorInfo.rgb" size="sm" />
 
                 <!-- Name & Stats -->
                 <div class="flex-1 min-w-0">
@@ -134,6 +130,7 @@
 import { ref, computed, watch } from 'vue';
 import { useDraggable } from '@vueuse/core';
 import Checkbox from '@/components/common/Checkbox.vue';
+import ColorSwatch from '@/components/common/ColorSwatch.vue';
 import { useColorFilter } from '@/composables/features/useColorFilter.js';
 import { useColorFilterStore } from '@/stores/colorFilterStore.js';
 

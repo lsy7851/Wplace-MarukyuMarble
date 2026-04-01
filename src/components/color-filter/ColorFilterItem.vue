@@ -75,11 +75,7 @@
       opacity: color.isDisabled ? '0.6' : '1'
     }">
     <!-- Color Swatch -->
-    <div
-      class="size-8 shrink-0 rounded-md border border-white/20"
-      :style="{
-        background: `rgb(${color.colorInfo.rgb[0]}, ${color.colorInfo.rgb[1]}, ${color.colorInfo.rgb[2]})`
-      }"></div>
+    <ColorSwatch :rgb="color.colorInfo.rgb" size="lg" />
 
     <!-- Info Container -->
     <div class="flex min-w-0 flex-1 flex-col gap-1">
@@ -147,6 +143,7 @@
  */
 
 import Checkbox from '@/components/common/Checkbox.vue';
+import ColorSwatch from '@/components/common/ColorSwatch.vue';
 
 // Props
 const props = defineProps({
