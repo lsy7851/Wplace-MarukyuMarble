@@ -127,6 +127,19 @@ export default defineUnlistedScript(() => {
     }, 1000);
   }
 
+  // ===== @property를 document 레벨에 호이스트 =====
+  // Shadow DOM 스타일시트에서는 @property가 등록되지 않는 브라우저 제약이 있음.
+  // CSS에서 @property 규칙을 추출하여 document 레벨에 등록하면
+  // Shadow DOM 내부에서도 initial-value와 inherits: false 시맨틱이 정상 동작함.
+  function hoistPropertyRules(cssText) {
+    const propertyRules = cssText.match(/@property\s+--[\w-]+\s*\{[^}]*\}/g);
+    if (!propertyRules) return;
+
+    const style = document.createElement('style');
+    style.textContent = propertyRules.join('\n');
+    document.head.appendChild(style);
+  }
+
   // ===== Shadow DOM에 CSS 로드 =====
   async function loadCSSIntoShadow(shadowRoot) {
     // vue-app.css URL을 찾기 위해 현재 스크립트의 base URL 사용
@@ -143,6 +156,11 @@ export default defineUnlistedScript(() => {
 
       // Shadow DOM 내부에서는 :root가 매칭되지 않으므로 :host로 치환
       cssText = cssText.replaceAll(':root', ':host');
+
+      // @property 규칙을 document 레벨에 등록
+      // (Shadow DOM 스타일시트에서는 @property가 등록되지 않으므로,
+      //  document 레벨에 호이스트하여 initial-value/inherits 시맨틱을 보존)
+      hoistPropertyRules(cssText);
 
       const style = document.createElement('style');
       style.textContent = cssText;
